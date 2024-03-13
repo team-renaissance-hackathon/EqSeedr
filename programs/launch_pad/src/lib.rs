@@ -63,7 +63,7 @@ pub struct Initialize<'info> {
     #[account(
         init,
         payer = authority,
-        space = ProgramAuthority::LEN,
+        space = IndexerStatus::LEN,
         seeds = [
             b"indexer-status",
             new_authority.key().as_ref(),
