@@ -13,19 +13,27 @@ pub mod launch_pad {
             new_authority,
             new_active_session_indexer,
             new_enqueue_session_indexer,
+            new_indexer_status,
             ..
         } = ctx.accounts;
 
+        // new_authority.authority = authority.key();
+        new_authority.is_initialzied = true;
+        new_authority.is_signer = true;
+
+        new_indexer_status.indexer.init();
+
+        // here to get rid of linter annoyance
+        new_indexer_status.indexer.update();
+
         new_authority.bump = ctx.bumps.new_authority;
+        new_indexer_status.bump = ctx.bumps.new_indexer_status;
         new_active_session_indexer.bump = ctx.bumps.new_active_session_indexer;
         new_enqueue_session_indexer.bump = ctx.bumps.new_enqueue_session_indexer;
 
-        new_authority.is_initialzied = true;
-        new_authority.is_signer = true;
-        new_authority.indexer.init();
-
-        // here to get rid of linter annoyance
-        new_authority.indexer.update();
+        new_indexer_status.authority = new_authority.key();
+        new_active_session_indexer.authority = new_authority.key();
+        new_enqueue_session_indexer.authority = new_authority.key();
 
         Ok(())
     }
@@ -51,6 +59,18 @@ pub struct Initialize<'info> {
         bump
     )]
     pub new_authority: Account<'info, ProgramAuthority>,
+
+    #[account(
+        init,
+        payer = authority,
+        space = ProgramAuthority::LEN,
+        seeds = [
+            b"indexer-status",
+            new_authority.key().as_ref(),
+        ],
+        bump
+    )]
+    pub new_indexer_status: Account<'info, IndexerStatus>,
 
     #[account(
         init,
@@ -101,16 +121,14 @@ pub struct ProgramAuthority {
     // pub authority: Pubkey,
     pub is_initialzied: bool,
     pub is_signer: bool,
-
-    // should this be in it's own state account?
-    // performance can be impacted if a lot of writes are happening,
-    // even when other actions don't require the Indexer.
-    // because this is the top level account. will update later.
-    pub indexer: Indexer,
 }
 
-// #[account]
-// pub struct IndexTracker {}
+#[account]
+pub struct IndexerStatus {
+    pub bump: u8,
+    pub authority: Pubkey,
+    pub indexer: Indexer,
+}
 
 #[account]
 pub struct SessionIndexer {
@@ -122,7 +140,11 @@ pub struct SessionIndexer {
 }
 
 impl ProgramAuthority {
-    const LEN: usize = DISCRIMINATOR + BUMP + BOOL + BOOL + Indexer::LEN;
+    const LEN: usize = DISCRIMINATOR + BUMP + BOOL + BOOL;
+}
+
+impl IndexerStatus {
+    const LEN: usize = DISCRIMINATOR + BUMP + PUBKEY_BYTES + Indexer::LEN;
 }
 
 impl SessionIndexer {
