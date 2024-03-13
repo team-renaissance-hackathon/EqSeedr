@@ -9,7 +9,16 @@ pub mod launch_pad {
     // LOGIC
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        let Initialize { new_authority, .. } = ctx.accounts;
+        let Initialize {
+            new_authority,
+            new_active_session_indexer,
+            new_enqueue_session_indexer,
+            ..
+        } = ctx.accounts;
+
+        new_authority.bump = ctx.bumps.new_authority;
+        new_active_session_indexer.bump = ctx.bumps.new_active_session_indexer;
+        new_enqueue_session_indexer.bump = ctx.bumps.new_enqueue_session_indexer;
 
         new_authority.is_initialzied = true;
         new_authority.is_signer = true;
@@ -38,7 +47,6 @@ pub struct Initialize<'info> {
         space = ProgramAuthority::LEN,
         seeds = [
             b"authority"
-            // specify a authority or deployer? hard coded
         ],
         bump
     )]
@@ -87,6 +95,10 @@ const BUMP: usize = 1;
 
 #[account]
 pub struct ProgramAuthority {
+    pub bump: u8,
+
+    // specify a authority or deployer?
+    // pub authority: Pubkey,
     pub is_initialzied: bool,
     pub is_signer: bool,
 
