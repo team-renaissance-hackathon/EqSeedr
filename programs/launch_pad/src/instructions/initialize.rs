@@ -70,10 +70,7 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     new_authority.is_initialzied = true;
     new_authority.is_signer = true;
 
-    new_indexer_status.indexer.init();
-
-    // here to get rid of linter annoyance
-    new_indexer_status.indexer.update();
+    new_indexer_status.status.init();
 
     new_authority.bump = ctx.bumps.new_authority;
     new_indexer_status.bump = ctx.bumps.new_indexer_status;
