@@ -5,7 +5,7 @@ use anchor_lang::prelude::*;
 pub struct IndexerStatus {
     pub bump: u8,
     pub authority: Pubkey,
-    pub indexer: Indexer,
+    pub status: Indexer,
 }
 
 impl IndexerStatus {
