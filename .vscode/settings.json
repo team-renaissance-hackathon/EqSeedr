@@ -1,0 +1,5 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./programs/launch_pad/Cargo.toml",
+    ],
+}

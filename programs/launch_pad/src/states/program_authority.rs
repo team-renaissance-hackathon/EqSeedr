@@ -1,4 +1,4 @@
-use super::super::utils::constants::*;
+use crate::utils::constants::*;
 use anchor_lang::prelude::*;
 
 #[account]
