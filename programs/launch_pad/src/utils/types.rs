@@ -41,7 +41,7 @@ impl Indexer {
             delta = 0;
         }
 
-        if self.week != (delta / Indexer::WEEK_DELTA) as u8 {
+        if self.week != (delta / Indexer::WEEK_DELTA) as u8 + 1 {
             self.nonce = 0;
         }
 
