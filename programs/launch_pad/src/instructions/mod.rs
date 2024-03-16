@@ -29,11 +29,36 @@ pub use initialize::*;
 //          NewVestedAccountByIndex
 //          tickBidLeaderBoard
 //          ValidSession
+//      OpenBid
+//          Bidder -> Signer / Payer / Authority
+//              - mut
+//          ValidVestedAccountByOwner
+//              - mut
+//              - ownder == bidder      @ ProgramError::InvalidVestedOwner
+//          CommitQueue
+//              - mut
+//              - bidder == nextBidder  @ ProgramError::NotCurrentCommitBidder
+//          ValidTickBidRound
+//              - mut
+//              - valid_tick_bid_round.status == open        @ ProgramError::InvalidOpenBid
+//              - valid_tick_bid_round.total == 0            @ ProgramError::InvalidOpenBid
+//              - valid_tick_bid_round.indexer == valid_session.indexer
+//          ValidSession
+//              - mut
+//              - status == open        @ ProgramError::SessionNotOpenStatus
 //      ExecuteBid
 //          Bidder -> Signer / Payer / Authority
-//          ValidVestedAccountByOwner -> has_one = authority
+//              - mut
+//          ValidVestedAccountByOwner
+//              - mut
+//              - ownder == bidder      @ ProgramError::InvalidVestedOwner
 //          ValidTickBidRound
+//              - mut
+//              - status == open
+//              - total != ticket_allocation
+//              - valid_tick_bid_round.indexer == valid_session.indexer
 //          ValidSession
+//              - mut
 //      UpdateLeaderBoard -> postInstruction
 //          INPUT:
 //              vested_account_current_pos
@@ -113,12 +138,21 @@ pub use initialize::*;
 //  MISC
 //      OpenRoundStatus
 //          Payer
+//              - mut
 //          ValidTickBidRound
+//              - mut
+//              - status == Enqueue
+//              - index == session.current_round
 //          Session
 //      CloseRoundStatus
 //          Payer
+//              - mut
 //          ValidTickBidRound
+//              - mut
+//              - status == open
+//              - valid_tick_bid_round.total == session.ticket_allocation
 //          Session
+//              - mut
 
 // SEALED-BID
 //  BIDDER/INVESTOR
