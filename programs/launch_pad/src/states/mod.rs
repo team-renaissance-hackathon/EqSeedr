@@ -33,12 +33,13 @@ pub use session_indexer::*;
 //              TokenEscrowAccount
 //              FundingEscrowAccount
 //          SealedStatus / SealedBidRound / SealedBidConfig
-//              TokenStakingAccount
+//              TokenStakingSession
 //              [..] ::SealedBidder::
 //                  :SealedBid
 //                  :TokenCommitStaking --  don't think it should be coupled with sealedBid with multiple instances,
 //                                          no benefit because of leaderBoard, and it's more convienent to have a single account
 //              CommitRankLeaderBoard
+//              CommitQueue
 //          ::TickBid::
 //              [n]RoundStatus / TickBidRound / SealedBidConfig
 //              TickBidLeaderBoard
