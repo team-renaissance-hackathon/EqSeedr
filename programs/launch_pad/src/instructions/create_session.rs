@@ -122,6 +122,8 @@ pub fn handler(ctx: Context<CreateSession>, input: SessionParams) -> Result<()> 
     new_session.total_bidders = 0;
     new_session.session_tick = 0;
 
+    new_session.has_marketplace = false;
+
     emit!(NewSession {
         message: String::from("New Session Created"),
         launch_date: new_session.launch_date,

@@ -87,31 +87,33 @@ pub use initialize::*;
 //                  - has_one == authority
 //                  - market_position == false
 //                  - node.position.index == index
-//              MarketplacePosition
+//                  -- update VestedAccountByOwner to isMarketMaker = true
+//              MarketplacePositions
 //                  - mut
-//                  - position >= self.total && self.stack.is_empty()
-//                      || position < self.total && self.pool[position] == None && position == self.last_element()
-//                  - self.is_valid(pos, node)
+//                  - self.pos_is_valid(pos)
+//                  - self.node_is_valid(pos, node)
 //          UpdatePosition
 //              INPUT:
 //                  balance_amount_delta
 //                  target_bid_delta
 //                  fee_payout_delta
 //                  current_position
-//                  ?new_position
+//                  new_position
 //              MarketMaker -> Signer / Authority
 //                  - mut
 //              ValidVestedAccountByOwner
 //                  - market_position == true
 //                  - has_one == authority
 //                  - node.position.index == index
-//              MarketplacePosition
+//              MarketplacePositions
 //                  - mut
+//                          I THINK SOME OF THE VALIDATION HERE IS WRONG, NEED CONFIRM -> need to check the change in delta
 //                  - self.node.position.index == vested_account_by_owner.index
-//                  - new_position < self.total && current_position < self.total
-//                  - self.pool[new_position] != None && self.pool[current_position] != None
-//                  - self.pool[current_position].position.index == vested_account_by_owner.index
-//                  - new_position != None && target_bid_delta != 0 && self.is_valid(new_position, self.get_node(current_position))
+//                  - !self.get(new_pos).is_none() && !self.get(current_pos).is_none()
+//                  - self.get(current_pos).upwrap().position.index == vested_account_by_owner.index
+//                  - self.valid_target_bid_update(target_bid_delta, current_pos, new_pos) -> I think I don't need it
+//                  - self.pos_is_valid(current_position) && self.pos_is_valid(new_position)
+//                  - self.node_is_valid(new_position, node)
 //          RemovePosition
 //              INPUT:
 //                  position
@@ -122,11 +124,12 @@ pub use initialize::*;
 //                  - market_position == true
 //                  - has_one == authority
 //                  - node.position.index == index
+//                  -- update VestedAccountByOwner to isMarketMaker = false
 //              MarketplacePosition
 //                  - mut
 //                  - self.node.position.index == vested_account_by_owner.index
-//                  - position < self.total
-//                  - self.pool[position] != None
+//                  - position < self.pool.total
+//                  - !self.get(pos).is_none()
 
 //      MARKET MATCHER -> I think is missing something, will look into it later
 //          MatchBid
@@ -139,8 +142,11 @@ pub use initialize::*;
 //              INPUT:
 //                  staking_amount
 //                  valid_position
-//              MarketMatcher -> Signer / Authority
+//              Authority
+//              MarketMatcher
+//                  - init
 //              MarketplaceMatchers
+//                  - mut
 //              MatcherTokenAccount
 //              TokenStakingAccount
 //              TokenMint
@@ -150,6 +156,7 @@ pub use initialize::*;
 //                  staking_amount
 //                  current_postion
 //                  valid_position
+//              Authority
 //              MarketMatcher -> Signer / Authority
 //              MarketplaceMatchers
 //              TokenAccount
@@ -160,19 +167,29 @@ pub use initialize::*;
 //          RemoveFromPool
 //              INPUT:
 //                  current_position
-//              MarketMatcher -> Signer / Authority
+//              Authority
+//              MarketMatcher
 //              MarketplaceMatchers
+//                  - mut
 //              MatcherTokenAccount
 //              TokenStakingAccount
 //              TokenMint
 //              TokenProgram
 //          SetActiveStatus
 //              INPUT:
-//                  current_position -> if adding position is max number
 //                  valid_position
-//              MarketMatcher -> Signer / Authority
-//              MatcherPool
+//              Authority
+//                  - mut
+//              MarketMatcher
+//                  - mut
+//                  - has_one = authority
+//                  - locked_amount != 0
+//                  - cool_down_status <= delta or increase fee to set active?
 //              MarketplaceMatchers
+//                  - mut
+//                  - market_matcher.index == self.active_list.index
+//                  - self.pos_is_valid(pos)
+//                  - self.node_is_valid(pos, node)
 
 //  MISC
 //      OpenRoundStatus
@@ -230,8 +247,13 @@ pub use initialize::*;
 //          SystemProgram
 //      CreateSessionMarketplace
 //          Authority
+//              - mut
 //          Session
+//              - mut?
+//              - has_one = authority
 //          NewSessionMarketplace
+//              - init
+//              - !session.has_marketplace
 //          SystemProgram
 //      CreateTickBidRound
 //          Authority
@@ -247,13 +269,21 @@ pub use initialize::*;
 //          SystemProgram
 //      CreateSealBidRound
 //          Authority
-//          Session
 //          NewSealBidRound
+//              - init
+//              - !session.has_sealed_bid_round -> not sure if need this
+//          Session
+//              - mut
+//              - has_one = authority
 //          SystemProgram
 //      CreateCommitLeaderBoard
 //          Authority
-//          Session
 //          NewCommitLeaderBoard
+//              - init
+//              - !session.has_commit_leader_board -> not sure if need this
+//          Session
+//              - mut
+//              - has_one = authority
 //          SystemProgram
 //      CreateCommitQueue
 //          Authority
