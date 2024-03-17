@@ -245,12 +245,12 @@ pub use initialize::*;
 //          NewSession
 //          EnqueueIndexer
 //          SystemProgram
-//      CreateSessionMarketplace
+//      CreateSessionMarketplacePositions
 //          Authority
 //              - mut
-//          NewSessionMarketplace
+//          NewSessionMarketplacePositions
 //              - init
-//              - !session.has_marketplace
+//              - !session.has_marketplace_positions
 //          Session
 //              - mut
 //              - has_one = authority
@@ -259,6 +259,7 @@ pub use initialize::*;
 //          Authority
 //              - mut
 //          NewTickBidRound
+//              - init
 //              - seed
 //                  - index
 //                  - session.key
@@ -266,6 +267,7 @@ pub use initialize::*;
 //          Session
 //              - mut
 //              - has_one = authority
+//              - !session.all_tick_bid_rounds_set
 //          SystemProgram
 //      CreateSealBidRound
 //          Authority

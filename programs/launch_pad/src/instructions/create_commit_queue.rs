@@ -13,7 +13,7 @@ pub struct CreateCommitQueue<'info> {
         ],
         bump
     )]
-    pub new_commit_leader_board: Account<'info, CommitQueue>,
+    pub new_commit_queue: Account<'info, CommitQueue>,
 
     #[account(
         mut,
@@ -27,7 +27,7 @@ pub struct CreateCommitQueue<'info> {
 
 pub fn handler(ctx: Context<CreateCommitQueue>) -> Result<()> {
     let CreateCommitQueue {
-        new_commit_leader_board,
+        new_commit_queue,
         session,
         ..
     } = ctx.accounts;

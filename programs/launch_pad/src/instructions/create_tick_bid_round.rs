@@ -2,7 +2,7 @@ use crate::states::{RoundStatus, Session};
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
-pub struct CreateRound<'info> {
+pub struct CreateSessionTickBidRound<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
@@ -22,14 +22,16 @@ pub struct CreateRound<'info> {
     #[account(
         mut,
         has_one = authority,
+        constraint = !session.all_tick_bid_rounds_set @ ProgramError::SessionTickBidRoundsAlreadyExist
+
     )]
     pub session: Account<'info, Session>,
 
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<CreateRound>) -> Result<()> {
-    let CreateRound { round, session, .. } = ctx.accounts;
+pub fn handler(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {
+    let CreateSessionTickBidRound { round, session, .. } = ctx.accounts;
 
     round.init();
     session.create_round();

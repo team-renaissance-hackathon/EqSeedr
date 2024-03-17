@@ -13,12 +13,12 @@ pub struct CreateSealedBidRound<'info> {
         ],
         bump
     )]
-    pub new_sealed_bid: Account<'info, SealedBidRound>,
+    pub new_sealed_bid_round: Account<'info, SealedBidRound>,
 
     #[account(
         mut,
         has_one = authority
-        constraint = !session.has_marketplace @ ProgramError::SessionSealedBidRoundAlreadyExist
+        constraint = !session.has_sealed_bid_round @ ProgramError::SessionSealedBidRoundAlreadyExist
     )]
     pub session: Account<'info, Session>,
 
