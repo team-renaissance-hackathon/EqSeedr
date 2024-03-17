@@ -70,7 +70,7 @@ impl LinkedList<T> {
         //  - remove position -> remove
         //          -> pos < self.total
         //          -> self.pool[pos] != None
-        //          -> self.pool[current_pos].position.index == vested_account_by_owner.index
+        //          -> self.pool[pos].position.index == vested_account_by_owner.index
         //  - update postion -> swap
         //          -> new_pos < self.total, current_pos < self.total,
         //          -> self.pool[new_pos] != None, self.pool[current_pool] != None
