@@ -1,25 +1,14 @@
-use anchor_lang::prelude::*;
-
 #[derive(Accounts)]
 pub struct CreateSessionMarketplace<'info> {
     #[account(mut)]
-    pub payer: Signer<'info>,
+    pub authority: Signer<'info>,
 
-    // do I need program authority? I don't think so unless it should be tied to seeds
-    // #[account(
-    //     seeds = [
-    //         b"authority",
-    //     ],
-    //     bump = program_authority.bump
-    // )]
-    // pub program_authority: Account<'info, ProgramAuthority>,
     #[account(
         init,
         payer = authority,
         space = MarketMakerPool::LEN,
         seeds = [
             session.key().as_ref(),
-            // program authority?
             b"marketplace",
         ],
         bump
@@ -28,7 +17,8 @@ pub struct CreateSessionMarketplace<'info> {
 
     #[account(
         mut,
-        constraint = !session.has_marketplace // @ ProgramError::SessionMarketplaceAlreadyExist
+        has_one = authority
+        constraint = !session.has_marketplace @ ProgramError::SessionMarketplaceAlreadyExist
     )]
     pub session: Account<'info, Session>,
 
@@ -42,8 +32,7 @@ pub fn handler(ctx: Context<CreateSessionMarketplace>) -> Result<()> {
         ..
     } = ctx.accounts;
 
-    new_marketplace.next_bid = 0;
-    new_marketplace.queue = Vec::New();
+    new_marketplace.pool = LinkedList::New();
 
     session.has_marketplace = true;
 
