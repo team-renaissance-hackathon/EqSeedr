@@ -248,12 +248,12 @@ pub use initialize::*;
 //      CreateSessionMarketplace
 //          Authority
 //              - mut
-//          Session
-//              - mut?
-//              - has_one = authority
 //          NewSessionMarketplace
 //              - init
 //              - !session.has_marketplace
+//          Session
+//              - mut
+//              - has_one = authority
 //          SystemProgram
 //      CreateTickBidRound
 //          Authority
@@ -269,6 +269,7 @@ pub use initialize::*;
 //          SystemProgram
 //      CreateSealBidRound
 //          Authority
+//              - mut
 //          NewSealBidRound
 //              - init
 //              - !session.has_sealed_bid_round -> not sure if need this
@@ -288,6 +289,7 @@ pub use initialize::*;
 //          SystemProgram
 //      CreateCommitQueue
 //          Authority
+//              - mut
 //          NewCommitQueue
 //              - init
 //              - !session.has_commit_queue
@@ -295,15 +297,28 @@ pub use initialize::*;
 //              - mut
 //              - has_one = authority
 //          SystemProgram
-//      CreateTickBidLeader
+//      CreateSessionTickBidLeaderBoard
 //          Authority
+//              - mut
+//          NewTickBidLeaderBoard
+//              - init
+//              - !session.has_tick_bid_leader_board
 //          Session
-//          NewTickBidLeader
+//              - mut
+//              - has_one = authority
 //          SystemProgram
 //      CreateVestingEscrowAccount
 //          Authority
-//          Session
+//              - mut
 //          NewVestingEscrowAccount
+//              - init
+//              - session.has_vesting_escrow_account
+//          Session
+//              - mut
+//              - has_one = authority
+//              - session.data.token_mint == token_mint.key
+//          TokenMint
+//          TokenProgram
 //          SystemProgram
 //      CreateVestingConfig
 //          Authority
