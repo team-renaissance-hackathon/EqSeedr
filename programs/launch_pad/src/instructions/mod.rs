@@ -278,17 +278,22 @@ pub use initialize::*;
 //          SystemProgram
 //      CreateCommitLeaderBoard
 //          Authority
+//              - mut
 //          NewCommitLeaderBoard
 //              - init
-//              - !session.has_commit_leader_board -> not sure if need this
+//              - !session.has_commit_leader_board -> we need the check list, need everything created before rounds can begin
 //          Session
 //              - mut
 //              - has_one = authority
 //          SystemProgram
 //      CreateCommitQueue
 //          Authority
-//          Session
 //          NewCommitQueue
+//              - init
+//              - !session.has_commit_queue
+//          Session
+//              - mut
+//              - has_one = authority
 //          SystemProgram
 //      CreateTickBidLeader
 //          Authority
