@@ -52,18 +52,18 @@ impl Indexer {
 }
 
 // LINKED LIST TYPE
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct LinkedList<T> {
     pub total: u32,
     head: u32,
     tail: u32,
-    pool: Vec<Option<Node<T>>>,
+    list: Vec<Option<Node<T>>>,
     stack: Vec<[u8; 3]>,
 }
 
 const STACK: usize = 3;
-impl<T: Len> LinkedList<T> {
-    const LEN: usize = UNSIGNED_32
+impl<T: Len + Copy> LinkedList<T> {
+    pub const LEN: usize = UNSIGNED_32
         + UNSIGNED_32
         + UNSIGNED_32
         // not sure if this is correct?
@@ -76,74 +76,38 @@ impl<T: Len> LinkedList<T> {
     // swap
     // search -> client side
 
-    fn next(&self, node: Node<T>) -> Option<Node<T>> {
+    pub fn next(&self, node: Node<T>) -> Option<Node<T>> {
         match node.next {
-            Some(pos) => self.pool[pos as usize],
+            Some(pos) => self.list[pos as usize].clone(),
             None => None,
         }
     }
 
-    fn prev(&self, node: Node<T>) -> Option<Node<T>> {
+    pub fn prev(&self, node: Node<T>) -> Option<Node<T>> {
         match node.prev {
-            Some(pos) => self.pool[pos as usize],
+            Some(pos) => self.list[pos as usize].clone(),
             None => None,
         }
     }
 
-    fn is_valid(&self, pos: u32, node: Node<T>) -> bool {
-        // place in validation check
-        //  - add position -> insert
-        //          -> pos >= self.total && self.stack.is_empty()
-        //                  || pos <= self.total && self.pool[pos] == None && self.last_element() == pos
-        //          -> self.is_valid(pos, node)
-        //  - remove position -> remove
-        //          -> pos < self.total
-        //          -> self.pool[pos] != None
-        //          -> self.pool[pos].position.index == vested_account_by_owner.index
-        //  - update postion -> swap
-        //          -> new_pos < self.total, current_pos < self.total,
-        //          -> self.pool[new_pos] != None, self.pool[current_pool] != None
-        //          -> self.pool[current_pos].position.index == vested_account_by_owner.index
-        //          -> self.is_valid(pos, node)
-
-        if self.total == 0 {
-            return true;
-        }
-
+    fn insert(&mut self, pos: u32, node: &mut Node<T>) {
         if pos == self.head {
-            let head_node = self.pool[self.head as usize].unwrap();
-
-            return node.position.is_less_than(head_node.position);
-        } else if (!self.stack.is_empty() && self.pool[pos as usize].is_none()) || pos >= self.total
-        {
-            let tail_node = self.pool[self.tail as usize].unwrap();
-
-            return node.position.is_greater_than_or_equal(tail_node.position);
-        } else {
-            let next_node = self.pool[pos as usize].unwrap();
-            let prev_node = self.pool[next_node.prev.unwrap() as usize].unwrap();
-
-            return node.position.is_less_than(next_node.position)
-                && node.position.is_greater_than_or_equal(prev_node.position);
-        }
-    }
-
-    fn insert(&self, pos: u32, node: &mut Node<T>) {
-        if pos == self.head {
-            let next_node = self.pool[self.head as usize].unwrap();
+            let next_node = self.list[self.head as usize].clone().unwrap();
 
             self.head = node.index;
             node.prev = None;
             node.next = Some(next_node.index);
-        } else if pos >= self.total || self.pool[pos as usize].is_none() {
-            let prev_node = self.pool[self.tail as usize].unwrap();
+        } else if pos >= self.total || self.list[pos as usize].is_none() {
+            let prev_node = self.list[self.tail as usize].clone().unwrap();
 
             self.tail = node.index;
             node.prev = Some(prev_node.index);
             node.next = None;
         } else {
-            let next_node = &mut self.pool[pos as usize].unwrap();
-            let prev_node = &mut self.pool[next_node.prev.unwrap() as usize].unwrap();
+            let next_node = &mut self.list[pos as usize].clone().unwrap().clone();
+            let prev_node = &mut self.list[next_node.prev.clone().unwrap() as usize]
+                .clone()
+                .unwrap();
 
             prev_node.next = Some(node.index);
             next_node.prev = Some(node.index);
@@ -152,64 +116,54 @@ impl<T: Len> LinkedList<T> {
         }
     }
 
-    fn remove(&self, pos: usize) -> Node<T> {
-        return self.pool[pos].unwrap();
+    pub fn remove(&self, pos: u32) -> Node<T> {
+        return self.list[pos as usize].clone().unwrap();
     }
 
-    fn set_to_none(&self, pos: usize) {
-        let node = self.remove(pos);
+    pub fn set_to_none(&mut self, pos: u32) {
+        let node = self.list[pos as usize].clone().unwrap();
         self.push(node.index);
-        self.pool[node.index as usize] = None;
+        self.list[node.index as usize] = None;
     }
 
-    fn add(&self, pos: u32, node: &mut Node<T>) {
+    pub fn add(&mut self, pos: u32, node: &mut Node<T>) {
         if !self.stack.is_empty() {
             node.index = self.pop();
-            self.pool[node.index as usize] = Some(Node {
-                index: node.index,
-                prev: node.prev,
-                next: node.next,
-                position: node.position,
-            });
+            self.list[node.index as usize] = Some(node.clone());
             self.insert(pos, node);
         } else {
             node.index = self.total;
-            self.pool.push(Some(Node {
-                index: node.index,
-                prev: node.prev,
-                next: node.next,
-                position: node.position,
-            }));
+            self.list.push(Some(node.clone()));
             self.insert(pos, node);
             self.total += 1;
         }
     }
 
-    fn swap(&self, current_pos: u32, new_pos: u32) {
-        let node = &mut self.remove(current_pos as usize);
+    pub fn swap(&mut self, current_pos: u32, new_pos: u32) {
+        let node = &mut self.remove(current_pos);
         self.insert(new_pos, node);
     }
 
-    fn push(&self, pos: u32) {
+    pub fn push(&mut self, pos: u32) {
         let u32_as_bytes: [u8; 4] = pos.to_be_bytes();
         let u24_as_bytes: [u8; 3] = [u32_as_bytes[1], u32_as_bytes[2], u32_as_bytes[3]];
         self.stack.push(u24_as_bytes);
     }
 
-    fn pop(&self) -> u32 {
+    pub fn pop(&mut self) -> u32 {
         let u24_as_bytes: [u8; 3] = self.stack.pop().unwrap();
         let u32_as_bytes: [u8; 4] = [0, u24_as_bytes[1], u24_as_bytes[2], u24_as_bytes[3]];
         return u32::from_be_bytes(u32_as_bytes);
     }
 
-    fn last_element(&self) -> u32 {
+    pub fn last_element(&self) -> u32 {
         let u24_as_bytes: [u8; 3] = self.stack[self.stack.len() - 1];
         let u32_as_bytes: [u8; 4] = [0, u24_as_bytes[1], u24_as_bytes[2], u24_as_bytes[3]];
         return u32::from_be_bytes(u32_as_bytes);
     }
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct Node<T> {
     index: u32,
     prev: Option<u32>,
@@ -217,22 +171,21 @@ pub struct Node<T> {
     position: T,
 }
 
-// impl<T: Compare> Node<T> {
-//     fn is_less_than(&self, node: Node<T>) -> bool {
-//         return self.position.is_less_than(node.position.is_less_than);
-//     }
-// }
+impl<T: Copy> Clone for Node<T> {
+    fn clone(&self) -> Self {
+        Node {
+            index: self.index,
+            prev: self.prev,
+            next: self.next,
+            position: self.position,
+        }
+    }
+}
 
 impl<T: Len> Node<T> {
-    const LEN: usize = UNSIGNED_32 + (BYTE + UNSIGNED_32) + (BYTE + UNSIGNED_32) + T::LEN;
+    pub const LEN: usize = UNSIGNED_32 + (BYTE + UNSIGNED_32) + (BYTE + UNSIGNED_32) + T::LEN;
 }
 
-impl<T: Compare> Node<T> {}
-
-trait Len {
+pub trait Len {
     const LEN: usize;
-}
-
-trait Compare {
-    fn is_less_than() -> bool;
 }
