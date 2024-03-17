@@ -70,24 +70,63 @@ pub use initialize::*;
 //  MARKETPLACE
 //      MARKET MAKER
 //          AddPosition
-//              INPUT:
-//                  transfer/delegate? -> balance_amount
-//                  target_bid
-//                  fee_payout
+//              INPUT: -> can sanitize input data? I think we should, the prev, and next, santize to None, sanitize index to last index if exceeds
+//                  node
+//                      index = insert position
+//                      prev = None
+//                      next = None
+//                      position -> MarketPosition
+//                          vested_index
+//                          balance_delta
+//                          target_bid_delta
+//                          fee_payout_delta
 //              MarketMaker -> Signer / Authority
-//              ValidVestedAccountByOwner -> has_one = authority
+//                  - mut
+//              ValidVestedAccountByOwner
+//                  - mut
+//                  - has_one == authority
+//                  - market_position == false
+//                  - node.position.index == index
 //              MarketplacePosition
+//                  - mut
+//                  - position >= self.total && self.stack.is_empty()
+//                      || position < self.total && self.pool[position] == None && position == self.last_element()
+//                  - self.is_valid(pos, node)
 //          UpdatePosition
 //              INPUT:
-//                  ?balance_amount
-//                  ?target_bid
-//                  ?fee_payout
+//                  balance_amount_delta
+//                  target_bid_delta
+//                  fee_payout_delta
+//                  current_position
+//                  ?new_position
 //              MarketMaker -> Signer / Authority
-//              ValidVestedAccountByOwner -> has_one = authority
+//                  - mut
+//              ValidVestedAccountByOwner
+//                  - market_position == true
+//                  - has_one == authority
+//                  - node.position.index == index
 //              MarketplacePosition
+//                  - mut
+//                  - self.node.position.index == vested_account_by_owner.index
+//                  - new_position < self.total && current_position < self.total
+//                  - self.pool[new_position] != None && self.pool[current_position] != None
+//                  - self.pool[current_position].position.index == vested_account_by_owner.index
+//                  - new_position != None && target_bid_delta != 0 && self.is_valid(new_position, self.get_node(current_position))
 //          RemovePosition
+//              INPUT:
+//                  position
 //              MarketMaker -> Signer / Authority
+//                  - mut
+//              ValidVestedAccountByOwner
+//                  - mut
+//                  - market_position == true
+//                  - has_one == authority
+//                  - node.position.index == index
 //              MarketplacePosition
+//                  - mut
+//                  - self.node.position.index == vested_account_by_owner.index
+//                  - position < self.total
+//                  - self.pool[position] != None
 
 //      MARKET MATCHER -> I think is missing something, will look into it later
 //          MatchBid
@@ -196,8 +235,15 @@ pub use initialize::*;
 //          SystemProgram
 //      CreateTickBidRound
 //          Authority
-//          Session
+//              - mut
 //          NewTickBidRound
+//              - seed
+//                  - index
+//                  - session.key
+//                  - b"round-status"
+//          Session
+//              - mut
+//              - has_one = authority
 //          SystemProgram
 //      CreateSealBidRound
 //          Authority
