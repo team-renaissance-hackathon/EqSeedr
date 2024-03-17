@@ -6,14 +6,14 @@ pub struct CreateSealedBidRound<'info> {
     #[account(
         init,
         payer = authority,
-        space = MarketMakerPool::LEN,
+        space = SealedBidRound::LEN,
         seeds = [
             session.key().as_ref(),
             b"sealed-bid-round",
         ],
         bump
     )]
-    pub new_sealed_bid: Account<'info, MarketMakerPool>,
+    pub new_sealed_bid: Account<'info, SealedBidRound>,
 
     #[account(
         mut,
