@@ -16,4 +16,7 @@ pub enum ProgramError {
 
     #[msg("Mint Authority does not Session Creator")]
     ExpectMintAuthorityToCreateSession,
+
+    #[msg("Session can not Exceed Target Rounds")]
+    MaxRoundSet,
 }
