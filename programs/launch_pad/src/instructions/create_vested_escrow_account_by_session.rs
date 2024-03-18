@@ -1,24 +1,24 @@
 #[derive(Accounts)]
-pub struct CreateVestingEscrowAccount<'info> {
+pub struct CreateVestedEscrowAccountBySession<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
     #[account(
         init,
         payer = authority,
-        space = VestingEscrowAccount::LEN,
+        space = VestedEscrowAccountBySession::LEN,
         seeds = [
             session.key().as_ref(),
-            b"vesting-escrow-account",
+            b"Vested-escrow-account",
         ],
         bump
     )]
-    pub new_vesting_escrow_account: Account<'info, VestingEscrowAccount>,
+    pub new_Vested_escrow_account: Account<'info, VestedEscrowAccountBySession>,
 
     #[account(
         mut,
         has_one = authority
-        constraint = !session.has_vesting_escrow_account @ ProgramError::VestCreateVestingEscrowAccountAlreadyExist
+        constraint = !session.has_Vested_escrow_account @ ProgramError::VestedEscrowAccountBySessionAlreadyExist
         constraint = session.data.token_mint == token_mint.key() @ ProgramError::InvalidTokenMint
     )]
     pub session: Account<'info, Session>,
@@ -28,14 +28,10 @@ pub struct CreateVestingEscrowAccount<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<CreateVestingEscrowAccount>) -> Result<()> {
-    let CreateVestingEscrowAccount {
-        new_vesting_escrow_account,
-        session,
-        ..
-    } = ctx.accounts;
+pub fn handler(ctx: Context<CreateVestedEscrowAccountBySession>) -> Result<()> {
+    let CreateVestedEscrowAccountBySession { session, .. } = ctx.accounts;
 
-    // need set state logic
+    session.vested_escrow_account_is_set();
 
     Ok(())
 }

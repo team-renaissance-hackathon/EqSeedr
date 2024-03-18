@@ -1,5 +1,5 @@
-use crate::states::{RoundStatus, Session};
-use anchor_lang::prelude::*;
+// use crate::states::{TickBidRound, Session};
+// use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct CreateSessionTickBidRound<'info> {
@@ -9,7 +9,7 @@ pub struct CreateSessionTickBidRound<'info> {
     #[account(
         init,
         payer = authority,
-        space = RoundStatus::LEN,
+        space = TickBidRound::LEN,
         seeds = [
             session.set_round().unwrap().as_bytes().as_ref(),
             session.key().as_ref(),
@@ -17,7 +17,7 @@ pub struct CreateSessionTickBidRound<'info> {
         ],
         bump
     )]
-    pub new_tick_bid_round: Account<'info, RoundStatus>,
+    pub new_tick_bid_round: Account<'info, TickBidRound>,
 
     #[account(
         mut,
@@ -31,10 +31,14 @@ pub struct CreateSessionTickBidRound<'info> {
 }
 
 pub fn handler(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {
-    let CreateSessionTickBidRound { round, session, .. } = ctx.accounts;
+    let CreateSessionTickBidRound {
+        new_tick_bid_round,
+        session,
+        ..
+    } = ctx.accounts;
 
-    round.init();
-    session.create_round();
+    new_tick_bid_round.initialize(session);
+    session.set_next_round();
 
     Ok(())
 }

@@ -72,6 +72,9 @@ pub use initialize::*;
 //          Payer -> Signer
 //          VestedAccountByOwner
 //          TickBidLeaderBoard
+//              - mut
+//              - self.data.session_id == vested_account_by_owner.session_id
+//              - postion && amount validation
 
 //  MARKETPLACE
 //      MARKET MAKER
@@ -317,28 +320,28 @@ pub use initialize::*;
 //              - mut
 //              - has_one = authority
 //          SystemProgram
-//      CreateVestingConfig
+//      CreateVestedConfigBySession
 //          Authority
 //              - mut
-//          NewVestingConfig
+//          NewVestedConfigBySession
 //              - init
-//              - !session.has_vestting_config
+//              - !session.has_vested_config
 //          Session
 //              - mut
 //              - has_one = authority
+//          TokenMint
+//              - self.key() == session.token_mint
 //          SystemProgram
-//      CreateVestingEscrowAccount
+//      CreateVestedEscrowAccountBySession
 //          Authority
 //              - mut
-//          NewVestingEscrowAccount
+//          NewVestedEscrowAccountBySession
 //              - init
-//              - session.has_vesting_escrow_account
+//              - session.has_vested_escrow_account
 //          Session
 //              - mut
 //              - has_one = authority
 //              - session.data.token_mint == token_mint.key
-//          ?VestingConfig
-//              - vesting_config.session == session.key
 //          TokenMint
 //          TokenProgram
 //          SystemProgram
