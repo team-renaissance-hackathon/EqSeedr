@@ -27,12 +27,17 @@ pub struct CreateSealedBidRound<'info> {
 
 pub fn handler(ctx: Context<CreateSealedBidRound>) -> Result<()> {
     let CreateSealedBidRound {
+        authority,
         new_sealed_bid_round,
         session,
         ..
     } = ctx.accounts;
 
-    // need set state logic
+    new_sealed_bid_round.initialize(
+        ctx.bumps.new_sealed_bid_round,
+        authority.key().clone(),
+        session.key().clone(),
+    );
 
     Ok(())
 }
