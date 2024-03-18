@@ -25,10 +25,16 @@ pub use initialize::*;
 //  BIDDER/INVESTOR
 //      Register
 //          Bidder
+//              - mut
 //          NewVestedAccountByOwner
+//              - init
 //          NewVestedAccountByIndex
+//              - init
 //          tickBidLeaderBoard
+//              - mut
+//              - self.session_id == session.key
 //          ValidSession
+//          SystemProgram
 //      OpenBid
 //          Bidder -> Signer / Payer / Authority
 //              - mut
@@ -241,6 +247,8 @@ pub use initialize::*;
 //  PROJECT DEVELOPER
 //      CreateSession
 //          Authority
+//              - mut
+//              - balance must be enough to cover all fees of creating all accounts or fail transaction
 //          SessionIndexer
 //          NewSession
 //          EnqueueIndexer
@@ -309,6 +317,16 @@ pub use initialize::*;
 //              - mut
 //              - has_one = authority
 //          SystemProgram
+//      CreateVestingConfig
+//          Authority
+//              - mut
+//          NewVestingConfig
+//              - init
+//              - !session.has_vestting_config
+//          Session
+//              - mut
+//              - has_one = authority
+//          SystemProgram
 //      CreateVestingEscrowAccount
 //          Authority
 //              - mut
@@ -319,20 +337,22 @@ pub use initialize::*;
 //              - mut
 //              - has_one = authority
 //              - session.data.token_mint == token_mint.key
+//          ?VestingConfig
+//              - vesting_config.session == session.key
 //          TokenMint
 //          TokenProgram
 //          SystemProgram
-//      CreateVestingConfig
-//          Authority
-//          Session
-//          NewVestingConfig
-//          SystemProgram
 //      CreateSessionTokenStaking
 //          Authority
-//          Session
+//              - mut
 //          NewSessionTokenStaking
+//              - int
+//          Session
+//              - mut
+//              - has_one = authority
 //          SystemProgram
 
+// NOT CORE FEATURE -> CAN DELAY, SHOULD BE SIMPLE TO IMPLEMENT
 //      RemoveSession
 //          Authority
 //          Session
