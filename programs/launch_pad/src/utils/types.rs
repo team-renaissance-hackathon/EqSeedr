@@ -20,7 +20,7 @@ impl Indexer {
     const GENISUS_TIMESTAMP: i64 = 1_704_067_200;
     const INIT_YEAR: u16 = 2024;
 
-    pub fn init(&mut self) {
+    pub fn initialize(&mut self) {
         self.year_timestamp = Indexer::GENISUS_TIMESTAMP;
         self.year = Indexer::INIT_YEAR;
         self.week = 0;
@@ -66,9 +66,8 @@ impl<T: Len + Copy> LinkedList<T> {
     pub const LEN: usize = UNSIGNED_32
         + UNSIGNED_32
         + UNSIGNED_32
-        // not sure if this is correct?
-        + ((BYTE + T::LEN) * MAX_PARTICPANTS)
-        + (STACK * MAX_PARTICPANTS);
+        + (BYTE + (BYTE + Node::<T>::LEN) * MAX_PARTICPANTS)
+        + (BYTE + STACK * MAX_PARTICPANTS);
     // next
     // prev
     // add
@@ -90,7 +89,7 @@ impl<T: Len + Copy> LinkedList<T> {
         }
     }
 
-    fn insert(&mut self, pos: u32, node: &mut Node<T>) {
+    pub fn insert(&mut self, pos: u32, node: &mut Node<T>) {
         if pos == self.head {
             let next_node = self.list[self.head as usize].clone().unwrap();
 
@@ -116,12 +115,16 @@ impl<T: Len + Copy> LinkedList<T> {
         }
     }
 
+    pub fn update(&mut self, node: Node<T>) {
+        self.list[node.index as usize] = Some(node.clone());
+    }
+
     pub fn remove(&self, pos: u32) -> Node<T> {
         return self.list[pos as usize].clone().unwrap();
     }
 
     pub fn set_to_none(&mut self, pos: u32) {
-        let node = self.list[pos as usize].clone().unwrap();
+        let node = self.remove(pos);
         self.push(node.index);
         self.list[node.index as usize] = None;
     }

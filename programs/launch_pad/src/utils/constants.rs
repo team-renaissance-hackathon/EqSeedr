@@ -15,6 +15,9 @@ pub const BYTE: usize = 1;
 pub const BOOL: usize = 1;
 pub const BUMP: usize = 1;
 
+pub const PERCENT_90: u64 = 90;
+pub const PERCENT_10: u64 = 10;
+pub const MAX_ROUNDS: u8 = 10;
 pub const MAX_TEXT_BYTES: usize = 32;
 pub const MAX_PARTICPANTS: usize = u16::MAX as usize;
 pub use anchor_lang::solana_program::pubkey::PUBKEY_BYTES;

@@ -22,6 +22,7 @@ pub mod launch_pad {
 // TICK-BID
 //  BIDDER/INVESTOR
 //      ExecuteBid
+//      OpenBid
 //  MARKETPLACE
 //      MARKET MAKER
 //          AddPosition
