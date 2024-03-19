@@ -48,21 +48,17 @@ impl SealedBidRound {
         self.total_unsealed_bids += 1;
     }
 
+    // VALIDATIONS:
     pub fn is_valid_stake_amount(&self) -> bool {
         return true;
     }
 
     pub fn is_valid_sealed_bid_phase(&self) -> bool {
-        return true;
+        return self.status == Status::SealBidPhase;
     }
 
     pub fn is_valid_unsealed_bid_phase(&self) -> bool {
-        return true;
-    }
-
-    pub fn is_valid_unsealed_bid(&self) -> bool {
-        // take amount, hash the amount, compare the hashed amount on state
-        return true;
+        return self.status == Status::UnsealBidPhase;
     }
 
     // don't think this is necessary, will combine the commit bid phase with unsealed bid phase
@@ -85,7 +81,6 @@ impl SealedBidRound {
     }
 
     pub fn is_valid_unsealed_bid(&self) -> bool {
-        // also check account is set as unsealed state
         return self.total_unsealed_bids < self.total_sealed_bids;
     }
 
@@ -128,6 +123,22 @@ impl SealedBidByIndex {
 
         // emit event
     }
+
+    // VALIDATIONS:
+    pub fn is_valid_unsealed_bid(&self, amount: u64, secret: String, session: Pubkey) -> bool {
+        let hasher = Hasher::default();
+        hasher.hash(amount.as_ref());
+        hasher.hash(sealed_bid_by_index.index.to_string().as_ref());
+        hasher.hash(session.as_ref());
+
+        // convert to Pubkey
+        let hash = hasher.result();
+        return hash == self.commit_hash;
+    }
+
+    pub fn unsealed_bid(&mut self) {
+        self.is_unsealed = true;
+    }
 }
 
 #[account]
@@ -141,6 +152,25 @@ pub struct CommitLeaderBoard {
 impl Len for CommitLeaderBoard {
     const LEN: usize =
         DISCRIMINATOR + BUMP + PUBKEY_BYTES + UNSIGNED_64 + LinkedList::<Commit>::LEN;
+}
+
+impl CommitLeaderBoard {
+    pub fn initialize(&mut self, bump: u8, session: Pubkey) {
+        self.bump = bump;
+        self.session = session;
+        self.min_target = 0;
+
+        self.pool = LinkedList<Commit>::new();
+    }
+
+    pub fn update(&self, owner: Pubkey, amount: u64) {
+        // add this code later. going to need index info for linked list
+        self.pool;
+    }
+
+    pub fn is_valid_commit_leader_board(session: Pubkey) -> bool {
+        return self.session == session;
+    }
 }
 
 #[account]
@@ -209,8 +239,8 @@ pub struct Commit {
 
 pub enum Status {
     Enqueue,
-    Open,
-    Closed,
+    SealedBidPhase,
+    UnsealBidPhase,
     Canceled,
 }
 
@@ -221,5 +251,5 @@ impl Status {
 // sealed bid system
 //  SealedBidRound
 //  SealedBidByIndex
-//  CommitQueue
 //  CommitLeaderBoard
+//  CommitQueue
