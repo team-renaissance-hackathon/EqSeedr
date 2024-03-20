@@ -4,10 +4,16 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LaunchPad } from "../target/types/launch_pad";
 
+import {
+    getAssociatedTokenAddressSync,
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    TOKEN_PROGRAM_ID,
+} from "@solana/spl-token"
+
 
 
 // need keypair from env / config
-const getAccounts = ({ tokenMint, program }: any) => {
+const getAccounts = ({ tokenMint, stakeTokenMint, bidTokenMint, program }: any) => {
 
     const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("authority")],
@@ -71,6 +77,19 @@ const getAccounts = ({ tokenMint, program }: any) => {
     ) : [undefined]
 
 
+    const sealedBidTokenStakeAccount = stakeTokenMint != undefined ? getAssociatedTokenAddressSync(
+        stakeTokenMint.mint.publicKey,
+        session,
+        true
+    ) : undefined
+
+    const commitTokenAccount = bidTokenMint != undefined ? getAssociatedTokenAddressSync(
+        bidTokenMint.mint.publicKey,
+        programAuthority,
+        true
+    ) : undefined
+
+
     return {
         programAuthority,
         indexerStatus,
@@ -80,6 +99,8 @@ const getAccounts = ({ tokenMint, program }: any) => {
         sealedBidRound,
         commitLeaderBoard,
         commitQueue,
+        sealedBidTokenStakeAccount,
+        commitTokenAccount,
     }
 }
 
@@ -255,10 +276,90 @@ const createSessionCommitQueue = async ({
     });
 }
 
+const createSealedBidTokenStakeAccount = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+    stakeTokenMint,
+}) => {
+
+    const {
+        session,
+        programAuthority,
+        sealedBidTokenStakeAccount,
+    } = getAccounts({ tokenMint, stakeTokenMint, program })
+
+
+    const tx = await program.methods
+        .createSealedBidTokenStakeAccount()
+        .accounts({
+            authority: authority.publicKey,
+            newSealedBidTokenStakeAccount: sealedBidTokenStakeAccount,
+            session: session,
+            programAuthority: programAuthority,
+            sessionTokenMint: tokenMint.mint.publicKey,
+            stakeTokenMint: stakeTokenMint.mint.publicKey,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
+const createCommitTokenAccount = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+    bidTokenMint,
+}) => {
+
+    const {
+        session,
+        programAuthority,
+        commitTokenAccount,
+    } = getAccounts({ tokenMint, bidTokenMint, program })
+
+    const tx = await program.methods
+        .createCommitTokenAccount()
+        .accounts({
+            authority: authority.publicKey,
+            newCommitTokenAccount: commitTokenAccount,
+            session: session,
+            programAuthority: programAuthority,
+            bidTokenMint: bidTokenMint.mint.publicKey,
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
 export const script = {
     init,
     createSession,
     createSessionSealedBidRound,
     createSessionCommitLeaderBoard,
     createSessionCommitQueue,
+    createSealedBidTokenStakeAccount,
+    createCommitTokenAccount,
 }

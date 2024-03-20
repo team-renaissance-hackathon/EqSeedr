@@ -80,13 +80,15 @@ describe("launch_pad", () => {
 
   const program = anchor.workspace.LaunchPad as Program<LaunchPad>;
   const keypair = anchor.web3.Keypair.generate()
-  const tokenMint = new Token()
+  const bidTokenMint = new Token()
+  const tokenMint = new Token() // session
+  const stakeTokenMint = new Token()
 
   before(async () => {
     {
       const tx = await provider.connection.requestAirdrop(
         keypair.publicKey,
-        1000 * anchor.web3.LAMPORTS_PER_SOL
+        10000 * anchor.web3.LAMPORTS_PER_SOL
       )
 
       const latestBlockHash = await provider.connection.getLatestBlockhash()
@@ -105,6 +107,44 @@ describe("launch_pad", () => {
       )
       const tx = await provider.connection.requestAirdrop(
         tokenMint.mintAuthority.publicKey,
+        10000 * anchor.web3.LAMPORTS_PER_SOL
+      )
+
+      const latestBlockHash = await provider.connection.getLatestBlockhash()
+      await provider.connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+      });
+    }
+
+    {
+
+      await bidTokenMint.createMint(
+        provider.connection,
+        keypair
+      )
+      const tx = await provider.connection.requestAirdrop(
+        bidTokenMint.mintAuthority.publicKey,
+        10000 * anchor.web3.LAMPORTS_PER_SOL
+      )
+
+      const latestBlockHash = await provider.connection.getLatestBlockhash()
+      await provider.connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+      });
+    }
+
+    {
+
+      await stakeTokenMint.createMint(
+        provider.connection,
+        keypair
+      )
+      const tx = await provider.connection.requestAirdrop(
+        stakeTokenMint.mintAuthority.publicKey,
         1000 * anchor.web3.LAMPORTS_PER_SOL
       )
 
@@ -129,6 +169,19 @@ describe("launch_pad", () => {
     })
 
   });
+
+  it("Create Commit Token Account", async () => {
+
+    await script.createCommitTokenAccount({
+      connection: provider.connection,
+      authority: tokenMint.mintAuthority,
+      program,
+      web3: anchor.web3,
+      tokenMint,
+      bidTokenMint,
+    })
+
+  })
 
   describe("Initialize Session State Contracts", () => {
 
@@ -182,6 +235,19 @@ describe("launch_pad", () => {
         program,
         web3: anchor.web3,
         tokenMint,
+      })
+
+    })
+
+    it("Create Sealed Bid Token Stake Account", async () => {
+
+      await script.createSealedBidTokenStakeAccount({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        stakeTokenMint,
       })
 
     })
