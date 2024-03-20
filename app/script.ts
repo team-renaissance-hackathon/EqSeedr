@@ -1,3 +1,5 @@
+console.log("test, can we stop the IDLERROR?")
+
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { LaunchPad } from "../target/types/launch_pad";
@@ -8,7 +10,12 @@ import { LaunchPad } from "../target/types/launch_pad";
 
 
 // part of deployment process
-const init = async ({ connection, authority, program, web3 }) => {
+const init = async ({
+    connection,
+    authority,
+    program,
+    web3
+}) => {
 
     const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("authority")],
@@ -39,8 +46,6 @@ const init = async ({ connection, authority, program, web3 }) => {
         program.programId
     )
 
-    console.log(authority, programAuthority, indexerStatus, activeSessionIndexer, enqueueSessionIndexer)
-
     const tx = await program.methods
         .initialize()
         .accounts({
@@ -62,6 +67,62 @@ const init = async ({ connection, authority, program, web3 }) => {
     });
 }
 
+const createSession = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+    input
+}) => {
+    const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("authority")],
+        program.programId
+    )
+
+    const [indexerStatus] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from("indexer-status"),
+            programAuthority.toBuffer(),
+        ],
+        program.programId
+    )
+
+    const [newSession] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            tokenMint.mint.publicKey.toBuffer(),
+            Buffer.from("session"),
+        ],
+        program.programId
+    )
+
+    const tx = await program.methods
+        .createSession({
+            tokenName: "",
+            ...input
+        })
+        .accounts({
+            authority: authority.publicKey,
+            indexer: indexerStatus,
+            newSession: newSession,
+            tokenMint: tokenMint.mint.publicKey,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+
+    // return the session?
+}
+
+
 export const script = {
     init,
+    createSession,
 }
