@@ -35,5 +35,8 @@ pub struct CreateCommitTokenAccount<'info> {
 
 pub fn handler(ctx: Context<CreateCommitTokenAccount>) -> Result<()> {
     // emit log
+    // new token account
+    // type of token account
+    msg!("{}", ctx.accounts.new_commit_token_account.key());
     Ok(())
 }

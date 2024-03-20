@@ -1,4 +1,3 @@
-use super::super::states::ProgramAuthority;
 use super::super::states::Session;
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -38,5 +37,9 @@ pub struct CreateSealedBidTokenStakeAccount<'info> {
 
 pub fn handler(ctx: Context<CreateSealedBidTokenStakeAccount>) -> Result<()> {
     // emit log
+    // new token account
+    // type of token account
+    // session id
+    msg!("{}", ctx.accounts.new_sealed_bid_token_stake_account.key());
     Ok(())
 }
