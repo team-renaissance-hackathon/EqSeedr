@@ -62,6 +62,14 @@ const getAccounts = ({ tokenMint, program }: any) => {
         program.programId
     ) : [undefined]
 
+    const [commitQueue] = tokenMint != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            Buffer.from("commit-queue"),
+        ],
+        program.programId
+    ) : [undefined]
+
 
     return {
         programAuthority,
@@ -70,7 +78,8 @@ const getAccounts = ({ tokenMint, program }: any) => {
         activeSessionIndexer,
         session,
         sealedBidRound,
-        commitLeaderBoard
+        commitLeaderBoard,
+        commitQueue,
     }
 }
 
@@ -88,7 +97,6 @@ const init = async ({
         enqueueSessionIndexer,
         activeSessionIndexer,
     } = getAccounts({ tokenMint: undefined, program: program })
-
 
     const tx = await program.methods
         .initialize()
@@ -124,7 +132,6 @@ const createSession = async ({
         indexerStatus,
         session,
     } = getAccounts({ tokenMint, program: program })
-
 
     const tx = await program.methods
         .createSession({
@@ -164,14 +171,12 @@ const createSessionSealedBidRound = async ({
         sealedBidRound,
     } = getAccounts({ tokenMint, program: program })
 
-
     const tx = await program.methods
         .createSessionSealedBidRound()
         .accounts({
             authority: authority.publicKey,
             newSealedBidRound: sealedBidRound,
             session: session,
-            // tokenMint: tokenMint.mint.publicKey,
             systemProgram: web3.SystemProgram.programId,
         })
         .signers([authority])
@@ -199,8 +204,6 @@ const createSessionCommitLeaderBoard = async ({
         commitLeaderBoard,
     } = getAccounts({ tokenMint, program: program })
 
-
-
     const tx = await program.methods
         .createSessionCommitLeaderBoard()
         .accounts({
@@ -220,9 +223,42 @@ const createSessionCommitLeaderBoard = async ({
     });
 }
 
+const createSessionCommitQueue = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+}) => {
+
+    const {
+        session,
+        commitQueue,
+    } = getAccounts({ tokenMint, program: program })
+
+    const tx = await program.methods
+        .createSessionCommitQueue()
+        .accounts({
+            authority: authority.publicKey,
+            newCommitQueue: commitQueue,
+            session: session,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
 export const script = {
     init,
     createSession,
     createSessionSealedBidRound,
     createSessionCommitLeaderBoard,
+    createSessionCommitQueue,
 }

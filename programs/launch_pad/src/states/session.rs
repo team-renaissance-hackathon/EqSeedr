@@ -132,6 +132,10 @@ impl Session {
         self.has_commit_leader_board = true;
     }
 
+    pub fn add_commit_queue(&mut self) {
+        self.has_commit_queue = true;
+    }
+
     // CloseRoundStatus
     pub fn close_round(&self) -> Result<()> {
         // self.current_round += 1;

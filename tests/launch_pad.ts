@@ -174,6 +174,18 @@ describe("launch_pad", () => {
 
     })
 
+    it("Create Session Commit Queue", async () => {
+
+      await script.createSessionCommitQueue({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+      })
+
+    })
+
 
   })
 

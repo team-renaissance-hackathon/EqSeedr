@@ -177,7 +177,7 @@ pub struct CommitQueue {
 
 const MAX_CAPACITY: usize = 10;
 impl CommitQueue {
-    const LEN: usize =
+    pub const LEN: usize =
         DISCRIMINATOR + BUMP + PUBKEY_BYTES + BYTE + (UNSIGNED_128 + (Commit::LEN * MAX_CAPACITY));
 
     pub fn initialize(&mut self, bump: u8, session: Pubkey) {

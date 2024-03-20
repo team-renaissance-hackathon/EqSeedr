@@ -50,3 +50,5 @@ impl Indexer {
         return Ok(());
     }
 }
+
+pub enum Status {}

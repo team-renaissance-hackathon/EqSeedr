@@ -19,4 +19,10 @@ pub enum ProgramError {
 
     #[msg("Session can not Exceed Target Rounds")]
     MaxRoundSet,
+
+    #[msg("Sealed Bid Round Already Exist For Session")]
+    SessionSealedBidRoundAlreadyExist,
+
+    #[msg("Session Commit Bid Leader Board Already Exist")]
+    SessionCommitLeaderBoardAlreadyExist,
 }

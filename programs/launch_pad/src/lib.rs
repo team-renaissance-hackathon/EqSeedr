@@ -17,6 +17,22 @@ pub mod launch_pad {
     pub fn create_session(ctx: Context<CreateSession>, input: SessionParams) -> Result<()> {
         instructions::create_session::handler(ctx, input)
     }
+
+    pub fn create_session_sealed_bid_round(
+        ctx: Context<CreateSessionSealedBidRound>,
+    ) -> Result<()> {
+        instructions::create_sealed_bid_round::handler(ctx)
+    }
+
+    pub fn create_session_commit_leader_board(
+        ctx: Context<CreateSessionCommitLeaderBoard>,
+    ) -> Result<()> {
+        instructions::create_commit_leader_board::handler(ctx)
+    }
+
+    pub fn create_session_commit_queue(ctx: Context<CreateSessionCommitQueue>) -> Result<()> {
+        instructions::create_commit_queue::handler(ctx)
+    }
 }
 
 // TICK-BID

@@ -20,4 +20,5 @@ pub const PERCENT_10: u64 = 10;
 pub const MAX_ROUNDS: u8 = 10;
 pub const MAX_TEXT_BYTES: usize = 32;
 pub const MAX_PARTICPANTS: usize = u16::MAX as usize;
+pub const MAX_STATE_ALLOCATION: usize = 10240;
 pub use anchor_lang::solana_program::pubkey::PUBKEY_BYTES;
