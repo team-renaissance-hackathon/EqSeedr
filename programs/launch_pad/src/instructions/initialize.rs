@@ -70,7 +70,7 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     new_authority.is_initialzied = true;
     new_authority.is_signer = true;
 
-    new_indexer_status.status.init();
+    new_indexer_status.status.initialize();
 
     new_authority.bump = ctx.bumps.new_authority;
     new_indexer_status.bump = ctx.bumps.new_indexer_status;
@@ -80,6 +80,10 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     new_indexer_status.authority = new_authority.key();
     new_active_session_indexer.authority = new_authority.key();
     new_enqueue_session_indexer.authority = new_authority.key();
+
+    // emit event ->
+    //  -> MSG!program deployed and initialized,
+    //  -> list all accounts
 
     Ok(())
 }
