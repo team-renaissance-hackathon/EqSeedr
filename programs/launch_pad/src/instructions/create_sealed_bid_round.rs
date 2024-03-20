@@ -1,5 +1,9 @@
+use crate::states::{SealedBidRound, Session};
+use crate::utils::errors::ProgramError;
+use anchor_lang::prelude::*;
+
 #[derive(Accounts)]
-pub struct CreateSealedBidRound<'info> {
+pub struct CreateSessionSealedBidRound<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
@@ -17,7 +21,7 @@ pub struct CreateSealedBidRound<'info> {
 
     #[account(
         mut,
-        has_one = authority
+        has_one = authority,
         constraint = !session.has_sealed_bid_round @ ProgramError::SessionSealedBidRoundAlreadyExist
     )]
     pub session: Account<'info, Session>,
@@ -25,8 +29,8 @@ pub struct CreateSealedBidRound<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<CreateSealedBidRound>) -> Result<()> {
-    let CreateSealedBidRound {
+pub fn handler(ctx: Context<CreateSessionSealedBidRound>) -> Result<()> {
+    let CreateSessionSealedBidRound {
         authority,
         new_sealed_bid_round,
         session,
@@ -38,6 +42,8 @@ pub fn handler(ctx: Context<CreateSealedBidRound>) -> Result<()> {
         authority.key().clone(),
         session.key().clone(),
     );
+
+    session.add_sealed_bid_round();
 
     Ok(())
 }

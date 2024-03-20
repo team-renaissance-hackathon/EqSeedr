@@ -82,6 +82,7 @@ impl SessionParams {
 
 pub fn handler(ctx: Context<CreateSession>, input: SessionParams) -> Result<()> {
     let CreateSession {
+        authority,
         indexer,
         new_session,
         token_mint,
@@ -92,6 +93,7 @@ pub fn handler(ctx: Context<CreateSession>, input: SessionParams) -> Result<()> 
 
     indexer.status.update()?;
     new_session.initialize(
+        authority.key(),
         indexer.status.clone(),
         token_mint.key(),
         session_pubkey,

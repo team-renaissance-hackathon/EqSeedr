@@ -130,22 +130,55 @@ describe("launch_pad", () => {
 
   });
 
-  it("Create New Session", async () => {
+  describe("Initialize Session State Contracts", () => {
 
-    await script.createSession({
-      connection: provider.connection,
-      authority: tokenMint.mintAuthority,
-      program,
-      web3: anchor.web3,
-      tokenMint,
-      input: {
-        tokenName: "EqSeedr",
-        launchDate: new anchor.BN(1713613050),
-        tokenAllocation: new anchor.BN(1_000_000_000 * 1_000_000),
-      }
+
+    it("Create New Session", async () => {
+
+      await script.createSession({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        input: {
+          tokenName: "EqSeedr",
+          launchDate: new anchor.BN(1713613050),
+          tokenAllocation: new anchor.BN(1_000_000_000 * 1_000_000),
+        }
+      })
+
     })
 
+    it("Create Session Sealed Bid round", async () => {
+
+      await script.createSessionSealedBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+      })
+
+    })
+
+    // it("Create Session Sealed Bid round", async () => {
+
+    //   await script.createSessionSealedBidRound({
+    //     connection: provider.connection,
+    //     authority: tokenMint.mintAuthority,
+    //     program,
+    //     web3: anchor.web3,
+    //     tokenMint,
+    //   })
+
+    // })
+
+
   })
+
+
+
 
 
 });

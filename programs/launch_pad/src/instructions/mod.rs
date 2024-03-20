@@ -1,9 +1,11 @@
+pub mod create_sealed_bid_round;
 pub mod create_session;
 pub mod initialize;
 // pub mod create_rounds;
 // pub mod create_session_marketplace;
 
 // how do I resolve this? other than using a different name for handler?
+pub use create_sealed_bid_round::*;
 pub use create_session::*;
 pub use initialize::*;
 // pub use create_rounds::*;
@@ -26,13 +28,16 @@ pub use initialize::*;
 //      Register
 //          Bidder
 //              - mut
+//          VestedConfigBySession
+//              - mut
+//              - self.session_id == session.key()
 //          NewVestedAccountByOwner
 //              - init
 //          NewVestedAccountByIndex
 //              - init
 //          tickBidLeaderBoard
 //              - mut
-//              - self.session_id == session.key
+//              - self.session_id == session.key()
 //          ValidSession
 //          SystemProgram
 //      OpenBid
@@ -225,8 +230,10 @@ pub use initialize::*;
 //          INPUT:
 //              commit_hash
 //          Bidder -> Signer / Payer / Authority
-//          SealedBid
+//          SealedBidByIndex
+//              - init
 //          SealedBidRound
+//              - mut
 //          ValidSession
 //          TokenStakingSessionAccount
 //          BidderTokenAccount
@@ -249,12 +256,21 @@ pub use initialize::*;
 // LAUNCH-PAD-SESSION
 //  PROJECT DEVELOPER
 //      CreateSession
+//          INPUT:
+//              - SessionParams
+//                  - token_name
+//                  - token_allocation
+//                  - launch_date
 //          Authority
 //              - mut
 //              - balance must be enough to cover all fees of creating all accounts or fail transaction
 //          SessionIndexer
 //          NewSession
-//          EnqueueIndexer
+//              - init
+//              - SessionParams::is_valid_token_name(input.token_name)
+//              - SessionParams::is_valid_token_allocation(input.token_allocation)
+//              - SessionParams::is_valid_launch_date(input.launch_date)?
+//          EnqueueIndexer - will not implement at this time
 //          SystemProgram
 //      CreateSessionMarketplacePositions
 //          Authority
@@ -280,10 +296,10 @@ pub use initialize::*;
 //              - has_one = authority
 //              - !session.all_tick_bid_rounds_set
 //          SystemProgram
-//      CreateSealBidRound
+//      CreateSealedBidRound
 //          Authority
 //              - mut
-//          NewSealBidRound
+//          NewSealedBidRound
 //              - init
 //              - !session.has_sealed_bid_round -> not sure if need this
 //          Session

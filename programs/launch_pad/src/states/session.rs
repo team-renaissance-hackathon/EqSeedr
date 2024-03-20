@@ -25,7 +25,7 @@ pub struct Session {
     // session
     pub token_allocation: u64,
     pub total_rounds: u8, // incremental to 10, starts at 1
-    pub launch_status: Status,
+    launch_status: Status,
 
     // dates
     pub intialized_timestamp: i64,
@@ -79,6 +79,7 @@ impl Session {
 
     pub fn initialize(
         &mut self,
+        authority: Pubkey,
         indexer: Indexer,
         token_mint: Pubkey,
         session: Pubkey,
@@ -88,6 +89,7 @@ impl Session {
 
         self.id = indexer.clone();
         self.token_mint = token_mint.key();
+        self.authority = authority;
 
         self.intialized_timestamp = clock.unix_timestamp;
         self.initialized_slot = clock.slot;
@@ -122,6 +124,10 @@ impl Session {
         Ok(())
     }
 
+    pub fn add_sealed_bid_round(&mut self) {
+        self.has_sealed_bid_round = true;
+    }
+
     // CloseRoundStatus
     pub fn close_round(&self) -> Result<()> {
         // self.current_round += 1;
@@ -150,7 +156,7 @@ impl Session {
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
-pub enum Status {
+enum Status {
     Enqueue,
     SealBid,
     TickBid,

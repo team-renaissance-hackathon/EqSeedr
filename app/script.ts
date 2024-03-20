@@ -88,7 +88,7 @@ const createSession = async ({
         program.programId
     )
 
-    const [newSession] = anchor.web3.PublicKey.findProgramAddressSync(
+    const [session] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             tokenMint.mint.publicKey.toBuffer(),
             Buffer.from("session"),
@@ -104,7 +104,7 @@ const createSession = async ({
         .accounts({
             authority: authority.publicKey,
             indexer: indexerStatus,
-            newSession: newSession,
+            newSession: session,
             tokenMint: tokenMint.mint.publicKey,
             systemProgram: web3.SystemProgram.programId,
         })
@@ -122,7 +122,53 @@ const createSession = async ({
 }
 
 
+const createSessionSealedBidRound = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+}) => {
+
+    const [session] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            tokenMint.mint.publicKey.toBuffer(),
+            Buffer.from("session"),
+        ],
+        program.programId
+    )
+
+    const [sealedBidRound] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            Buffer.from("sealed-bid-round"),
+        ],
+        program.programId
+    )
+
+    const tx = await program.methods
+        .createSessionSealedBidRound()
+        .accounts({
+            authority: authority.publicKey,
+            newSealedBidRound: sealedBidRound,
+            session: session,
+            tokenMint: tokenMint.mint.publicKey,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+
+}
+
 export const script = {
     init,
     createSession,
+    createSessionSealedBidRound,
 }
