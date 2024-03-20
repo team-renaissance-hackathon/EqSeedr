@@ -128,6 +128,10 @@ impl Session {
         self.has_sealed_bid_round = true;
     }
 
+    pub fn add_commit_leader_board(&mut self) {
+        self.has_commit_leader_board = true;
+    }
+
     // CloseRoundStatus
     pub fn close_round(&self) -> Result<()> {
         // self.current_round += 1;

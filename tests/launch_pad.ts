@@ -162,17 +162,17 @@ describe("launch_pad", () => {
 
     })
 
-    // it("Create Session Sealed Bid round", async () => {
+    it("Create Session Commit Leader Board", async () => {
 
-    //   await script.createSessionSealedBidRound({
-    //     connection: provider.connection,
-    //     authority: tokenMint.mintAuthority,
-    //     program,
-    //     web3: anchor.web3,
-    //     tokenMint,
-    //   })
+      await script.createSessionCommitLeaderBoard({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+      })
 
-    // })
+    })
 
 
   })

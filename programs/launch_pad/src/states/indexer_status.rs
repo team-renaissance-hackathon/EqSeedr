@@ -37,22 +37,22 @@ pub struct ActiveSessionIndex {
     pub stack: Vec<u16>,
 }
 
-// #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
-// pub struct IndexerLinkedList {
-//     pub total: u32,
-//     head: u32,
-//     tail: u32,
-//     list: Vec<Node>,
+#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+pub struct IndexerLinkedList {
+    pub total: u32,
+    head: u32,
+    tail: u32,
+    list: Vec<Option<Node>>,
 
-//     stack: Vec<[u8; 3]>,
-// }
+    stack: Vec<[u8; 3]>,
+}
 
-// #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
-// pub struct Node {
-//     pub next: u8,
-//     pub prev: u8,
-//     pub position: Indexer,
-// }
+#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+pub struct Node {
+    pub next: Option<u32>,
+    pub prev: Option<u32>,
+    pub position: Indexer,
+}
 
 // currently EnqueueSessionIndex and ActiveSessionIndex are being created, but they are not fully
 // implemented that handles the list data

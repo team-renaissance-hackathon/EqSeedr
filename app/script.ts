@@ -7,15 +7,7 @@ import { LaunchPad } from "../target/types/launch_pad";
 
 
 // need keypair from env / config
-
-
-// part of deployment process
-const init = async ({
-    connection,
-    authority,
-    program,
-    web3
-}) => {
+const getAccounts = ({ tokenMint, program }: any) => {
 
     const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("authority")],
@@ -46,6 +38,58 @@ const init = async ({
         program.programId
     )
 
+    const [session] = tokenMint != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            tokenMint.mint.publicKey.toBuffer(),
+            Buffer.from("session"),
+        ],
+        program.programId
+    ) : [undefined]
+
+    const [sealedBidRound] = tokenMint != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            Buffer.from("sealed-bid-round"),
+        ],
+        program.programId
+    ) : [undefined]
+
+    const [commitLeaderBoard] = tokenMint != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            Buffer.from("commit-leader-board"),
+        ],
+        program.programId
+    ) : [undefined]
+
+
+    return {
+        programAuthority,
+        indexerStatus,
+        enqueueSessionIndexer,
+        activeSessionIndexer,
+        session,
+        sealedBidRound,
+        commitLeaderBoard
+    }
+}
+
+// part of deployment process
+const init = async ({
+    connection,
+    authority,
+    program,
+    web3
+}) => {
+
+    const {
+        programAuthority,
+        indexerStatus,
+        enqueueSessionIndexer,
+        activeSessionIndexer,
+    } = getAccounts({ tokenMint: undefined, program: program })
+
+
     const tx = await program.methods
         .initialize()
         .accounts({
@@ -75,26 +119,12 @@ const createSession = async ({
     tokenMint,
     input
 }) => {
-    const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("authority")],
-        program.programId
-    )
 
-    const [indexerStatus] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-            Buffer.from("indexer-status"),
-            programAuthority.toBuffer(),
-        ],
-        program.programId
-    )
+    const {
+        indexerStatus,
+        session,
+    } = getAccounts({ tokenMint, program: program })
 
-    const [session] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-            tokenMint.mint.publicKey.toBuffer(),
-            Buffer.from("session"),
-        ],
-        program.programId
-    )
 
     const tx = await program.methods
         .createSession({
@@ -121,7 +151,6 @@ const createSession = async ({
     // return the session?
 }
 
-
 const createSessionSealedBidRound = async ({
     connection,
     authority,
@@ -130,21 +159,11 @@ const createSessionSealedBidRound = async ({
     tokenMint,
 }) => {
 
-    const [session] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-            tokenMint.mint.publicKey.toBuffer(),
-            Buffer.from("session"),
-        ],
-        program.programId
-    )
+    const {
+        session,
+        sealedBidRound,
+    } = getAccounts({ tokenMint, program: program })
 
-    const [sealedBidRound] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-            session.toBuffer(),
-            Buffer.from("sealed-bid-round"),
-        ],
-        program.programId
-    )
 
     const tx = await program.methods
         .createSessionSealedBidRound()
@@ -152,7 +171,7 @@ const createSessionSealedBidRound = async ({
             authority: authority.publicKey,
             newSealedBidRound: sealedBidRound,
             session: session,
-            tokenMint: tokenMint.mint.publicKey,
+            // tokenMint: tokenMint.mint.publicKey,
             systemProgram: web3.SystemProgram.programId,
         })
         .signers([authority])
@@ -167,8 +186,43 @@ const createSessionSealedBidRound = async ({
 
 }
 
+const createSessionCommitLeaderBoard = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+}) => {
+
+    const {
+        session,
+        commitLeaderBoard,
+    } = getAccounts({ tokenMint, program: program })
+
+
+
+    const tx = await program.methods
+        .createSessionCommitLeaderBoard()
+        .accounts({
+            authority: authority.publicKey,
+            newCommitLeaderBoard: commitLeaderBoard,
+            session: session,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
 export const script = {
     init,
     createSession,
     createSessionSealedBidRound,
+    createSessionCommitLeaderBoard,
 }

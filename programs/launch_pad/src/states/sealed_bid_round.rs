@@ -96,155 +96,146 @@ impl SealedBidRound {
     // pub fn is_valid() {}
 }
 
-// #[account]
-// pub struct SealedBidByIndex {
-//     // VALIDATION STATE
-//     pub bump: u8,
-//     pub index: u32,
-//     pub session: Pubkey,
-//     pub owner: Pubkey,
+#[account]
+pub struct CommitLeaderBoard {
+    pub bump: u8,
+    pub session: Pubkey,
+    pub min_target: u64, // cutoff / bottom amount, increaese when commit queue has 10 -> I don't think I need this
+    pub pool: CommitLeaderBoardLinkedList,
+}
 
-//     // STATE
-//     pub commit_hash: Pubkey, // technially a hash [u8; 32]
-//     pub staked_amount: u64,
-//     pub is_unsealed: bool,
-// }
+impl CommitLeaderBoard {
+    pub const LEN: usize =
+        DISCRIMINATOR + BUMP + PUBKEY_BYTES + UNSIGNED_64 + CommitLeaderBoardLinkedList::LEN;
+}
 
-// impl SealedBidByIndex {
-//     pub fn initialize(
-//         &mut self,
-//         bump: u8,
-//         index: u32,
-//         session: Pubkey,
-//         owner: Pubkey,
-//         amount: u64,
-//         commit_hash: Pubkey,
-//     ) {
-//         self.bump = bump;
-//         self.index = index;
-//         self.session = session;
-//         self.owner = owner;
+impl CommitLeaderBoard {
+    pub fn initialize(&mut self, bump: u8, session: Pubkey) {
+        self.bump = bump;
+        self.session = session;
+        self.min_target = 0;
 
-//         self.commit_hash = commit_hash;
-//         self.staked_amount = amount;
+        self.pool = CommitLeaderBoardLinkedList::new();
+    }
 
-//         self.is_unsealed = false;
+    // pub fn update(&mut self, owner: Pubkey, amount: u64) {
+    //     // add this code later. going to need index info for linked list
+    //     // self.pool;
+    // }
 
-//         // emit event
-//     }
+    pub fn is_valid_commit_leader_board(&mut self, session: Pubkey) -> bool {
+        return self.session == session;
+    }
+}
 
-//     // VALIDATIONS:
-//     pub fn is_valid_unsealed_bid(&self, amount: u64, secret: String, session: Pubkey) -> bool {
-//         let hasher = Hasher::default();
-//         hasher.hash(amount.as_ref());
-//         hasher.hash(sealed_bid_by_index.index.to_string().as_ref());
-//         hasher.hash(session.as_ref());
+#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+pub struct CommitLeaderBoardLinkedList {
+    pub total: u32,
+    head: u32,
+    tail: u32,
+    list: Vec<CommitNode>,
+    stack: Vec<[u8; 3]>,
+}
 
-//         // convert to Pubkey
-//         let hash = hasher.result();
-//         return hash == self.commit_hash;
-//     }
+impl CommitLeaderBoardLinkedList {
+    pub const LEN: usize = UNSIGNED_32
+        + UNSIGNED_32
+        + UNSIGNED_32
+        + (BYTE + (BYTE + CommitNode::LEN) * MAX_PARTICPANTS)
+        + (BYTE + 3 * MAX_PARTICPANTS);
 
-//     pub fn unsealed_bid(&mut self) {
-//         self.is_unsealed = true;
-//     }
-// }
+    pub fn new() -> Self {
+        CommitLeaderBoardLinkedList {
+            total: 0,
+            head: 0,
+            tail: 0,
+            list: Vec::<CommitNode>::new(),
+            stack: Vec::<[u8; 3]>::new(),
+        }
+    }
+}
 
-// #[account]
-// pub struct CommitLeaderBoard {
-//     pub bump: u8,
-//     pub session: Pubkey,
-//     pub min_target: u64, // cutoff / bottom amount, increaese when commit queue has 10 -> I don't think I need this
-//     pub pool: LinkedList<Commit>,
-// }
+#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+pub struct CommitNode {
+    index: u32,
+    prev: Option<u32>,
+    next: Option<u32>,
+    position: Commit,
+}
 
-// impl Len for CommitLeaderBoard {
-//     const LEN: usize =
-//         DISCRIMINATOR + BUMP + PUBKEY_BYTES + UNSIGNED_64 + LinkedList::<Commit>::LEN;
-// }
+impl CommitNode {
+    pub const LEN: usize = UNSIGNED_32 + (BYTE + UNSIGNED_32) + (BYTE + UNSIGNED_32) + Commit::LEN;
+}
 
-// impl CommitLeaderBoard {
-//     pub fn initialize(&mut self, bump: u8, session: Pubkey) {
-//         self.bump = bump;
-//         self.session = session;
-//         self.min_target = 0;
+#[account]
+pub struct CommitQueue {
+    pub bump: u8,
+    pub session: Pubkey,
+    pointer: u8,
+    queue: Vec<Commit>,
+}
 
-//         self.pool = LinkedList<Commit>::new();
-//     }
+const MAX_CAPACITY: usize = 10;
+impl CommitQueue {
+    const LEN: usize =
+        DISCRIMINATOR + BUMP + PUBKEY_BYTES + BYTE + (UNSIGNED_128 + (Commit::LEN * MAX_CAPACITY));
 
-//     pub fn update(&self, owner: Pubkey, amount: u64) {
-//         // add this code later. going to need index info for linked list
-//         self.pool;
-//     }
+    pub fn initialize(&mut self, bump: u8, session: Pubkey) {
+        self.bump = bump;
+        self.session = session;
+        self.queue = Vec::new();
 
-//     pub fn is_valid_commit_leader_board(session: Pubkey) -> bool {
-//         return self.session == session;
-//     }
-// }
+        // emit event
+    }
 
-// #[account]
-// pub struct CommitQueue {
-//     pub bump: u8,
-//     pub session: Pubkey,
-//     pointer: u8,
-//     queue: Vec<Commit>,
-// }
+    pub fn insert(&mut self, commit: Commit) {
+        let mut index = self.queue.len();
 
-// const MAX_CAPACITY: usize = 10;
-// impl CommitQueue {
-//     const LEN: usize =
-//         DISCRIMINATOR + BUMP + PUBKEY_BYTES + BYTE + (UNSIGNED_128 + (Commit::LEN * MAX_CAPACITY));
+        while index != 0 && commit.amount > self.queue[index - 1].amount {
+            index -= 1;
+        }
 
-//     pub fn initialize(&mut self, bump: u8, session: Pubkey) {
-//         self.bump = bump;
-//         self.session = session;
-//         self.queue = Vec::new();
+        if self.queue.len() != 0 && self.queue.len() == MAX_CAPACITY {
+            self.queue.insert(index, commit);
+            self.queue.pop();
+        } else if self.queue.len() != 0 && index < MAX_CAPACITY && index < self.queue.len() {
+            self.queue.insert(index, commit);
+        } else {
+            self.queue.push(commit);
+        }
 
-//         // emit event
-//     }
+        // emit event element was added
+    }
 
-//     pub fn insert(&mut self, commit: Commit) {
-//         let mut index = self.queue.len();
+    pub fn dequeue(&mut self) -> Commit {
+        let index = self.pointer;
+        self.pointer += 1;
+        return self.queue[index as usize].clone();
+    }
 
-//         while index != 0 && commit.amount > self.queue[index - 1].unwrap().amount {
-//             index -= 1;
-//         }
+    pub fn is_valid_insert(&self, commit: Commit) -> bool {
+        return self.queue.len() == MAX_CAPACITY
+            && commit.amount > self.queue[self.queue.len() - 1].amount;
+    }
 
-//         if self.queue.len() != 0 && self.queue.len() == MAX_CAPACITY {
-//             self.queue.insert(index, commit).pop();
-//         } else if self.queue.len() != 0 && index < MAX_CAPACITY && index < self.queue.len() {
-//             self.queue.insert(index, commit);
-//         } else {
-//             self.queue.push(commit);
-//         }
+    pub fn is_valid_dequeue(&self) -> bool {
+        return self.pointer < MAX_CAPACITY as u8;
+    }
 
-//         // emit event element was added
-//     }
+    pub fn is_valid_session(&self, session: Pubkey) -> bool {
+        return self.session == session;
+    }
+}
 
-//     pub fn dequeue(&mut self) -> Option<Commit> {
-//         let index = self.pointer;
-//         self.pointer += 1;
-//         return self.queue[index];
-//     }
+#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+pub struct Commit {
+    pub bidder_index: u32,
+    pub amount: u64,
+}
 
-//     pub fn is_valid_insert(&self, commit: Commit) -> bool {
-//         return self.queue.len() == MAX_CAPACITY
-//             && commit.amount > self.queue[self.queue.len() - 1];
-//     }
-
-//     pub fn is_valid_dequeue(&self) -> bool {
-//         return self.point < MAX_CAPACITY;
-//     }
-
-//     pub fn is_valid_session(&self, session: Session) -> bool {
-//         return self.session == session.key();
-//     }
-// }
-
-// pub struct Commit {
-//     pub bidder_index: u32,
-//     pub amount: u64,
-// }
+impl Commit {
+    const LEN: usize = UNSIGNED_32 + UNSIGNED_64;
+}
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
 enum Status {
@@ -263,3 +254,8 @@ impl Status {
 //  SealedBidByIndex
 //  CommitLeaderBoard
 //  CommitQueue
+
+// temperary
+pub trait Len {
+    const LEN: usize;
+}
