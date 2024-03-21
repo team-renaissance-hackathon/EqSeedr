@@ -1,4 +1,5 @@
 pub mod indexer_status;
+pub mod marketplace_positions;
 pub mod program_authority;
 pub mod sealed_bid_round;
 pub mod session;
@@ -6,6 +7,7 @@ pub mod session_indexer;
 pub mod tick_bid_round;
 
 pub use indexer_status::*;
+pub use marketplace_positions::*;
 pub use program_authority::*;
 pub use sealed_bid_round::*;
 pub use session::*;
@@ -49,7 +51,7 @@ pub use tick_bid_round::*;
 //          VestedConfig / VestedStatus /VestedState
 //              [..] ::VestedAccount::
 //                  :VestedAccountByOwner
-//                  :VestedAccountByPagination
+//                  :VestedAccountByIndex
 //      ProgramAuthority
 //          SessionIndexer
 //          ActiveSessionIndex

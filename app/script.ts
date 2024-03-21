@@ -91,6 +91,22 @@ const getAccounts = ({
         program.programId
     ) : [undefined]
 
+    const [sessionTickBidLeaderBoard] = tokenMint != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            Buffer.from("tick-bid-leader-board"),
+        ],
+        program.programId
+    ) : [undefined]
+
+    const [sessionMarketplace] = tokenMint != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            Buffer.from("session-marketplace"),
+        ],
+        program.programId
+    ) : [undefined]
+
 
     const sealedBidTokenStakeAccount = stakeTokenMint != undefined ? getAssociatedTokenAddressSync(
         stakeTokenMint.mint.publicKey,
@@ -117,6 +133,8 @@ const getAccounts = ({
         sealedBidTokenStakeAccount,
         commitTokenAccount,
         tickBidRound,
+        sessionTickBidLeaderBoard,
+        sessionMarketplace,
     }
 }
 
@@ -410,6 +428,80 @@ const createTickBidRound = async ({
     });
 }
 
+const createSessionTickBidLeaderBoard = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+
+}) => {
+
+    const {
+        session,
+        sessionTickBidLeaderBoard,
+    } = getAccounts({
+        tokenMint,
+        program
+    })
+
+
+    const tx = await program.methods
+        .createSessionTickBidLeaderBoard()
+        .accounts({
+            authority: authority.publicKey,
+            newTickBidLeaderBoard: sessionTickBidLeaderBoard,
+            session: session,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
+const createSessionMarketplace = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+
+}) => {
+
+    const {
+        session,
+        sessionMarketplace,
+    } = getAccounts({
+        tokenMint,
+        program
+    })
+
+
+    const tx = await program.methods
+        .createSessionMarketplace()
+        .accounts({
+            authority: authority.publicKey,
+            newMarketplacePositions: sessionMarketplace,
+            session: session,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
 export const script = {
     init,
     createSession,
@@ -419,4 +511,6 @@ export const script = {
     createSealedBidTokenStakeAccount,
     createCommitTokenAccount,
     createTickBidRound,
+    createSessionTickBidLeaderBoard,
+    createSessionMarketplace,
 }

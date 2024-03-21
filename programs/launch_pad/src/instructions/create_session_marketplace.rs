@@ -1,3 +1,9 @@
+use crate::{
+    states::{Session, MarketplacePositions},
+    // utils::ProgramError,
+};
+use anchor_lang::prelude::*;
+
 #[derive(Accounts)]
 pub struct CreateSessionMarketplacePositions<'info> {
     #[account(mut)]
@@ -9,7 +15,7 @@ pub struct CreateSessionMarketplacePositions<'info> {
         space = MarketplacePositions::LEN,
         seeds = [
             session.key().as_ref(),
-            b"marketplace",
+            b"session-marketplace",
         ],
         bump
     )]
@@ -17,8 +23,9 @@ pub struct CreateSessionMarketplacePositions<'info> {
 
     #[account(
         mut,
-        has_one = authority
-        constraint = !session.has_marketplace_positions @ ProgramError::SessionMarketplacePositionsAlreadyExist
+        has_one = authority,
+        constraint = !session.has_marketplace_positions 
+        // @ ProgramError::SessionMarketplacePositionsAlreadyExist
     )]
     pub session: Account<'info, Session>,
 
@@ -32,9 +39,8 @@ pub fn handler(ctx: Context<CreateSessionMarketplacePositions>) -> Result<()> {
         ..
     } = ctx.accounts;
 
-    new_marketplace_positions.pool = LinkedList::New();
-
-    session.has_marketplace_positions = true;
+    new_marketplace_positions.initialize();
+    session.add_marketplace_positions();
 
     Ok(())
 }

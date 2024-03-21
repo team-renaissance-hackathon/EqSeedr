@@ -362,8 +362,29 @@ describe("launch_pad", () => {
 
 
     })
-    // tick bid leader board
-    // tick bid market place
+
+    it("Create Session Tick Bid Leader Board", async () => {
+
+      await script.createSessionTickBidLeaderBoard({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+      })
+    })
+
+    it("Create Tick Bid Marketplace", async () => {
+
+      await script.createSessionMarketplace({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+      })
+    })
+    // vested config by session
 
     describe("Interact with Sealed Bid System", () => {
       // submit sealed bid

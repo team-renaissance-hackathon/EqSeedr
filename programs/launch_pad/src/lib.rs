@@ -47,6 +47,18 @@ pub mod launch_pad {
     pub fn create_tick_bid_round(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {
         instructions::create_tick_bid_round::handler(ctx)
     }
+
+    pub fn create_session_tick_bid_leader_board(
+        ctx: Context<CreateSessionTickBidLeaderBoard>,
+    ) -> Result<()> {
+        instructions::create_session_tick_bid_leader_board::handler(ctx)
+    }
+
+    pub fn create_session_marketplace(
+        ctx: Context<CreateSessionMarketplacePositions>,
+    ) -> Result<()> {
+        instructions::create_session_marketplace::handler(ctx)
+    }
 }
 
 // TICK-BID

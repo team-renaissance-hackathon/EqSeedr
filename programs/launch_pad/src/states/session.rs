@@ -136,6 +136,14 @@ impl Session {
         self.has_commit_queue = true;
     }
 
+    pub fn add_tick_bid_leader_board(&mut self) {
+        self.has_tick_bid_leader_board = true;
+    }
+
+    pub fn add_marketplace_positions(&mut self) {
+        self.has_marketplace_positions = true;
+    }
+
     pub fn allocate_tokens(&self) -> u64 {
         return self.token_allocation / MAX_ROUNDS as u64;
     }

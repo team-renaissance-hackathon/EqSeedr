@@ -242,6 +242,7 @@ enum Status {
     Enqueue,
     SealedBidPhase,
     UnsealBidPhase,
+    Closed,
     Canceled,
 }
 

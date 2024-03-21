@@ -28,4 +28,10 @@ pub enum ProgramError {
 
     #[msg("Session Tick Bid Rounds, All 10 Rounds Exist")]
     SessionTickBidRoundMaxRoundSet,
+
+    #[msg("Session Tick Bid Leader Board Already Exist")]
+    SessionTickBidLeaderBoardAlreadyExist,
+
+    #[msg("Session Marketplace Positions Already Exist")]
+    SessionMarketplacePositionsAlreadyExist,
 }
