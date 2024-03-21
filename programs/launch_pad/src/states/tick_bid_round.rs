@@ -6,6 +6,7 @@ use anchor_lang::prelude::*;
 // round status, round header, round details
 #[account]
 pub struct TickBidRound {
+    pub bump: u8,
     // identifier
     pub index: u8,
 
@@ -19,24 +20,35 @@ pub struct TickBidRound {
     // user token amount distribution -> token_allocation * token share distribution
 
     // status
-    pub status: Status,
+    status: Status,
 
     // ticket ticket status
     pub total: u64,
     pub bonus_pool: u64,
     // start scaler at 64
     pub scaler: u64,
-    pub average_tick_depth: u64,
+    pub avg_tick_depth: u64,
+
+    // total amount of USDC | SOL raised
+    // total_amount_bids
+    pub bid_sum: u64,
+
+    // total amount tickets issued
+    pub total_tickets: u64,
+
+    // total of bids executed
+    pub number_of_bids: u32,
 
     // bid status
     pub last_market_bid: u64,
     pub last_tick_bid: u64,
     pub last_bid_timestamp: i64,
-    pub last_bid_slot: u128,
+    pub last_bid_slot: u64,
 }
 
 impl TickBidRound {
     pub const LEN: usize = DISCRIMINATOR
+        + UNSIGNED_8
         + UNSIGNED_8
         + UNSIGNED_64
         + UNSIGNED_64
@@ -44,8 +56,14 @@ impl TickBidRound {
         + UNSIGNED_64
         + UNSIGNED_64
         + UNSIGNED_64
+        + UNSIGNED_64
+        + UNSIGNED_64
+        + UNSIGNED_64
+        + UNSIGNED_32
+        + UNSIGNED_64
+        + UNSIGNED_64
         + SIGNED_64
-        + UNSIGNED_128;
+        + UNSIGNED_64;
 
     const MIN: i64 = 60;
     const UNIT: u64 = 0b1;
@@ -60,32 +78,34 @@ impl TickBidRound {
     ];
 
     // CreateTickBidRound
-    pub fn initialize(&mut self, session: Session) {
-        self.round.index = session.round;
-        // self.round.token_allocation = session.token_allocation / session.target_rounds;
-        // self.round.ticket_allocation = session.ticket_allocation / session.target_rounds;
-        self.round.token_allocation = session.allocate_tokens();
-        self.round.ticket_allocation = session.allocate_tickets();
-        self.round.status = Status::Enqueue;
-        self.round.scaler = 64;
-        self.round.average_tick_depth = 0;
-        self.round.last_market_bid = 0;
-        self.round.last_tick_bid = 0;
-        self.round.last_bid_timestamp = 0;
-        self.round.last_bid_slot = 0;
-        self.round.total = 0;
-        self.round.bonus_pool = 0;
+    pub fn initialize(&mut self, bump: u8, session: &Account<'_, Session>) {
+        self.bump = bump;
+        self.index = session.next_round();
+        self.token_allocation = session.allocate_tokens();
+        self.status = Status::Enqueue;
+
+        self.scaler = 64;
+
+        self.avg_tick_depth = 0;
+        self.last_market_bid = 0;
+        self.last_tick_bid = 0;
+        self.last_bid_timestamp = 0;
+        self.last_bid_slot = 0;
+        self.total = 0;
+        self.bonus_pool = 0;
+
+        msg!("round: {}", self.index)
     }
 
     // OpenRoundStatus
-    fn open_round(&self) -> Result<()> {
-        self.round.status = Status::Open;
+    fn open_round(&mut self) -> Result<()> {
+        self.status = Status::Open;
         Ok(())
     }
 
     // CloseRoundStatus
-    fn close_round(&self) -> Result<()> {
-        self.status == Status::Closed;
+    fn close_round(&mut self) -> Result<()> {
+        self.status = Status::Closed;
 
         // redistribute bag
         // update round bag
@@ -106,16 +126,16 @@ impl TickBidRound {
     // transfer()
 
     // OpenBid - 0
-    fn open_bid(&self, bid: u64, current: Clock) -> Result<()> {
+    fn open_bid(&mut self, bid: u64, current: Clock) -> Result<()> {
         // need update average something
         // are these the same???? most resolve
-        self.round.last_market_bid = bid;
+        self.last_market_bid = bid;
         // is this the tick depth?
         // self.round.last_tick_bid = bid;
 
-        self.round.last_bid_timestamp = current.unix_timestamp;
-        self.round.last_bid_slot = current.slot;
-        self.round.total += 1;
+        self.last_bid_timestamp = current.unix_timestamp;
+        self.last_bid_slot = current.slot;
+        self.total += 1;
         // log event
 
         Ok(())
@@ -129,38 +149,40 @@ impl TickBidRound {
     }
 
     // ExecuteBid - 1
-    fn get_current_bid(self) -> Result<(u64, u64)> {
-        let clock = Clock.get()?;
-        let targert_delta = last_bid_timestamp - clock.unix_timestamp;
-        let delta = MIN * 2 as i64;
-        let tick_depth: u64 = 0;
+    fn get_current_bid(&self) -> Result<(u64, u64)> {
+        let clock = Clock::get()?;
+        let targert_delta = self.last_bid_timestamp - clock.unix_timestamp;
+        let mut delta = TickBidRound::MIN * 2 as i64;
+        let mut tick_depth: u64 = 0;
 
         while targert_delta > delta {
-            delta += delta + MIN;
-            tick_depth += UNIT;
+            delta += delta + TickBidRound::MIN;
+            tick_depth += TickBidRound::UNIT;
         }
 
-        let bid = if tick_depth > BYTES_8 || last_market_bid >> tick_depth == IS_ZERO {
-            UNIT
-        } else if tick_depth <= UNIT {
-            let price = (MULTIPLIER >> tick_depth) * self.last_market_bid;
-            price + (price * tick_depth / PERCENT_100)
+        let bid = if tick_depth > TickBidRound::BYTES_8
+            || self.last_market_bid >> tick_depth == TickBidRound::IS_ZERO
+        {
+            TickBidRound::UNIT
+        } else if tick_depth <= TickBidRound::UNIT {
+            let price = (TickBidRound::MULTIPLIER >> tick_depth) * self.last_market_bid;
+            price + (price * tick_depth / TickBidRound::PERCENT_100)
         } else {
-            let reduce = (UNIT << (tick_depth - OFFSET));
+            let reduce = TickBidRound::UNIT << (tick_depth - TickBidRound::OFFSET);
             let price = self.last_market_bid / reduce;
-            price + (price * tick_depth / PERCENT_100)
+            price + (price * tick_depth / TickBidRound::PERCENT_100)
         };
 
         Ok((bid, tick_depth))
     }
 
     // ExecuteBid - 2
-    fn can_bid_queue(&self, bid: u64, queue: MarketMakerQueue) -> bool {
-        // log message if can't bid, can't bid, because queue is filled
-        // name candidate?
-        // top bid, next bid, highest bid
-        return queue.next_bid >= bid;
-    }
+    // fn can_bid_queue(&self, bid: u64, queue: MarketMakerQueue) -> bool {
+    //     // log message if can't bid, can't bid, because queue is filled
+    //     // name candidate?
+    //     // top bid, next bid, highest bid
+    //     return queue.next_bid >= bid;
+    // }
 
     // ExecuteBid - 3 | OpenBid?
     fn update_bid_status(&mut self, bid: u64, tick: u64, clock: Clock) {
@@ -175,18 +197,22 @@ impl TickBidRound {
     // where the bulk of the algorthm will be
     // ExecuteBid - 4 | Openbid?
     fn update_ticket_status(&mut self, bid: u64, tick_depth: u64) {
-        let sum: u64;
-        for num in RoundStatus::FIB_SEQUENCE[..tick_depth] {
-            sum += num / self.ticket_bag_scaler;
+        let mut sum: u64 = 0;
+        let mut tick = 0;
+
+        while tick != tick_depth {
+            let num = TickBidRound::FIB_SEQUENCE[tick as usize];
+            sum += num / self.scaler;
+            tick += 1;
         }
 
-        if tick > self.average_tick_depth {
-            self.ticket_bag_scaler -= 1;
+        if tick_depth > self.avg_tick_depth {
+            self.scaler -= 1;
         }
 
-        self.average_tick_depth = (self.average_tick_depth + tick_depth) / self.total;
+        self.avg_tick_depth = (self.avg_tick_depth + tick_depth) / self.total;
 
-        self.bonus_pool + sum;
+        self.bonus_pool += sum;
         self.total += sum + 1;
         // log data
     }
@@ -197,7 +223,8 @@ impl TickBidRound {
     }
 }
 
-pub enum Status {
+#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+enum Status {
     Enqueue,
     Open,
     Closed,

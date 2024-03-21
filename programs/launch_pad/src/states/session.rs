@@ -136,6 +136,10 @@ impl Session {
         self.has_commit_queue = true;
     }
 
+    pub fn allocate_tokens(&self) -> u64 {
+        return self.token_allocation / MAX_ROUNDS as u64;
+    }
+
     // CloseRoundStatus
     pub fn close_round(&self) -> Result<()> {
         // self.current_round += 1;
@@ -146,20 +150,24 @@ impl Session {
         Ok(())
     }
 
-    pub fn next_round(&self) -> String {
-        return (self.total_rounds + 1).to_string();
+    pub fn next_round(&self) -> u8 {
+        return self.total_rounds + 1;
     }
 
     pub fn increment_round(&mut self) {
+        self.total_rounds += 1;
+
         if self.total_rounds == MAX_ROUNDS {
             self.has_max_rounds = true;
         }
-
-        self.total_rounds += 1;
     }
 
     pub fn is_valid_staking_account(&self, account: Pubkey) -> bool {
         return self.staking_account == account;
+    }
+
+    pub fn is_valid_token_mint(&self, token_mint: Pubkey) -> bool {
+        return !(self.token_mint == token_mint);
     }
 }
 

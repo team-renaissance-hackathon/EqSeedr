@@ -1,7 +1,7 @@
-use anchor_lang::prelude::*;
 pub mod instructions;
 pub mod states;
 pub mod utils;
+use anchor_lang::prelude::*;
 pub use instructions::*;
 
 declare_id!("7GKWqKvkev22SYs2HEb1jw6h4uHJwLVKpEcxVUqTZKxG");
@@ -12,6 +12,10 @@ pub mod launch_pad {
 
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         instructions::initialize::handler(ctx)
+    }
+
+    pub fn create_commit_token_account(ctx: Context<CreateCommitTokenAccount>) -> Result<()> {
+        instructions::create_commit_token_account::handler(ctx)
     }
 
     pub fn create_session(ctx: Context<CreateSession>, input: SessionParams) -> Result<()> {
@@ -32,6 +36,16 @@ pub mod launch_pad {
 
     pub fn create_session_commit_queue(ctx: Context<CreateSessionCommitQueue>) -> Result<()> {
         instructions::create_commit_queue::handler(ctx)
+    }
+
+    pub fn create_sealed_bid_token_stake_account(
+        ctx: Context<CreateSealedBidTokenStakeAccount>,
+    ) -> Result<()> {
+        instructions::create_sealed_bid_token_stake_account::handler(ctx)
+    }
+
+    pub fn create_tick_bid_round(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {
+        instructions::create_tick_bid_round::handler(ctx)
     }
 }
 

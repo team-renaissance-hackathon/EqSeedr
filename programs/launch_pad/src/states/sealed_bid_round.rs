@@ -254,8 +254,5 @@ impl Status {
 //  SealedBidByIndex
 //  CommitLeaderBoard
 //  CommitQueue
-
-// temperary
-pub trait Len {
-    const LEN: usize;
-}
+//  SealedBidTokenStakeAccount
+//  CommitTokenAccount

@@ -13,7 +13,13 @@ import {
 
 
 // need keypair from env / config
-const getAccounts = ({ tokenMint, stakeTokenMint, bidTokenMint, program }: any) => {
+const getAccounts = ({
+    tokenMint,
+    stakeTokenMint,
+    bidTokenMint,
+    roundIndex,
+    program
+}: any) => {
 
     const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
         [Buffer.from("authority")],
@@ -76,6 +82,15 @@ const getAccounts = ({ tokenMint, stakeTokenMint, bidTokenMint, program }: any) 
         program.programId
     ) : [undefined]
 
+    const [tickBidRound] = tokenMint != undefined && roundIndex != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from(roundIndex.toString()),
+            session.toBuffer(),
+            Buffer.from("tick-bid-round"),
+        ],
+        program.programId
+    ) : [undefined]
+
 
     const sealedBidTokenStakeAccount = stakeTokenMint != undefined ? getAssociatedTokenAddressSync(
         stakeTokenMint.mint.publicKey,
@@ -101,6 +116,7 @@ const getAccounts = ({ tokenMint, stakeTokenMint, bidTokenMint, program }: any) 
         commitQueue,
         sealedBidTokenStakeAccount,
         commitTokenAccount,
+        tickBidRound,
     }
 }
 
@@ -354,6 +370,46 @@ const createCommitTokenAccount = async ({
     });
 }
 
+const createTickBidRound = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+    bidTokenMint,
+    roundIndex,
+}) => {
+
+    const {
+        session,
+        tickBidRound,
+    } = getAccounts({
+        tokenMint,
+        bidTokenMint,
+        roundIndex,
+        program
+    })
+
+
+    const tx = await program.methods
+        .createTickBidRound()
+        .accounts({
+            authority: authority.publicKey,
+            newTickBidRound: tickBidRound,
+            session: session,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
 export const script = {
     init,
     createSession,
@@ -362,4 +418,5 @@ export const script = {
     createSessionCommitQueue,
     createSealedBidTokenStakeAccount,
     createCommitTokenAccount,
+    createTickBidRound,
 }

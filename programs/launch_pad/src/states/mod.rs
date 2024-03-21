@@ -1,16 +1,16 @@
 pub mod indexer_status;
 pub mod program_authority;
-// pub mod round_status;
 pub mod sealed_bid_round;
 pub mod session;
 pub mod session_indexer;
+pub mod tick_bid_round;
 
 pub use indexer_status::*;
 pub use program_authority::*;
-// pub use round_status::*;
 pub use sealed_bid_round::*;
 pub use session::*;
 pub use session_indexer::*;
+pub use tick_bid_round::*;
 
 // STATE
 //      Indexer

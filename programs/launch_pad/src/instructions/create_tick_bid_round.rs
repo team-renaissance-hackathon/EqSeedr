@@ -1,5 +1,8 @@
-// use crate::states::{TickBidRound, Session};
-// use anchor_lang::prelude::*;
+use crate::{
+    states::{Session, TickBidRound},
+    // utils::ProgramError,
+};
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct CreateSessionTickBidRound<'info> {
@@ -11,9 +14,9 @@ pub struct CreateSessionTickBidRound<'info> {
         payer = authority,
         space = TickBidRound::LEN,
         seeds = [
-            session.set_round().unwrap().as_bytes().as_ref(),
+            session.next_round().to_string().as_ref(),
             session.key().as_ref(),
-            b"round-status",
+            b"tick-bid-round",
         ],
         bump
     )]
@@ -22,7 +25,8 @@ pub struct CreateSessionTickBidRound<'info> {
     #[account(
         mut,
         has_one = authority,
-        constraint = !session.all_tick_bid_rounds_set @ ProgramError::SessionTickBidRoundsAlreadyExist
+        constraint = !session.has_max_rounds
+        //  @ ProgramError::SessionTickBidRoundMaxRoundSet,
 
     )]
     pub session: Account<'info, Session>,
@@ -37,8 +41,8 @@ pub fn handler(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {
         ..
     } = ctx.accounts;
 
-    new_tick_bid_round.initialize(session);
-    session.set_next_round();
+    new_tick_bid_round.initialize(ctx.bumps.new_tick_bid_round, session);
+    session.increment_round();
 
     Ok(())
 }

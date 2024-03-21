@@ -82,7 +82,7 @@ describe("launch_pad", () => {
   const keypair = anchor.web3.Keypair.generate()
   const bidTokenMint = new Token()
   const tokenMint = new Token() // session
-  const stakeTokenMint = new Token()
+
 
   before(async () => {
     {
@@ -137,24 +137,7 @@ describe("launch_pad", () => {
       });
     }
 
-    {
 
-      await stakeTokenMint.createMint(
-        provider.connection,
-        keypair
-      )
-      const tx = await provider.connection.requestAirdrop(
-        stakeTokenMint.mintAuthority.publicKey,
-        1000 * anchor.web3.LAMPORTS_PER_SOL
-      )
-
-      const latestBlockHash = await provider.connection.getLatestBlockhash()
-      await provider.connection.confirmTransaction({
-        blockhash: latestBlockHash.blockhash,
-        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-        signature: tx,
-      });
-    }
 
 
   })
@@ -185,6 +168,27 @@ describe("launch_pad", () => {
 
   describe("Initialize Session State Contracts", () => {
 
+    const stakeTokenMint = new Token()
+    before(async () => {
+      {
+
+        await stakeTokenMint.createMint(
+          provider.connection,
+          keypair
+        )
+        const tx = await provider.connection.requestAirdrop(
+          stakeTokenMint.mintAuthority.publicKey,
+          1000 * anchor.web3.LAMPORTS_PER_SOL
+        )
+
+        const latestBlockHash = await provider.connection.getLatestBlockhash()
+        await provider.connection.confirmTransaction({
+          blockhash: latestBlockHash.blockhash,
+          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+          signature: tx,
+        });
+      }
+    })
 
     it("Create New Session", async () => {
 
@@ -252,7 +256,131 @@ describe("launch_pad", () => {
 
     })
 
+    it("Create Tick Bid Rounds", async () => {
 
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 1,
+      })
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 2,
+      })
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 3,
+      })
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 4,
+      })
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 5,
+      })
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 6,
+      })
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 7,
+      })
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 8,
+      })
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 9,
+      })
+
+      await script.createTickBidRound({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+        bidTokenMint,
+        roundIndex: 10,
+      })
+
+
+
+    })
+    // tick bid leader board
+    // tick bid market place
+
+    describe("Interact with Sealed Bid System", () => {
+      // submit sealed bid
+      // submit unsealed bid
+      // submit commit
+    })
+
+    describe("Interact with Tick Bid System", () => {
+      // registerVestedAccount
+      // process commit for round, opens the round
+      // execute bid
+      // delayed execute bid
+      // need to excute many bids quickly to close the tick bid round and enter another tick bid round
+      // need to execute all the rounds fast to close the session
+    })
+
+    describe("Process Errors", () => { })
   })
 
 
