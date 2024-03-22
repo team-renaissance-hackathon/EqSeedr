@@ -65,6 +65,10 @@ pub mod launch_pad {
     ) -> Result<()> {
         instructions::create_vested_config_by_session::handler(ctx)
     }
+
+    pub fn submit_sealed_bid(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()> {
+        instructions::submit_sealed_bid::handler(ctx, commit_hash)
+    }
 }
 
 // TICK-BID

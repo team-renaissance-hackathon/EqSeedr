@@ -111,6 +111,9 @@ impl Session {
         self.has_commit_queue = false;
         self.has_max_rounds = false;
 
+        // need implement
+        // self.staking_account = staking_account
+
         msg!("TESTING");
 
         // this doesn't work.

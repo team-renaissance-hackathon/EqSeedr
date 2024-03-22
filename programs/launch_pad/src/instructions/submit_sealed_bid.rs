@@ -1,3 +1,10 @@
+use super::super::{
+    states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session},
+    utils::*,
+};
+use anchor_lang::prelude::*;
+use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
+
 #[derive(Accounts)]
 pub struct SubmitSealedBid<'info> {
     #[account(mut)]
@@ -6,7 +13,8 @@ pub struct SubmitSealedBid<'info> {
     #[account(
         init,
         payer = authority,
-        space = SealedBidByIndex::LEN,
+        // space = SealedBidByIndex::LEN,
+        space = 10000,
         seeds = [
             sealed_bid_round.next_index().as_ref(),
             session.key().as_ref(),
@@ -18,24 +26,27 @@ pub struct SubmitSealedBid<'info> {
 
     #[account(
         mut,
-        constraint = sealed_bid_round.authority == session.key(),
+        constraint = sealed_bid_round.session == session.key(),
     )]
     pub sealed_bid_round: Account<'info, SealedBidRound>,
 
     #[account(
-        mut
+        mut,
         constraint = bidder_token_account.owner == authority.key()
     )]
     pub bidder_token_account: Account<'info, TokenAccount>,
 
     #[account(
-        mut
-        constraint = session.is_valid_staking_account(session_stake_token_account.key())
+        mut,
+        // right now this constraint wont work, no staking account is stored.
+        // constraint = session.is_valid_staking_account(session_stake_token_account.key())
     )]
     pub session_stake_token_account: Account<'info, TokenAccount>,
 
     #[account(
-        constraint = token_mint.mint_authority == program_authority.key(),
+        // right now this constraint wont work since I have to create a cpi so the program authority can be
+        // the mint authority.
+        // constraint = token_mint.mint_authority.unwrap() == program_authority.key(),
     )]
     pub token_mint: Account<'info, Mint>,
 

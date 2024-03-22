@@ -20,6 +20,12 @@ impl Indexer {
     const GENISUS_TIMESTAMP: i64 = 1_704_067_200;
     const INIT_YEAR: u16 = 2024;
 
+    // pub fn new() -> Self {
+    //     Indexer {
+
+    //     }
+    // }
+
     pub fn initialize(&mut self) {
         self.year_timestamp = Indexer::GENISUS_TIMESTAMP;
         self.year = Indexer::INIT_YEAR;

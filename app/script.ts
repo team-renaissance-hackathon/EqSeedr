@@ -18,7 +18,8 @@ const getAccounts = ({
     stakeTokenMint,
     bidTokenMint,
     roundIndex,
-    program
+    program,
+    sealedBidIndex,
 }: any) => {
 
     const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -137,6 +138,16 @@ const getAccounts = ({
     ) : undefined
 
 
+    const [sealedBidAccount] = sealedBidIndex != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from(sealedBidIndex.toString()),
+            session.toBuffer(),
+            Buffer.from("sealed-bid-by-index"),
+        ],
+        program.programId
+    ) : [undefined]
+
+
 
     return {
         programAuthority,
@@ -154,8 +165,18 @@ const getAccounts = ({
         sessionMarketplace,
         marketplaceMatchers,
         vestedConfigBySession,
+        sealedBidAccount,
     }
 }
+
+// const confirmTransaction = async () => {
+//     const latestBlockHash = await connection.getLatestBlockhash()
+//     await connection.confirmTransaction({
+//         blockhash: latestBlockHash.blockhash,
+//         lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+//         signature: tx,
+//     });
+// }
 
 // part of deployment process
 const init = async ({
@@ -562,16 +583,98 @@ const createVestedConfigBySession = async ({
     });
 }
 
+const submitSealedBid = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+    stakeTokenMint,
+    input,
+}) => {
+
+    const {
+        session,
+        sealedBidAccount,
+        programAuthority,
+        sealedBidRound,
+        sealedBidTokenStakeAccount
+    } = getAccounts({
+        tokenMint,
+        program,
+        stakeTokenMint,
+        sealedBidIndex: input.index,
+    })
+
+    // console.log(
+    //     authority.publicKey,
+    //     input.stakeTokenAccount,
+    //     input.bidTokenAccount,
+    //     tokenMint.publicKey,
+    //     input.commitHash
+    // )
+
+    // console.log(sealedBidAccount)
+
+    // console.log(sealedBidTokenStakeAccount, tokenMint.mint.publicKey, stakeTokenMint, session)
+
+    const tx = await program.methods
+        .submitSealedBid(input.commitHash)
+        .accounts({
+            authority: authority.publicKey,
+
+            newSealedBidByIndex: sealedBidAccount,
+            sealedBidRound: sealedBidRound,
+
+            bidderTokenAccount: await input.bidderStakeTokenAccount,
+            sessionStakeTokenAccount: sealedBidTokenStakeAccount,
+            tokenMint: tokenMint.mint.publicKey,
+
+            programAuthority: programAuthority,
+            session: session,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
+
+
 export const script = {
     init,
+    createCommitTokenAccount,
+
+    // CREATE SESSION
     createSession,
+    // SESSION -> CREATE SEALED-BID SYSTEM
+
     createSessionSealedBidRound,
     createSessionCommitLeaderBoard,
     createSessionCommitQueue,
     createSealedBidTokenStakeAccount,
-    createCommitTokenAccount,
+
+    // SESSION -> CREATE TICK-BID SYSTEM
     createTickBidRound,
     createSessionTickBidLeaderBoard,
+    // may need leader baord for each round
     createSessionMarketplace,
     createVestedConfigBySession,
+
+    // interact with sealed bid round
+    submitSealedBid,
+    // submitUnsealedBid,
+    // submitCommit,
+
+    // interact with tick bid round
+    // register
+    // openBid,
+    // executeBid,
 }
