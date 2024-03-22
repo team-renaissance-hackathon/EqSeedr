@@ -14,7 +14,13 @@ pub struct IndexerStatus {
 impl IndexerStatus {
     pub const LEN: usize = DISCRIMINATOR + BUMP + PUBKEY_BYTES + Indexer::LEN;
 
-    pub fn initialize(&self) {}
+    pub fn initialize(&mut self, bump: u8, authority: Pubkey) {
+        // bump = 253
+        self.bump = bump;
+        self.authority = authority;
+        self.status.initialize();
+        // self.status = Indexer::new();
+    }
 }
 
 #[account]
@@ -27,6 +33,15 @@ pub struct EnqueueSessionIndex {
     pub stack: Vec<u16>,
 }
 
+impl EnqueueSessionIndex {
+    pub fn initialize(&mut self, bump: u8, authority: Pubkey) {
+        self.bump = bump;
+        self.authority = authority;
+        self.list = Vec::<Indexer>::new();
+        self.stack = Vec::<u16>::new();
+    }
+}
+
 #[account]
 pub struct ActiveSessionIndex {
     // VALIDATION STATE
@@ -35,6 +50,15 @@ pub struct ActiveSessionIndex {
     // STATE
     pub list: Vec<Indexer>,
     pub stack: Vec<u16>,
+}
+
+impl ActiveSessionIndex {
+    pub fn initialize(&mut self, bump: u8, authority: Pubkey) {
+        self.bump = bump;
+        self.authority = authority;
+        self.list = Vec::<Indexer>::new();
+        self.stack = Vec::<u16>::new();
+    }
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]

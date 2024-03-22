@@ -12,7 +12,7 @@ pub struct CreateCommitTokenAccount<'info> {
     pub authority: Signer<'info>,
 
     #[account(
-        // constraint = program_authority.is_initialized == true,
+        constraint = program_authority.is_initialized == true,
         seeds = [b"authority"],
         bump = program_authority.bump
     )]

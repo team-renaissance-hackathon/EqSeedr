@@ -50,6 +50,14 @@ const getAccounts = ({
         program.programId
     )
 
+    const [marketplaceMatchers] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from("marketplace-matchers"),
+            programAuthority.toBuffer(),
+        ],
+        program.programId
+    )
+
     const [session] = tokenMint != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
         [
             tokenMint.mint.publicKey.toBuffer(),
@@ -121,6 +129,7 @@ const getAccounts = ({
     ) : undefined
 
 
+
     return {
         programAuthority,
         indexerStatus,
@@ -135,6 +144,7 @@ const getAccounts = ({
         tickBidRound,
         sessionTickBidLeaderBoard,
         sessionMarketplace,
+        marketplaceMatchers
     }
 }
 
@@ -151,6 +161,7 @@ const init = async ({
         indexerStatus,
         enqueueSessionIndexer,
         activeSessionIndexer,
+        marketplaceMatchers,
     } = getAccounts({ tokenMint: undefined, program: program })
 
     const tx = await program.methods
@@ -161,6 +172,7 @@ const init = async ({
             newIndexerStatus: indexerStatus,
             newActiveSessionIndexer: activeSessionIndexer,
             newEnqueueSessionIndexer: enqueueSessionIndexer,
+            newMarketplaceMatchers: marketplaceMatchers,
             systemProgram: web3.SystemProgram.programId,
         })
         .signers([authority])
@@ -364,6 +376,7 @@ const createCommitTokenAccount = async ({
         programAuthority,
         commitTokenAccount,
     } = getAccounts({ tokenMint, bidTokenMint, program })
+
 
     const tx = await program.methods
         .createCommitTokenAccount()
