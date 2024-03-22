@@ -6,6 +6,7 @@ pub mod sealed_bid_round;
 pub mod session;
 pub mod session_indexer;
 pub mod tick_bid_round;
+pub mod vested_account;
 
 pub use indexer_status::*;
 pub use marketplace_matchers::*;
@@ -15,6 +16,7 @@ pub use sealed_bid_round::*;
 pub use session::*;
 pub use session_indexer::*;
 pub use tick_bid_round::*;
+pub use vested_account::*;
 
 // STATE
 //      Indexer

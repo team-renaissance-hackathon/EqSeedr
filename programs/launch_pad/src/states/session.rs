@@ -144,6 +144,10 @@ impl Session {
         self.has_marketplace_positions = true;
     }
 
+    pub fn add_vested_config_by_session(&mut self) {
+        self.has_vested_config = true;
+    }
+
     pub fn allocate_tokens(&self) -> u64 {
         return self.token_allocation / MAX_ROUNDS as u64;
     }

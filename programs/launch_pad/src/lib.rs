@@ -59,6 +59,12 @@ pub mod launch_pad {
     ) -> Result<()> {
         instructions::create_session_marketplace::handler(ctx)
     }
+
+    pub fn create_vested_config_by_session(
+        ctx: Context<CreateVestedConfigBySession>,
+    ) -> Result<()> {
+        instructions::create_vested_config_by_session::handler(ctx)
+    }
 }
 
 // TICK-BID

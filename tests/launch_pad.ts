@@ -384,6 +384,17 @@ describe("launch_pad", () => {
         tokenMint,
       })
     })
+
+    it("Create Vested Config By Session", async () => {
+
+      await script.createVestedConfigBySession({
+        connection: provider.connection,
+        authority: tokenMint.mintAuthority,
+        program,
+        web3: anchor.web3,
+        tokenMint,
+      })
+    })
     // vested config by session
 
     describe("Interact with Sealed Bid System", () => {

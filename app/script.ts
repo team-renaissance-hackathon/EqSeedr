@@ -115,6 +115,14 @@ const getAccounts = ({
         program.programId
     ) : [undefined]
 
+    const [vestedConfigBySession] = tokenMint != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            Buffer.from("vested-config"),
+        ],
+        program.programId
+    ) : [undefined]
+
 
     const sealedBidTokenStakeAccount = stakeTokenMint != undefined ? getAssociatedTokenAddressSync(
         stakeTokenMint.mint.publicKey,
@@ -144,7 +152,8 @@ const getAccounts = ({
         tickBidRound,
         sessionTickBidLeaderBoard,
         sessionMarketplace,
-        marketplaceMatchers
+        marketplaceMatchers,
+        vestedConfigBySession,
     }
 }
 
@@ -515,6 +524,44 @@ const createSessionMarketplace = async ({
     });
 }
 
+const createVestedConfigBySession = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+
+}) => {
+
+    const {
+        session,
+        vestedConfigBySession,
+    } = getAccounts({
+        tokenMint,
+        program
+    })
+
+
+    const tx = await program.methods
+        .createVestedConfigBySession()
+        .accounts({
+            authority: authority.publicKey,
+            newVestedConfig: vestedConfigBySession,
+            session: session,
+            tokenMint: tokenMint.mint.publicKey,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
 export const script = {
     init,
     createSession,
@@ -526,4 +573,5 @@ export const script = {
     createTickBidRound,
     createSessionTickBidLeaderBoard,
     createSessionMarketplace,
+    createVestedConfigBySession,
 }
