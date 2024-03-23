@@ -18,6 +18,13 @@ pub struct CreateSealedBidTokenStakeAccount<'info> {
     #[account(
         init,
         payer =  authority,
+        // right now I am using the session as the authority,
+        // would like to use the program authority
+        // but can only create one instances if using the program authority
+        // so would need to use some type of way to create multiple instances
+        // with the prgoram authority. that means not using the canincal bump
+        // and associated token program.
+        // don't need to use the ATP necessarly, 
         associated_token::authority = session,
         associated_token::mint = stake_token_mint,
         associated_token::token_program = token_program,

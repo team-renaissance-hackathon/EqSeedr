@@ -507,12 +507,18 @@ describe("launch_pad", () => {
 
     describe("Interact with Sealed Bid System", () => {
 
+      const target = 30
       const users = []
 
       before(async () => {
+
         const list = []
 
-        for (let i = 0; i < 1; i++) {
+        function random(min, max) { // min and max included 
+          return Math.floor(Math.random() * (max - min + 1) + min)
+        }
+
+        for (let i = 0; i < target; i++) {
 
           const keypair = anchor.web3.Keypair.generate()
 
@@ -551,9 +557,9 @@ describe("launch_pad", () => {
             .update(passPhrase)
             .digest()
 
-          const amount = 100 + (i * 100)
+          const amount = new anchor.BN(100 + (random(i, i + target) * 100))
           const commitHash = createHash('sha256')
-            .update(amount.toString())
+            .update(Buffer.from(amount.toString()))
             .update(keypair.publicKey.toBuffer())
             .update(secret)
             .digest()
@@ -608,7 +614,36 @@ describe("launch_pad", () => {
 
         await fn(0)
       })
-      // submit unsealed bid
+
+      it("Submit Unsealed Bid", async () => {
+
+        const fn = async (index) => {
+
+          if (index == users.length) {
+            return
+          }
+
+          await script.submitUnsealedBid({
+            connection: provider.connection,
+            authority: users[index].keypair,
+            program: program,
+            tokenMint,
+            stakeTokenMint,
+            input: {
+              ...users[index],
+              amount: new anchor.BN(users[index].amount),
+              secretAsPub: new anchor.web3.PublicKey(users[index].secret)
+            }, // need an insert index
+          })
+          index++
+          await fn(index)
+        }
+
+        await fn(0)
+
+
+
+      })
       // submit commit
     })
 

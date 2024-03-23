@@ -69,6 +69,16 @@ pub mod launch_pad {
     pub fn submit_sealed_bid(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()> {
         instructions::submit_sealed_bid::handler(ctx, commit_hash)
     }
+
+    pub fn submit_unsealed_bid(
+        ctx: Context<SubmitUnsealedBid>,
+        amount: u64,
+        index: u32,
+        secret: [u8; 32],
+    ) -> Result<()> {
+        instructions::submit_unsealed_bid::handler(ctx, amount, index, secret)
+        // instructions::submit_unsealed_bid::handler(ctx, amount, index)
+    }
 }
 
 // TICK-BID

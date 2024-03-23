@@ -10,6 +10,7 @@ pub mod create_tick_bid_round;
 pub mod create_vested_config_by_session;
 pub mod initialize;
 pub mod submit_sealed_bid;
+pub mod submit_unsealed_bid;
 // pub mod create_rounds;
 // pub mod create_session_marketplace;
 
@@ -26,6 +27,7 @@ pub use create_tick_bid_round::*;
 pub use create_vested_config_by_session::*;
 pub use initialize::*;
 pub use submit_sealed_bid::*;
+pub use submit_unsealed_bid::*;
 // pub use create_rounds::*;
 // pub use create_session_marketplace::*;
 

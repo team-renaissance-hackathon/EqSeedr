@@ -401,10 +401,13 @@ const createSealedBidTokenStakeAccount = async ({
         .accounts({
             authority: authority.publicKey,
             newSealedBidTokenStakeAccount: sealedBidTokenStakeAccount,
+
             session: session,
             programAuthority: programAuthority,
+
             sessionTokenMint: tokenMint.mint.publicKey,
             stakeTokenMint: stakeTokenMint.mint.publicKey,
+
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: web3.SystemProgram.programId,
@@ -639,18 +642,6 @@ const submitSealedBid = async ({
         sealedBidIndex: input.index,
     })
 
-    // console.log(
-    //     authority.publicKey,
-    //     input.stakeTokenAccount,
-    //     input.bidTokenAccount,
-    //     tokenMint.publicKey,
-    //     input.commitHash
-    // )
-
-    // console.log(sealedBidAccount)
-
-    // console.log(sealedBidTokenStakeAccount, tokenMint.mint.publicKey, stakeTokenMint, session)
-
     const tx = await program.methods
         .submitSealedBid(input.commitHash)
         .accounts({
@@ -679,6 +670,178 @@ const submitSealedBid = async ({
     });
 }
 
+const submitUnsealedBid = async ({
+    connection,
+    authority,
+    program,
+    tokenMint,
+    stakeTokenMint,
+    input,
+}) => {
+
+    const {
+        session,
+        sealedBidAccount,
+        sealedBidRound,
+        commitLeaderBoard,
+    } = getAccounts({
+        tokenMint,
+        program,
+        stakeTokenMint,
+        sealedBidIndex: input.index,
+    })
+
+    const data = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
+    console.log(data.pool.list)
+
+    const list = data.pool.total && new LinkedList(data)
+    const index = data.pool.total && list.search(new Node({ position: { amount: input.amount, index: input.index } }))
+
+    console.log({ index })
+    const tx = await program.methods
+        .submitUnsealedBid(
+            input.amount,
+            index,
+            input.secret,
+        )
+        .accounts({
+            authority: authority.publicKey,
+            sealedBidByIndex: sealedBidAccount,
+            sealedBidRound: sealedBidRound,
+            commitLeaderBoard: commitLeaderBoard,
+            session: session,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+
+    const d = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
+
+    console.log(d)
+    console.log(d.pool.list)
+
+}
+
+const getCommitLeaderBoard = async ({
+    program,
+    connection,
+    tokenMint,
+
+}) => {
+
+    const {
+        commitLeaderBoard,
+    } = getAccounts({
+        tokenMint,
+        program,
+    })
+
+    const tx = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+
+}
+
+class Position {
+
+    bidderIndex: number;
+    amount: anchor.BN;
+
+    constructor(position) {
+        this.bidderIndex = position.bidderIndex
+        this.amount = position.amount
+    }
+}
+
+class Node {
+
+    index?: number;
+    prev?: number;
+    next?: number;
+    position: Position;
+
+    constructor(node) {
+        this.index = node.index
+        this.prev = node.prev
+        this.next = node.next
+        this.position = new Position(node.position)
+    }
+}
+
+class LinkedList {
+
+    head?: number;
+    tail?: number;
+    current: number;
+    list: Node[];
+
+    constructor({ pool }) {
+        // console.log("LIST", pool.list)
+        this.head = pool.head
+        this.tail = pool.tail
+        this.current = this.head
+        this.list = pool.list.map(node => {
+            return new Node(node)
+        })
+    }
+
+    next() {
+        if (this.list[this.current].next == undefined) {
+            this.current = undefined
+            return
+        }
+
+        this.current = this.list[this.current].next
+    }
+
+    prev() {
+        if (this.list[this.current].prev == undefined) {
+            return
+        }
+
+        this.current = this.list[this.current].prev
+    }
+
+    get() {
+        return this.list[this.current]
+    }
+
+
+    // liner search... can improve, but is good enough for now.
+    search(node: Node) {
+        this.current = this.head
+        while (this.isFound(node)) {
+            this.next()
+        }
+
+        return this.current !== undefined ? this.current : this.list.length
+    }
+
+    isFound(node: Node) {
+        console.log(
+            this.current,
+            this.current !== undefined
+            && node.position.amount.lte(this.get().position.amount),
+            node.position.amount.toString(),
+            this.current !== undefined
+            && this.get().position.amount.toString()
+        )
+
+        return this.current !== undefined
+            && node.position.amount.lte(this.get().position.amount)
+    }
+}
+
 
 
 export const script = {
@@ -703,13 +866,15 @@ export const script = {
 
     // interact with sealed bid round
     submitSealedBid,
-    // submitUnsealedBid,
+    submitUnsealedBid,
     // submitCommit,
 
     // interact with tick bid round
     // register
     // openBid,
     // executeBid,
+
+    getCommitLeaderBoard,
 }
 
 
@@ -721,7 +886,7 @@ export const script = {
 //          - sealed bid commit stake token account
 //  session
 //  - USDC Token mint / Sol token mint / stable coin token mint
-//      - commit bid / commit queue -> one instance or multple instancs per session
+//      - commit bid / commit queue -> one instance or multple instances per session
 //      - tick bid / funding for project
 //  - launch project token mint
 //      - tick bid token allocation

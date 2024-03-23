@@ -1,7 +1,4 @@
-use super::super::{
-    states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session},
-    utils::*,
-};
+use super::super::states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
 
@@ -13,8 +10,7 @@ pub struct SubmitSealedBid<'info> {
     #[account(
         init,
         payer = authority,
-        // space = SealedBidByIndex::LEN,
-        space = 10000,
+        space = SealedBidByIndex::LEN,
         seeds = [
             sealed_bid_round.next_index().as_ref(),
             session.key().as_ref(),

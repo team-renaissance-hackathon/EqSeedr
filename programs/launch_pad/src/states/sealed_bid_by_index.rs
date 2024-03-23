@@ -5,6 +5,8 @@ use anchor_lang::{
 
 use crate::utils::{BOOL, BYTE, DISCRIMINATOR, UNSIGNED_32, UNSIGNED_64};
 
+// this account can be closed after sealed bid phase is completed
+// and unsealed bid has been submitted
 #[account]
 pub struct SealedBidByIndex {
     // VALIDATION STATE
@@ -20,8 +22,14 @@ pub struct SealedBidByIndex {
 }
 
 impl SealedBidByIndex {
-    pub const LEN: usize =
-        DISCRIMINATOR + BYTE + UNSIGNED_32 + PUBKEY_BYTES + PUBKEY_BYTES + UNSIGNED_64 + BOOL;
+    pub const LEN: usize = DISCRIMINATOR
+        + BYTE
+        + UNSIGNED_32
+        + PUBKEY_BYTES
+        + PUBKEY_BYTES
+        + PUBKEY_BYTES
+        + UNSIGNED_64
+        + BOOL;
 
     pub fn initialize(
         &mut self,
@@ -54,7 +62,9 @@ impl SealedBidByIndex {
         hasher.hash(secret.as_ref());
 
         let hash = hasher.result();
-        return Pubkey::new_from_array(hash.to_bytes()) == self.commit_hash;
+        let commit = Pubkey::new_from_array(hash.to_bytes());
+
+        return !(commit == self.commit_hash);
     }
 
     pub fn unsealed_bid(&mut self) {
