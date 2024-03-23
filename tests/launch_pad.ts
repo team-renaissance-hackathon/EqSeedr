@@ -165,7 +165,7 @@ describe("launch_pad", () => {
 
   const program = anchor.workspace.LaunchPad as Program<LaunchPad>;
   const keypair = anchor.web3.Keypair.generate()
-  const bidTokenMint = new Token()
+  const bidTokenMint = new Token() // USDC / SOL Token / STABLE token
   const tokenMint = new Token() // session
 
 
@@ -238,15 +238,24 @@ describe("launch_pad", () => {
       connection: provider.connection,
       authority: keypair,
       program,
-      web3: anchor.web3
+      web3: anchor.web3,
     })
 
   });
 
+  // this should be moved into session for sealed bid?
+  // right now only one instance of this is being created
+  // multiple instances should  be created for each session.
+  // program authority is the authority of account but should that be true?
+  // now that I think about it. this is for the commit queue.
+  // so then maybe only one instances is okay to exist?
+  // and is using a valid bid token mint -> USDC / SOL / Stable coin
   it("Create Commit Token Account", async () => {
 
     await script.createCommitTokenAccount({
       connection: provider.connection,
+      // is just payer and this is the session token mint
+      // is that accurate? or should be the bidTokenMint?
       authority: tokenMint.mintAuthority,
       program,
       web3: anchor.web3,
@@ -260,8 +269,13 @@ describe("launch_pad", () => {
 
     const stakeTokenMint = new Token()
     before(async () => {
+      // sealed bid commit stake account
+      //  - program token mint
+      //  - valid stable coin mint
+      //  - sol token mint != native sol
       {
 
+        // using a valid stable coin token mint in this test case
         await stakeTokenMint.createMint(
           provider.connection,
           keypair, undefined, 2
@@ -277,9 +291,9 @@ describe("launch_pad", () => {
           lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
           signature: tx,
         });
+
       }
 
-      // console.log(stakeTokenMint)
     })
 
     describe("Initialize Session State Contracts", () => {
@@ -345,6 +359,7 @@ describe("launch_pad", () => {
           program,
           web3: anchor.web3,
           tokenMint,
+          // a valid token mint -> program token -> or USDC / stable token mint
           stakeTokenMint,
         })
 
@@ -505,17 +520,25 @@ describe("launch_pad", () => {
             keypair.publicKey,
             10000 * anchor.web3.LAMPORTS_PER_SOL
           ).then(tx => {
-            return provider.connection.getLatestBlockhash().then(latestBlockHash => {
-              return provider.connection.confirmTransaction({
-                blockhash: latestBlockHash.blockhash,
-                lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-                signature: tx,
+
+            return provider.connection.getLatestBlockhash()
+              .then(latestBlockHash => {
+
+                return provider.connection.confirmTransaction({
+                  blockhash: latestBlockHash.blockhash,
+                  lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+                  signature: tx,
+                })
               })
-            })
+
           }).then(() => {
-            return bidTokenMint.mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
+
+            return bidTokenMint
+              .mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
           }).then(() => {
-            return stakeTokenMint.mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
+
+            return stakeTokenMint
+              .mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
           })
 
           list.push(tx)

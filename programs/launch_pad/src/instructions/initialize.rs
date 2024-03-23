@@ -3,6 +3,10 @@ use super::super::states::{
     SessionIndexer,
 };
 use anchor_lang::prelude::*;
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{Mint, Token, TokenAccount},
+};
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
@@ -20,6 +24,29 @@ pub struct Initialize<'info> {
         bump
     )]
     pub new_authority: Account<'info, ProgramAuthority>,
+
+    #[account(
+        init,
+        payer = authority,
+        seeds = [
+            new_authority.key().as_ref(),
+            b"token-mint",
+        ],
+        bump,
+        mint::authority = new_authority,
+        mint::decimals = 9,
+        mint::freeze_authority = new_authority,
+    )]
+    pub new_token_mint: Account<'info, Mint>,
+
+    #[account(
+        init,
+        payer = authority,
+        associated_token::mint = new_token_mint,
+        associated_token::authority = new_authority,
+        associated_token::token_program = token_program,
+    )]
+    pub new_authority_token_account: Account<'info, TokenAccount>,
 
     #[account(
         init,
@@ -68,6 +95,9 @@ pub struct Initialize<'info> {
         bump
     )]
     pub new_marketplace_matchers: Account<'info, MarketplaceMatchers>,
+
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
 

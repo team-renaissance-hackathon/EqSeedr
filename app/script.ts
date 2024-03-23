@@ -27,6 +27,21 @@ const getAccounts = ({
         program.programId
     )
 
+    // can I do this? or does it have to be a keypair
+    const [programTokenMint] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            programAuthority.toBuffer(),
+            Buffer.from("token-mint"),
+        ],
+        program.programId
+    )
+
+    const programTokenAccount = getAssociatedTokenAddressSync(
+        programTokenMint,
+        programAuthority,
+        true
+    )
+
     const [indexerStatus] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from("indexer-status"),
@@ -151,6 +166,8 @@ const getAccounts = ({
 
     return {
         programAuthority,
+        programTokenMint,
+        programTokenAccount,
         indexerStatus,
         enqueueSessionIndexer,
         activeSessionIndexer,
@@ -183,7 +200,8 @@ const init = async ({
     connection,
     authority,
     program,
-    web3
+    web3,
+
 }) => {
 
     const {
@@ -192,7 +210,11 @@ const init = async ({
         enqueueSessionIndexer,
         activeSessionIndexer,
         marketplaceMatchers,
+
+        programTokenMint,
+        programTokenAccount,
     } = getAccounts({ tokenMint: undefined, program: program })
+
 
     const tx = await program.methods
         .initialize()
@@ -203,6 +225,12 @@ const init = async ({
             newActiveSessionIndexer: activeSessionIndexer,
             newEnqueueSessionIndexer: enqueueSessionIndexer,
             newMarketplaceMatchers: marketplaceMatchers,
+
+            newTokenMint: programTokenMint,
+            newAuthorityTokenAccount: programTokenAccount,
+
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: web3.SystemProgram.programId,
         })
         .signers([authority])
@@ -392,6 +420,11 @@ const createSealedBidTokenStakeAccount = async ({
     });
 }
 
+// should come back to this. right now there is only a single top level
+// instances of this account being created...
+// should there be only one instances or multiple instances at the session level?
+// is being created for the bid token... need add validation that this
+// can only be created with a valid bid token which is USDC ATM.
 const createCommitTokenAccount = async ({
     connection,
     authority,
@@ -678,3 +711,20 @@ export const script = {
     // openBid,
     // executeBid,
 }
+
+
+// TOKEN ACCOUNTS
+//  program authority
+//  - program token mint
+//      - staking account
+//          - marketplace matchers
+//          - sealed bid commit stake token account
+//  session
+//  - USDC Token mint / Sol token mint / stable coin token mint
+//      - commit bid / commit queue -> one instance or multple instancs per session
+//      - tick bid / funding for project
+//  - launch project token mint
+//      - tick bid token allocation
+//      - vested token
+//  - sealed bid commit stake -> program token mint / stable coin token mint
+//      
