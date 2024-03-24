@@ -1,0 +1,47 @@
+.wrapper {
+  width: 80%;
+  max-width: 50%;
+  margin-top: 50px;
+  align-items: center;
+  border-radius: 2rem;
+  margin: 50px auto;
+  overflow: hidden;
+  background-color: #212530;
+  box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+  -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+}
+
+.tableHeader {
+  display: flex;
+  justify-content: space-around;
+  background-color: #383c47;
+  color: #f1f1f3;
+  padding: 10px 0;
+  border-bottom: 1px solid #31353e;
+}
+
+.rows {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  gap: 10px;
+  color: white;
+}
+
+.rows > div {
+  flex: 1;
+  text-align: left;
+  padding: 10px;
+}
+
+.addressTitle {
+  font-size: 1.3rem;
+  font-weight: bolder;
+  color: #f2505e;
+}
+
+
+
+
+
