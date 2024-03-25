@@ -45,10 +45,13 @@ pub fn handler(
         ..
     } = ctx.accounts;
 
-    let node = commit_leader_board.create_node(sealed_bid_by_index.index, amount);
+    // SOMETHING WRONG HERE
+    let node = commit_leader_board.create_node(sealed_bid_by_index.bid_index, amount);
 
     commit_leader_board.add(&mut node.clone(), index);
-    sealed_bid_by_index.unsealed_bid();
+    sealed_bid_by_index.unsealed_bid(commit_leader_board.pool.total);
+
+    msg!("SUBMITTED SECRET: {}", Pubkey::new_from_array(secret));
 
     Ok(())
 }
