@@ -650,7 +650,7 @@ const submitSealedBid = async ({
             newSealedBidByIndex: sealedBidAccount,
             sealedBidRound: sealedBidRound,
 
-            bidderTokenAccount: await input.bidderStakeTokenAccount,
+            bidderTokenAccount: input.bidderStakeTokenAccount,
             sessionStakeTokenAccount: sealedBidTokenStakeAccount,
             tokenMint: tokenMint.mint.publicKey,
 
@@ -692,7 +692,7 @@ const submitUnsealedBid = async ({
     })
 
     const data = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
-    console.log(data.pool.list)
+    // console.log(data.pool.list)
 
     const list = data.pool.total && new LinkedList(data)
     const index = data.pool.total && list.search(new Node({ position: { amount: input.amount, index: input.index } }))
@@ -723,8 +723,8 @@ const submitUnsealedBid = async ({
 
     const d = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
 
-    console.log(d)
-    console.log(d.pool.list)
+    // console.log(d)
+    // console.log(d)
 
 }
 
@@ -843,6 +843,68 @@ class LinkedList {
 }
 
 
+const submitCommitBid = async ({
+    connection,
+    authority,
+    program,
+    tokenMint,
+    stakeTokenMint,
+    bidTokenMint,
+    input,
+}) => {
+
+    const {
+        session,
+        sealedBidAccount,
+        programAuthority,
+        sealedBidRound,
+        commitTokenAccount,
+        commitLeaderBoard,
+        commitQueue,
+    } = getAccounts({
+        tokenMint,
+        program,
+        stakeTokenMint,
+        bidTokenMint,
+        sealedBidIndex: input.index,
+    })
+
+    // console.log(commitTokenAccount, bidTokenMint)
+
+    const tx = await program.methods
+        .submitCommitBid()
+        .accounts({
+
+            authority: authority.publicKey,
+
+            sealedBidByIndex: sealedBidAccount,
+            sealedBidRound: sealedBidRound,
+
+            bidderTokenAccount: input.bidTokenAccount,
+            sessionCommitTokenAccount: commitTokenAccount,
+
+
+            commitLeaderBoard: commitLeaderBoard,
+            commitQueue: commitQueue,
+
+            tokenMint: tokenMint.mint.publicKey,
+
+            programAuthority: programAuthority,
+            session: session,
+
+            tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
 
 export const script = {
     init,
@@ -867,7 +929,7 @@ export const script = {
     // interact with sealed bid round
     submitSealedBid,
     submitUnsealedBid,
-    // submitCommit,
+    submitCommitBid,
 
     // interact with tick bid round
     // register
@@ -875,6 +937,8 @@ export const script = {
     // executeBid,
 
     getCommitLeaderBoard,
+
+    getAccounts,
 }
 
 

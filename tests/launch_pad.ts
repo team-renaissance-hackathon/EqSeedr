@@ -26,6 +26,15 @@ const {
   sendAndConfirmTransaction,
 } = anchor.web3
 
+const shuffle = (array: string[]) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
+
 class Token {
   mint: anchor.web3.Keypair;
   mintAuthority: anchor.web3.Keypair;
@@ -507,7 +516,7 @@ describe("launch_pad", () => {
 
     describe("Interact with Sealed Bid System", () => {
 
-      const target = 30
+      const target = 15
       const users = []
 
       before(async () => {
@@ -570,14 +579,14 @@ describe("launch_pad", () => {
             secret,
             commitHash: new anchor.web3.PublicKey(commitHash),
             index: i + 1,
-            bidTokenAccount: getAssociatedTokenAddress(
+            bidTokenAccount: await getAssociatedTokenAddress(
               bidTokenMint.mint.publicKey,
               keypair.publicKey,
               true,
               TOKEN_PROGRAM_ID,
               ASSOCIATED_TOKEN_PROGRAM_ID
             ),
-            bidderStakeTokenAccount: getAssociatedTokenAddress(
+            bidderStakeTokenAccount: await getAssociatedTokenAddress(
               stakeTokenMint.mint.publicKey,
               keypair.publicKey,
               true,
@@ -588,6 +597,8 @@ describe("launch_pad", () => {
         }
 
         await Promise.all(list)
+
+
       })
 
       it("Submit Sealed Bid", async () => {
@@ -613,6 +624,9 @@ describe("launch_pad", () => {
         }
 
         await fn(0)
+
+        // shuffle users. but don't like using it in tests.
+        shuffle(users)
       })
 
       it("Submit Unsealed Bid", async () => {
@@ -635,16 +649,93 @@ describe("launch_pad", () => {
               secretAsPub: new anchor.web3.PublicKey(users[index].secret)
             }, // need an insert index
           })
+
+          index++
+          await fn(index)
+          shuffle(users)
+
+        }
+
+        await fn(0)
+
+        const {
+          commitLeaderBoard,
+        } = script.getAccounts({
+          tokenMint,
+          program,
+          bidTokenMint,
+          stakeTokenMint,
+        })
+
+        const data = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
+        console.log(data, data.pool, data.pool.list)
+      })
+
+      // need to refind the test. needs to iterate through all the 
+      // submit unsealed bids
+      // once there are 10 bids in queue, then filter
+      // out the lowest bids so it doesn't trigger constraint
+      // main thing is not to trigger constaint because that is not
+      // what we are testing for.
+      // so their can be multiple ways to go about that.
+      it("Submit Commit Bid", async () => {
+
+        // await script.submitCommitBid({
+        //   connection: provider.connection,
+        //   authority: users[2].keypair,
+        //   // authority: users[5].keypair,
+
+        //   program: program,
+        //   tokenMint,
+        //   stakeTokenMint,
+        //   bidTokenMint,
+        //   input: users[2],
+        //   // input: users[5],
+
+
+        // })
+
+        const fn = async (index) => {
+
+          if (index == users.length - 5) {
+            return
+          }
+
+          await script.submitCommitBid({
+            connection: provider.connection,
+            authority: users[index].keypair,
+
+            program: program,
+            tokenMint,
+            stakeTokenMint,
+            bidTokenMint,
+            input: users[index],
+          })
+
           index++
           await fn(index)
         }
 
         await fn(0)
 
+        const {
+          commitQueue,
+        } = script.getAccounts({
+          tokenMint,
+          program,
+          bidTokenMint,
+          stakeTokenMint,
+        })
 
 
+
+        const data1 = await program.account.commitQueue.fetch(commitQueue)
+        console.log(users)
+        console.log(data1)
       })
-      // submit commit
+
+      // request unlock staked tokens
+      // request unclaimed commit bid
     })
 
     describe("Interact with Tick Bid System", () => {
