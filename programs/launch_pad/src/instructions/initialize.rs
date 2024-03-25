@@ -103,6 +103,7 @@ pub struct Initialize<'info> {
 
 pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     let Initialize {
+        authority,
         new_authority,
         new_indexer_status,
         new_active_session_indexer,
@@ -125,7 +126,7 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     // so I am hard coding the bumps in, at least for now until
     // I figure out how to resolve this bumps issue.
     // I speculate that it's a bug with anchor of some kind.
-    new_authority.initialize(255);
+    new_authority.initialize(255, authority.key());
 
     new_indexer_status.initialize(253, new_authority.key());
 
