@@ -1,6 +1,8 @@
 use crate::utils::*;
 use anchor_lang::prelude::*;
 
+use super::SealedBidByIndex;
+
 #[account]
 pub struct SealedBidRound {
     pub bump: u8,
@@ -127,17 +129,22 @@ impl CommitLeaderBoard {
         self.pool = CommitLeaderBoardLinkedList::new();
     }
 
-    pub fn create_node(&self, bidder_index: u32, amount: u64) -> CommitNode {
+    pub fn get_node(&self, index: u32) -> Commit {
+        // index -> commit_leader_board_index
+        // should validate that we grab the correct index of commit
+        // position.commit.bid_index == sealed_bid_index.bid_index
+        return self.pool.list[index as usize].clone().unwrap().position;
+    }
+
+    pub fn create_node(&self, bid_index: u32, amount: u64) -> CommitNode {
         CommitNode {
             index: self.pool.total,
             prev: None,
             next: None,
-            position: Commit {
-                bidder_index,
-                amount,
-            },
+            position: Commit { bid_index, amount },
         }
     }
+
     pub fn add(&mut self, node: &mut CommitNode, index: u32) {
         self.pool.add(index, node);
     }
@@ -147,7 +154,18 @@ impl CommitLeaderBoard {
     }
 
     pub fn is_valid_node(&self, pos: u32, amount: u64) -> bool {
-        self.pool.node_is_valid(pos, amount)
+        return self.pool.node_is_valid(pos, amount);
+    }
+
+    pub fn is_valid_indexed_commit_bid(
+        &self,
+        sealed_bid_by_index: &Account<SealedBidByIndex>,
+    ) -> bool {
+        return !(self.pool.list[sealed_bid_by_index.commit_leader_board_index as usize]
+            .clone()
+            .unwrap()
+            .index
+            == sealed_bid_by_index.bid_index);
     }
 }
 
@@ -178,19 +196,19 @@ impl CommitLeaderBoardLinkedList {
         }
     }
 
-    fn next(&self, node: CommitNode) -> Option<CommitNode> {
-        match node.next {
-            Some(pos) => self.list[pos as usize].clone(),
-            None => None,
-        }
-    }
+    // fn next(&self, node: CommitNode) -> Option<CommitNode> {
+    //     match node.next {
+    //         Some(pos) => self.list[pos as usize].clone(),
+    //         None => None,
+    //     }
+    // }
 
-    fn prev(&self, node: CommitNode) -> Option<CommitNode> {
-        match node.prev {
-            Some(pos) => self.list[pos as usize].clone(),
-            None => None,
-        }
-    }
+    // fn prev(&self, node: CommitNode) -> Option<CommitNode> {
+    //     match node.prev {
+    //         Some(pos) => self.list[pos as usize].clone(),
+    //         None => None,
+    //     }
+    // }
 
     fn insert(&mut self, pos: u32, node: &mut CommitNode) {
         if self.total == 0 {
@@ -318,13 +336,16 @@ pub struct CommitQueue {
     pub bump: u8,
     pub session: Pubkey,
     pointer: u8,
-    queue: Vec<Commit>,
+    queue: Vec<CommitBid>,
 }
 
-const MAX_CAPACITY: usize = 10;
 impl CommitQueue {
-    pub const LEN: usize =
-        DISCRIMINATOR + BUMP + PUBKEY_BYTES + BYTE + (UNSIGNED_128 + (Commit::LEN * MAX_CAPACITY));
+    const MAX_CAPACITY: usize = 10;
+    pub const LEN: usize = DISCRIMINATOR
+        + BUMP
+        + PUBKEY_BYTES
+        + BYTE
+        + (UNSIGNED_128 + (CommitBid::LEN * Self::MAX_CAPACITY));
 
     pub fn initialize(&mut self, bump: u8, session: Pubkey) {
         self.bump = bump;
@@ -334,53 +355,100 @@ impl CommitQueue {
         // emit event
     }
 
-    pub fn insert(&mut self, commit: Commit) {
+    // SOMETHING WRONG HERE
+    pub fn insert(&mut self, commit: Commit, sealed_bid_by_index: &Account<SealedBidByIndex>) {
         let mut index = self.queue.len();
 
         while index != 0 && commit.amount > self.queue[index - 1].amount {
             index -= 1;
         }
 
-        if self.queue.len() != 0 && self.queue.len() == MAX_CAPACITY {
-            self.queue.insert(index, commit);
-            self.queue.pop();
-        } else if self.queue.len() != 0 && index < MAX_CAPACITY && index < self.queue.len() {
-            self.queue.insert(index, commit);
-        } else {
-            self.queue.push(commit);
-        }
+        if index == self.queue.len() && index != Self::MAX_CAPACITY {
+            self.queue.push(CommitBid {
+                owner: sealed_bid_by_index.key(),
+                bid_index: sealed_bid_by_index.bid_index,
+                amount: commit.amount,
+                commit_leader_board_index: sealed_bid_by_index.commit_leader_board_index,
+            });
 
         // emit event element was added
+        } else if index != Self::MAX_CAPACITY {
+            self.queue.insert(
+                index,
+                CommitBid {
+                    owner: sealed_bid_by_index.key(),
+                    bid_index: sealed_bid_by_index.bid_index,
+                    amount: commit.amount,
+                    commit_leader_board_index: sealed_bid_by_index.commit_leader_board_index,
+                },
+            );
+
+            // emit event element was added
+        }
     }
 
-    pub fn dequeue(&mut self) -> Commit {
+    pub fn remove(&mut self) -> Option<CommitBid> {
+        if !(self.queue.len() > Self::MAX_CAPACITY) {
+            return None;
+        }
+
+        // log transfer refund
+        return self.queue.pop();
+    }
+
+    pub fn dequeue(&mut self) -> CommitBid {
         let index = self.pointer;
         self.pointer += 1;
         return self.queue[index as usize].clone();
     }
 
-    pub fn is_valid_insert(&self, commit: Commit) -> bool {
-        return self.queue.len() == MAX_CAPACITY
-            && commit.amount > self.queue[self.queue.len() - 1].amount;
+    pub fn is_valid_insert(
+        &self,
+        commit_leader_board: &Account<CommitLeaderBoard>,
+        sealed_bid_by_index: &Account<SealedBidByIndex>,
+    ) -> bool {
+        let commit = commit_leader_board.pool.list
+            [sealed_bid_by_index.commit_leader_board_index as usize]
+            .clone()
+            .unwrap();
+
+        return !(self.queue.len() != Self::MAX_CAPACITY
+            || (self.queue.len() == Self::MAX_CAPACITY
+                && commit.position.amount > self.queue[self.queue.len() - 1].amount));
     }
 
     pub fn is_valid_dequeue(&self) -> bool {
-        return self.pointer < MAX_CAPACITY as u8;
+        return self.pointer < Self::MAX_CAPACITY as u8;
     }
 
     pub fn is_valid_session(&self, session: Pubkey) -> bool {
-        return self.session == session;
+        return !(self.session == session);
     }
+
+    pub fn add(&mut self) {}
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
 pub struct Commit {
-    pub bidder_index: u32,
+    pub bid_index: u32,
     pub amount: u64,
 }
 
 impl Commit {
     const LEN: usize = UNSIGNED_32 + UNSIGNED_64;
+}
+
+// QueuedCommit / CommitBid
+#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+pub struct CommitBid {
+    pub owner: Pubkey,
+    pub bid_index: u32,
+    pub amount: u64,
+    pub commit_leader_board_index: u32,
+}
+
+impl CommitBid {
+    pub const LEN: usize = PUBKEY_BYTES + UNSIGNED_32 + UNSIGNED_64 + UNSIGNED_32;
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]

@@ -10,6 +10,8 @@ pub struct CreateSessionCommitQueue<'info> {
         init,
         payer = authority,
         space = CommitQueue::LEN,
+        // space = 526,
+
         seeds = [
             session.key().as_ref(),
             b"commit-queue",

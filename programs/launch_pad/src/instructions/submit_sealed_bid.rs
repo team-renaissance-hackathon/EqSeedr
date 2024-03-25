@@ -66,10 +66,9 @@ pub fn handler(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()>
 
     new_sealed_bid_by_index.initialize(
         ctx.bumps.new_sealed_bid_by_index,
-        sealed_bid_round.get_index(),
-        session.key(),
+        &sealed_bid_round,
+        &session,
         authority.key(),
-        session.staking_amount,
         commit_hash,
     );
 
