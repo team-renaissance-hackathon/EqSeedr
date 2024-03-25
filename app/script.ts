@@ -697,7 +697,7 @@ const submitUnsealedBid = async ({
     const list = data.pool.total && new LinkedList(data)
     const index = data.pool.total && list.search(new Node({ position: { amount: input.amount, index: input.index } }))
 
-    console.log({ index })
+    // console.log({ index })
     const tx = await program.methods
         .submitUnsealedBid(
             input.amount,
@@ -721,7 +721,7 @@ const submitUnsealedBid = async ({
         signature: tx,
     });
 
-    const d = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
+    // const d = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
 
     // console.log(d)
     // console.log(d)
@@ -828,14 +828,14 @@ class LinkedList {
     }
 
     isFound(node: Node) {
-        console.log(
-            this.current,
-            this.current !== undefined
-            && node.position.amount.lte(this.get().position.amount),
-            node.position.amount.toString(),
-            this.current !== undefined
-            && this.get().position.amount.toString()
-        )
+        // console.log(
+        //     this.current,
+        //     this.current !== undefined
+        //     && node.position.amount.lte(this.get().position.amount),
+        //     node.position.amount.toString(),
+        //     this.current !== undefined
+        //     && this.get().position.amount.toString()
+        // )
 
         return this.current !== undefined
             && node.position.amount.lte(this.get().position.amount)

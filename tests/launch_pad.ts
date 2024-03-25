@@ -647,7 +647,7 @@ describe("launch_pad", () => {
               ...users[index],
               amount: new anchor.BN(users[index].amount),
               secretAsPub: new anchor.web3.PublicKey(users[index].secret)
-            }, // need an insert index
+            },
           })
 
           index++
@@ -658,17 +658,15 @@ describe("launch_pad", () => {
 
         await fn(0)
 
-        const {
-          commitLeaderBoard,
-        } = script.getAccounts({
-          tokenMint,
-          program,
-          bidTokenMint,
-          stakeTokenMint,
-        })
+        // const {
+        //   commitLeaderBoard,
+        // } = script.getAccounts({
+        //   tokenMint,
+        //   program,
+        //   bidTokenMint,
+        //   stakeTokenMint,
+        // })
 
-        const data = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
-        console.log(data, data.pool, data.pool.list)
       })
 
       // need to refind the test. needs to iterate through all the 
@@ -718,20 +716,16 @@ describe("launch_pad", () => {
 
         await fn(0)
 
-        const {
-          commitQueue,
-        } = script.getAccounts({
-          tokenMint,
-          program,
-          bidTokenMint,
-          stakeTokenMint,
-        })
+        // const {
+        //   commitQueue,
+        // } = script.getAccounts({
+        //   tokenMint,
+        //   program,
+        //   bidTokenMint,
+        //   stakeTokenMint,
+        // })
 
 
-
-        const data1 = await program.account.commitQueue.fetch(commitQueue)
-        console.log(users)
-        console.log(data1)
       })
 
       // request unlock staked tokens
