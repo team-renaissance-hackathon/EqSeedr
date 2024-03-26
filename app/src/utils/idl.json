@@ -5,265 +5,207 @@
     {
       "name": "initialize",
       "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newAuthority", "isMut": true, "isSigner": false },
+        { "name": "newTokenMint", "isMut": true, "isSigner": false },
         {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "newAuthority",
+          "name": "newAuthorityTokenAccount",
           "isMut": true,
           "isSigner": false
         },
-        {
-          "name": "newIndexerStatus",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "newActiveSessionIndexer",
-          "isMut": true,
-          "isSigner": false
-        },
+        { "name": "newIndexerStatus", "isMut": true, "isSigner": false },
+        { "name": "newActiveSessionIndexer", "isMut": true, "isSigner": false },
         {
           "name": "newEnqueueSessionIndexer",
           "isMut": true,
           "isSigner": false
         },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "newMarketplaceMatchers", "isMut": true, "isSigner": false },
+        { "name": "associatedTokenProgram", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": []
     },
     {
       "name": "createCommitTokenAccount",
       "accounts": [
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "programAuthority",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "newCommitTokenAccount",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "bidTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "programAuthority", "isMut": false, "isSigner": false },
+        { "name": "newCommitTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "bidTokenMint", "isMut": false, "isSigner": false },
+        { "name": "associatedTokenProgram", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": []
     },
     {
       "name": "createSession",
       "accounts": [
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "indexer",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "newSession",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "tokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "indexer", "isMut": true, "isSigner": false },
+        { "name": "newSession", "isMut": true, "isSigner": false },
+        { "name": "tokenMint", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
-      "args": [
-        {
-          "name": "input",
-          "type": {
-            "defined": "SessionParams"
-          }
-        }
-      ]
+      "args": [{ "name": "input", "type": { "defined": "SessionParams" } }]
     },
     {
       "name": "createSessionSealedBidRound",
       "accounts": [
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "newSealedBidRound",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "session",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newSealedBidRound", "isMut": true, "isSigner": false },
+        { "name": "session", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": []
     },
     {
       "name": "createSessionCommitLeaderBoard",
       "accounts": [
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "newCommitLeaderBoard",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "session",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newCommitLeaderBoard", "isMut": true, "isSigner": false },
+        { "name": "session", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": []
     },
     {
       "name": "createSessionCommitQueue",
       "accounts": [
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "newCommitQueue",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "session",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newCommitQueue", "isMut": true, "isSigner": false },
+        { "name": "session", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": []
     },
     {
       "name": "createSealedBidTokenStakeAccount",
       "accounts": [
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "session",
-          "isMut": false,
-          "isSigner": false
-        },
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "session", "isMut": false, "isSigner": false },
         {
           "name": "newSealedBidTokenStakeAccount",
           "isMut": true,
           "isSigner": false
         },
-        {
-          "name": "sessionTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "stakeTokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "sessionTokenMint", "isMut": false, "isSigner": false },
+        { "name": "stakeTokenMint", "isMut": false, "isSigner": false },
+        { "name": "associatedTokenProgram", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": []
     },
     {
       "name": "createTickBidRound",
       "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newTickBidRound", "isMut": true, "isSigner": false },
+        { "name": "session", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "createSessionTickBidLeaderBoard",
+      "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newTickBidLeaderBoard", "isMut": true, "isSigner": false },
+        { "name": "session", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "createSessionMarketplace",
+      "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newMarketplacePositions", "isMut": true, "isSigner": false },
+        { "name": "session", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "createVestedConfigBySession",
+      "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newVestedConfig", "isMut": true, "isSigner": false },
+        { "name": "session", "isMut": true, "isSigner": false },
+        { "name": "tokenMint", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "submitSealedBid",
+      "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newSealedBidByIndex", "isMut": true, "isSigner": false },
+        { "name": "sealedBidRound", "isMut": true, "isSigner": false },
+        { "name": "bidderTokenAccount", "isMut": true, "isSigner": false },
         {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "newTickBidRound",
+          "name": "sessionStakeTokenAccount",
           "isMut": true,
           "isSigner": false
         },
+        { "name": "tokenMint", "isMut": false, "isSigner": false },
+        { "name": "programAuthority", "isMut": false, "isSigner": false },
+        { "name": "session", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "commitHash", "type": "publicKey" }]
+    },
+    {
+      "name": "submitUnsealedBid",
+      "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "sealedBidByIndex", "isMut": true, "isSigner": false },
+        { "name": "sealedBidRound", "isMut": true, "isSigner": false },
+        { "name": "commitLeaderBoard", "isMut": true, "isSigner": false },
+        { "name": "session", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "amount", "type": "u64" },
+        { "name": "index", "type": "u32" },
+        { "name": "secret", "type": { "array": ["u8", 32] } }
+      ]
+    },
+    {
+      "name": "submitCommitBid",
+      "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "sealedBidByIndex", "isMut": true, "isSigner": false },
+        { "name": "sealedBidRound", "isMut": true, "isSigner": false },
+        { "name": "commitLeaderBoard", "isMut": true, "isSigner": false },
+        { "name": "commitQueue", "isMut": true, "isSigner": false },
+        { "name": "bidderTokenAccount", "isMut": true, "isSigner": false },
         {
-          "name": "session",
+          "name": "sessionCommitTokenAccount",
           "isMut": true,
           "isSigner": false
         },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "tokenMint", "isMut": false, "isSigner": false },
+        { "name": "programAuthority", "isMut": false, "isSigner": false },
+        { "name": "session", "isMut": false, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "sessionRegistration",
+      "accounts": [
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "newVestedAccountByOwner", "isMut": true, "isSigner": false },
+        { "name": "newVestedAccountByIndex", "isMut": true, "isSigner": false },
+        { "name": "vestedConfig", "isMut": true, "isSigner": false },
+        { "name": "session", "isMut": true, "isSigner": false },
+        { "name": "tokenMint", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": []
     }
@@ -274,20 +216,9 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "status",
-            "type": {
-              "defined": "Indexer"
-            }
-          }
+          { "name": "bump", "type": "u8" },
+          { "name": "authority", "type": "publicKey" },
+          { "name": "status", "type": { "defined": "Indexer" } }
         ]
       }
     },
@@ -296,28 +227,10 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "list",
-            "type": {
-              "vec": {
-                "defined": "Indexer"
-              }
-            }
-          },
-          {
-            "name": "stack",
-            "type": {
-              "vec": "u16"
-            }
-          }
+          { "name": "bump", "type": "u8" },
+          { "name": "authority", "type": "publicKey" },
+          { "name": "list", "type": { "vec": { "defined": "Indexer" } } },
+          { "name": "stack", "type": { "vec": "u16" } }
         ]
       }
     },
@@ -326,27 +239,38 @@
       "type": {
         "kind": "struct",
         "fields": [
+          { "name": "bump", "type": "u8" },
+          { "name": "authority", "type": "publicKey" },
+          { "name": "list", "type": { "vec": { "defined": "Indexer" } } },
+          { "name": "stack", "type": { "vec": "u16" } }
+        ]
+      }
+    },
+    {
+      "name": "MarketplaceMatchers",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "bump", "type": "u8" },
+          { "name": "authority", "type": "publicKey" },
           {
-            "name": "bump",
-            "type": "u8"
+            "name": "activePool",
+            "type": { "defined": "MarketplaceMatchersLinkedList" }
           },
+          { "name": "currentMarketMatcher", "type": "u32" },
+          { "name": "pool", "type": { "vec": "u32" } },
+          { "name": "stack", "type": { "vec": "u32" } }
+        ]
+      }
+    },
+    {
+      "name": "MarketplacePositions",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "list",
-            "type": {
-              "vec": {
-                "defined": "Indexer"
-              }
-            }
-          },
-          {
-            "name": "stack",
-            "type": {
-              "vec": "u16"
-            }
+            "name": "pool",
+            "type": { "defined": "MarketplacePositionsLinkedList" }
           }
         ]
       }
@@ -356,18 +280,29 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "isInitialzied",
-            "type": "bool"
-          },
-          {
-            "name": "isSigner",
-            "type": "bool"
-          }
+          { "name": "bump", "type": "u8" },
+          { "name": "authority", "type": "publicKey" },
+          { "name": "isInitialized", "type": "bool" },
+          { "name": "isSigner", "type": "bool" },
+          { "name": "tokenMint", "type": { "vec": "publicKey" } },
+          { "name": "mint", "type": "publicKey" }
+        ]
+      }
+    },
+    {
+      "name": "SealedBidByIndex",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "bump", "type": "u8" },
+          { "name": "bidIndex", "type": "u32" },
+          { "name": "session", "type": "publicKey" },
+          { "name": "owner", "type": "publicKey" },
+          { "name": "commitHash", "type": "publicKey" },
+          { "name": "stakedAmount", "type": "u64" },
+          { "name": "isUnsealed", "type": "bool" },
+          { "name": "isCommit", "type": "bool" },
+          { "name": "commitLeaderBoardIndex", "type": "u32" }
         ]
       }
     },
@@ -376,32 +311,12 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "session",
-            "type": "publicKey"
-          },
-          {
-            "name": "status",
-            "type": {
-              "defined": "Status"
-            }
-          },
-          {
-            "name": "totalSealedBids",
-            "type": "u32"
-          },
-          {
-            "name": "totalUnsealedBids",
-            "type": "u32"
-          }
+          { "name": "bump", "type": "u8" },
+          { "name": "authority", "type": "publicKey" },
+          { "name": "session", "type": "publicKey" },
+          { "name": "status", "type": { "defined": "Status" } },
+          { "name": "totalSealedBids", "type": "u32" },
+          { "name": "totalUnsealedBids", "type": "u32" }
         ]
       }
     },
@@ -410,23 +325,12 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "session",
-            "type": "publicKey"
-          },
-          {
-            "name": "minTarget",
-            "type": "u64"
-          },
+          { "name": "bump", "type": "u8" },
+          { "name": "session", "type": "publicKey" },
+          { "name": "minTarget", "type": "u64" },
           {
             "name": "pool",
-            "type": {
-              "defined": "CommitLeaderBoardLinkedList"
-            }
+            "type": { "defined": "CommitLeaderBoardLinkedList" }
           }
         ]
       }
@@ -436,26 +340,10 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "session",
-            "type": "publicKey"
-          },
-          {
-            "name": "pointer",
-            "type": "u8"
-          },
-          {
-            "name": "queue",
-            "type": {
-              "vec": {
-                "defined": "Commit"
-              }
-            }
-          }
+          { "name": "bump", "type": "u8" },
+          { "name": "session", "type": "publicKey" },
+          { "name": "pointer", "type": "u8" },
+          { "name": "queue", "type": { "vec": { "defined": "CommitBid" } } }
         ]
       }
     },
@@ -464,22 +352,9 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "list",
-            "type": {
-              "vec": {
-                "defined": "Index"
-              }
-            }
-          }
+          { "name": "bump", "type": "u8" },
+          { "name": "authority", "type": "publicKey" },
+          { "name": "list", "type": { "vec": { "defined": "Index" } } }
         ]
       }
     },
@@ -488,106 +363,30 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "bump",
-            "type": "u8"
-          },
-          {
-            "name": "id",
-            "type": {
-              "defined": "Indexer"
-            }
-          },
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "tokenMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "tokenName",
-            "type": "string"
-          },
-          {
-            "name": "stakingMint",
-            "type": "publicKey"
-          },
-          {
-            "name": "stakingAccount",
-            "type": "publicKey"
-          },
-          {
-            "name": "stakingAmount",
-            "type": "u64"
-          },
-          {
-            "name": "tokenAllocation",
-            "type": "u64"
-          },
-          {
-            "name": "totalRounds",
-            "type": "u8"
-          },
-          {
-            "name": "launchStatus",
-            "type": {
-              "defined": "Status"
-            }
-          },
-          {
-            "name": "intializedTimestamp",
-            "type": "i64"
-          },
-          {
-            "name": "initializedSlot",
-            "type": "u64"
-          },
-          {
-            "name": "launchDate",
-            "type": "i64"
-          },
-          {
-            "name": "totalVested",
-            "type": "u32"
-          },
-          {
-            "name": "numberOfBids",
-            "type": "u32"
-          },
-          {
-            "name": "bidSum",
-            "type": "u64"
-          },
-          {
-            "name": "hasSealedBidRound",
-            "type": "bool"
-          },
-          {
-            "name": "hasMarketplacePositions",
-            "type": "bool"
-          },
-          {
-            "name": "hasVestedConfig",
-            "type": "bool"
-          },
-          {
-            "name": "hasTickBidLeaderBoard",
-            "type": "bool"
-          },
-          {
-            "name": "hasCommitLeaderBoard",
-            "type": "bool"
-          },
-          {
-            "name": "hasCommitQueue",
-            "type": "bool"
-          },
-          {
-            "name": "hasMaxRounds",
-            "type": "bool"
-          }
+          { "name": "bump", "type": "u8" },
+          { "name": "id", "type": { "defined": "Indexer" } },
+          { "name": "authority", "type": "publicKey" },
+          { "name": "tokenMint", "type": "publicKey" },
+          { "name": "tokenName", "type": "string" },
+          { "name": "stakingMint", "type": "publicKey" },
+          { "name": "stakingAccount", "type": "publicKey" },
+          { "name": "stakingAmount", "type": "u64" },
+          { "name": "tokenAllocation", "type": "u64" },
+          { "name": "totalRounds", "type": "u8" },
+          { "name": "launchStatus", "type": { "defined": "SessionStatus" } },
+          { "name": "intializedTimestamp", "type": "i64" },
+          { "name": "initializedSlot", "type": "u64" },
+          { "name": "launchDate", "type": "i64" },
+          { "name": "totalVested", "type": "u32" },
+          { "name": "numberOfBids", "type": "u32" },
+          { "name": "bidSum", "type": "u64" },
+          { "name": "hasSealedBidRound", "type": "bool" },
+          { "name": "hasMarketplacePositions", "type": "bool" },
+          { "name": "hasVestedConfig", "type": "bool" },
+          { "name": "hasTickBidLeaderBoard", "type": "bool" },
+          { "name": "hasCommitLeaderBoard", "type": "bool" },
+          { "name": "hasCommitQueue", "type": "bool" },
+          { "name": "hasMaxRounds", "type": "bool" }
         ]
       }
     },
@@ -596,71 +395,83 @@
       "type": {
         "kind": "struct",
         "fields": [
+          { "name": "bump", "type": "u8" },
+          { "name": "index", "type": "u8" },
+          { "name": "tokenAllocation", "type": "u64" },
+          { "name": "ticketAllocation", "type": "u64" },
+          { "name": "status", "type": { "defined": "Status" } },
+          { "name": "total", "type": "u64" },
+          { "name": "bonusPool", "type": "u64" },
+          { "name": "scaler", "type": "u64" },
+          { "name": "avgTickDepth", "type": "u64" },
+          { "name": "bidSum", "type": "u64" },
+          { "name": "totalTickets", "type": "u64" },
+          { "name": "numberOfBids", "type": "u32" },
+          { "name": "lastMarketBid", "type": "u64" },
+          { "name": "lastTickBid", "type": "u64" },
+          { "name": "lastBidTimestamp", "type": "i64" },
+          { "name": "lastBidSlot", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "TickBidLeaderBoard",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "bump", "type": "u8" },
+          { "name": "session", "type": "publicKey" },
           {
-            "name": "bump",
-            "type": "u8"
-          },
+            "name": "pool",
+            "type": { "defined": "TickBidLeaderBoardLinkedList" }
+          }
+        ]
+      }
+    },
+    {
+      "name": "VestedConfigBySession",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "bump", "type": "u8" },
+          { "name": "session", "type": "publicKey" },
+          { "name": "tokenMint", "type": "publicKey" },
+          { "name": "vestedIndex", "type": "u32" },
+          { "name": "statsBySession", "type": { "defined": "Stats" } },
           {
-            "name": "index",
-            "type": "u8"
-          },
+            "name": "rounds",
+            "type": { "array": [{ "defined": "Round" }, 10] }
+          }
+        ]
+      }
+    },
+    {
+      "name": "VestedAccountByIndex",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "bump", "type": "u8" },
+          { "name": "session", "type": "publicKey" },
+          { "name": "vestedConfig", "type": "publicKey" },
+          { "name": "owner", "type": "publicKey" },
+          { "name": "bidIndex", "type": "u32" }
+        ]
+      }
+    },
+    {
+      "name": "VestedAccountByOwner",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "bump", "type": "u8" },
+          { "name": "session", "type": "publicKey" },
+          { "name": "vestedConfig", "type": "publicKey" },
+          { "name": "owner", "type": "publicKey" },
+          { "name": "bidIndex", "type": "u32" },
+          { "name": "sessionStatus", "type": { "defined": "VestedSession" } },
           {
-            "name": "tokenAllocation",
-            "type": "u64"
-          },
-          {
-            "name": "ticketAllocation",
-            "type": "u64"
-          },
-          {
-            "name": "status",
-            "type": {
-              "defined": "Status"
-            }
-          },
-          {
-            "name": "total",
-            "type": "u64"
-          },
-          {
-            "name": "bonusPool",
-            "type": "u64"
-          },
-          {
-            "name": "scaler",
-            "type": "u64"
-          },
-          {
-            "name": "avgTickDepth",
-            "type": "u64"
-          },
-          {
-            "name": "bidSum",
-            "type": "u64"
-          },
-          {
-            "name": "totalTickets",
-            "type": "u64"
-          },
-          {
-            "name": "numberOfBids",
-            "type": "u32"
-          },
-          {
-            "name": "lastMarketBid",
-            "type": "u64"
-          },
-          {
-            "name": "lastTickBid",
-            "type": "u64"
-          },
-          {
-            "name": "lastBidTimestamp",
-            "type": "i64"
-          },
-          {
-            "name": "lastBidSlot",
-            "type": "u64"
+            "name": "roundStatus",
+            "type": { "array": [{ "defined": "VestedRound" }, 10] }
           }
         ]
       }
@@ -672,18 +483,9 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "tokenName",
-            "type": "string"
-          },
-          {
-            "name": "tokenAllocation",
-            "type": "u64"
-          },
-          {
-            "name": "launchDate",
-            "type": "i64"
-          }
+          { "name": "tokenName", "type": "string" },
+          { "name": "tokenAllocation", "type": "u64" },
+          { "name": "launchDate", "type": "i64" }
         ]
       }
     },
@@ -692,39 +494,14 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "total",
-            "type": "u32"
-          },
-          {
-            "name": "head",
-            "type": "u32"
-          },
-          {
-            "name": "tail",
-            "type": "u32"
-          },
+          { "name": "total", "type": "u32" },
+          { "name": "head", "type": "u32" },
+          { "name": "tail", "type": "u32" },
           {
             "name": "list",
-            "type": {
-              "vec": {
-                "option": {
-                  "defined": "Node"
-                }
-              }
-            }
+            "type": { "vec": { "option": { "defined": "Node" } } }
           },
-          {
-            "name": "stack",
-            "type": {
-              "vec": {
-                "array": [
-                  "u8",
-                  3
-                ]
-              }
-            }
-          }
+          { "name": "stack", "type": { "vec": { "array": ["u8", 3] } } }
         ]
       }
     },
@@ -733,24 +510,101 @@
       "type": {
         "kind": "struct",
         "fields": [
+          { "name": "next", "type": { "option": "u32" } },
+          { "name": "prev", "type": { "option": "u32" } },
+          { "name": "position", "type": { "defined": "Indexer" } }
+        ]
+      }
+    },
+    {
+      "name": "MarketplaceMatchersLinkedList",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "total", "type": "u32" },
+          { "name": "head", "type": "u32" },
+          { "name": "tail", "type": "u32" },
           {
-            "name": "next",
-            "type": {
-              "option": "u32"
-            }
+            "name": "list",
+            "type": { "vec": { "defined": "MarketMatcherPositionNode" } }
           },
+          { "name": "stack", "type": { "vec": { "array": ["u8", 3] } } }
+        ]
+      }
+    },
+    {
+      "name": "MarketMatcherPositionNode",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "index", "type": "u32" },
+          { "name": "prev", "type": { "option": "u32" } },
+          { "name": "next", "type": { "option": "u32" } },
+          { "name": "position", "type": { "defined": "MarketMatcherPosition" } }
+        ]
+      }
+    },
+    {
+      "name": "MarketMatcherPosition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "index", "type": "u32" },
+          { "name": "staked", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "MarketMatcher",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "index", "type": { "option": "u32" } },
+          { "name": "authority", "type": "publicKey" },
+          { "name": "isActive", "type": "bool" },
+          { "name": "lockedAmount", "type": "u64" },
+          { "name": "balance", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "MarketplacePositionsLinkedList",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "total", "type": "u32" },
+          { "name": "head", "type": "u32" },
+          { "name": "tail", "type": "u32" },
           {
-            "name": "prev",
-            "type": {
-              "option": "u32"
-            }
+            "name": "list",
+            "type": { "vec": { "defined": "MarketPositionNode" } }
           },
-          {
-            "name": "position",
-            "type": {
-              "defined": "Indexer"
-            }
-          }
+          { "name": "stack", "type": { "vec": { "array": ["u8", 3] } } }
+        ]
+      }
+    },
+    {
+      "name": "MarketPositionNode",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "index", "type": "u32" },
+          { "name": "prev", "type": { "option": "u32" } },
+          { "name": "next", "type": { "option": "u32" } },
+          { "name": "position", "type": { "defined": "MarketPosition" } }
+        ]
+      }
+    },
+    {
+      "name": "MarketPosition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "index", "type": "u32" },
+          { "name": "vestedIndex", "type": "u32" },
+          { "name": "balance", "type": "u64" },
+          { "name": "bidTarget", "type": "u64" },
+          { "name": "feePay", "type": "u64" }
         ]
       }
     },
@@ -759,37 +613,14 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "total",
-            "type": "u32"
-          },
-          {
-            "name": "head",
-            "type": "u32"
-          },
-          {
-            "name": "tail",
-            "type": "u32"
-          },
+          { "name": "total", "type": "u32" },
+          { "name": "head", "type": "u32" },
+          { "name": "tail", "type": "u32" },
           {
             "name": "list",
-            "type": {
-              "vec": {
-                "defined": "CommitNode"
-              }
-            }
+            "type": { "vec": { "option": { "defined": "CommitNode" } } }
           },
-          {
-            "name": "stack",
-            "type": {
-              "vec": {
-                "array": [
-                  "u8",
-                  3
-                ]
-              }
-            }
-          }
+          { "name": "stack", "type": { "vec": { "array": ["u8", 3] } } }
         ]
       }
     },
@@ -798,28 +629,10 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "index",
-            "type": "u32"
-          },
-          {
-            "name": "prev",
-            "type": {
-              "option": "u32"
-            }
-          },
-          {
-            "name": "next",
-            "type": {
-              "option": "u32"
-            }
-          },
-          {
-            "name": "position",
-            "type": {
-              "defined": "Commit"
-            }
-          }
+          { "name": "index", "type": "u32" },
+          { "name": "prev", "type": { "option": "u32" } },
+          { "name": "next", "type": { "option": "u32" } },
+          { "name": "position", "type": { "defined": "Commit" } }
         ]
       }
     },
@@ -828,14 +641,20 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "bidderIndex",
-            "type": "u32"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          }
+          { "name": "bidIndex", "type": "u32" },
+          { "name": "amount", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "CommitBid",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "owner", "type": "publicKey" },
+          { "name": "bidIndex", "type": "u32" },
+          { "name": "amount", "type": "u64" },
+          { "name": "commitLeaderBoardIndex", "type": "u32" }
         ]
       }
     },
@@ -844,16 +663,103 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "indexer",
-            "type": {
-              "defined": "Indexer"
-            }
-          },
-          {
-            "name": "session",
-            "type": "publicKey"
-          }
+          { "name": "indexer", "type": { "defined": "Indexer" } },
+          { "name": "session", "type": "publicKey" }
+        ]
+      }
+    },
+    {
+      "name": "TickBidLeaderBoardLinkedList",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "total", "type": "u32" },
+          { "name": "head", "type": "u32" },
+          { "name": "tail", "type": "u32" },
+          { "name": "list", "type": { "vec": { "defined": "TickBidNode" } } },
+          { "name": "stack", "type": { "vec": { "array": ["u8", 3] } } }
+        ]
+      }
+    },
+    {
+      "name": "TickBidNode",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "index", "type": "u32" },
+          { "name": "prev", "type": { "option": "u32" } },
+          { "name": "next", "type": { "option": "u32" } },
+          { "name": "position", "type": { "defined": "TickBidPosition" } }
+        ]
+      }
+    },
+    {
+      "name": "TickBidPosition",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "vestedIndex", "type": "u32" },
+          { "name": "vestedAmount", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "Stats",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "initDate", "type": "i64" },
+          { "name": "initSlot", "type": "u64" },
+          { "name": "totalVestedAccounts", "type": "u32" },
+          { "name": "claimedVestedAccounts", "type": "u32" },
+          { "name": "tokenAllocation", "type": "u64" },
+          { "name": "tokensClaimed", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "LockedStatus",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "maturityDate", "type": "i64" },
+          { "name": "maturitySlot", "type": "u64" },
+          { "name": "maturityDateDelta", "type": "i64" },
+          { "name": "maturitySlotDelta", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "Round",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "round", "type": "u8" },
+          { "name": "stats", "type": { "defined": "Stats" } },
+          { "name": "status", "type": { "defined": "LockedStatus" } }
+        ]
+      }
+    },
+    {
+      "name": "VestedSession",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "totalTickets", "type": "u64" },
+          { "name": "bidSum", "type": "u64" }
+        ]
+      }
+    },
+    {
+      "name": "VestedRound",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "round", "type": "u8" },
+          { "name": "isVested", "type": "bool" },
+          { "name": "isClaimed", "type": "bool" },
+          { "name": "totalTokens", "type": "u64" },
+          { "name": "bidSum", "type": "u64" }
         ]
       }
     },
@@ -862,61 +768,39 @@
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "yearTimestamp",
-            "type": "i64"
-          },
-          {
-            "name": "year",
-            "type": "u16"
-          },
-          {
-            "name": "week",
-            "type": "u8"
-          },
-          {
-            "name": "nonce",
-            "type": "u8"
-          },
-          {
-            "name": "deltaIndex",
-            "type": "u8"
-          }
+          { "name": "yearTimestamp", "type": "i64" },
+          { "name": "year", "type": "u16" },
+          { "name": "week", "type": "u8" },
+          { "name": "nonce", "type": "u8" },
+          { "name": "deltaIndex", "type": "u8" }
         ]
       }
     },
     {
-      "name": "Status",
+      "name": "SessionStatus",
       "type": {
         "kind": "enum",
-        "variants": []
+        "variants": [
+          { "name": "Enqueue" },
+          { "name": "SealBid" },
+          { "name": "TickBid" },
+          { "name": "Closed" },
+          { "name": "Canceled" }
+        ]
       }
-    }
+    },
+    { "name": "Status", "type": { "kind": "enum", "variants": [] } }
   ],
   "events": [
     {
       "name": "NewSession",
       "fields": [
-        {
-          "name": "message",
-          "type": "string",
-          "index": false
-        },
-        {
-          "name": "launchDate",
-          "type": "i64",
-          "index": false
-        },
-        {
-          "name": "sessionAccount",
-          "type": "publicKey",
-          "index": false
-        },
+        { "name": "message", "type": "string", "index": false },
+        { "name": "launchDate", "type": "i64", "index": false },
+        { "name": "sessionAccount", "type": "publicKey", "index": false },
         {
           "name": "sessionIndexer",
-          "type": {
-            "defined": "Indexer"
-          },
+          "type": { "defined": "Indexer" },
           "index": false
         }
       ]
@@ -967,9 +851,19 @@
       "code": 6008,
       "name": "SessionTickBidRoundMaxRoundSet",
       "msg": "Session Tick Bid Rounds, All 10 Rounds Exist"
+    },
+    {
+      "code": 6009,
+      "name": "SessionTickBidLeaderBoardAlreadyExist",
+      "msg": "Session Tick Bid Leader Board Already Exist"
+    },
+    {
+      "code": 6010,
+      "name": "SessionMarketplacePositionsAlreadyExist",
+      "msg": "Session Marketplace Positions Already Exist"
     }
   ],
-  "metadata": {
-    "address": "9ZgbGPRMANYkub7n798cEFneSXGcpZBA2jrXJdAVTwoS"
+    "metadata": {
+        "address": "E9oqQMVbWbJGUK957fdWzapEUmEmarzwgM2cfd6gCzrb"
+      }
   }
-}

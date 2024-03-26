@@ -1,5 +1,6 @@
 import { AnchorProvider, BN, Program } from "@coral-xyz/anchor";
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 import idl from "./idl.json";
 import {
@@ -55,6 +56,51 @@ export const getNewEnqueueSessionIndexer = async (newAuthorityPk) => {
       PROGRAM_ID)
   );
 };
+
+export const getNewMarketPlaceMatchers = async (newAuthorityPk) => {
+  return (
+    await PublicKey.findProgramAddressSync([
+      Buffer.from("marketplace-matchers"),
+      newAuthorityPk[0].toBuffer()],
+      PROGRAM_ID)
+  );
+};
+
+export const getNewProgramMint = async (newAuthorityPk) => {
+  return (
+    await PublicKey.findProgramAddressSync([
+      newAuthorityPk[0].toBuffer(),
+      Buffer.from("token-mint")],
+      PROGRAM_ID)
+  );
+};
+
+export const getNewAuthorityTokenAccount = async (owner, programMint) => {
+  const ATA = getAssociatedTokenAddressSync(programMint[0], owner);
+  return ATA
+}
+
+// export const getNewAuthorityTokenAccount = async (owner, programMint) => {
+//   return (
+//     await PublicKey.findProgramAddressSync([
+//       owner.toBuffer(),
+//       PROGRAM_ID.toBuffer(),
+//       programMint[0].toBuffer()],
+//       ASSOCIATED_TOKEN_PROGRAM_ID)
+//   );
+// };
+
+// Get New Session
+export const getNewSession = async (token_mint) => {
+  return (
+    await PublicKey.findProgramAddressSync([
+      token_mint.toBuffer(),
+      Buffer.from("session")],
+      PROGRAM_ID)
+  );
+};
+
+
 
 
 
