@@ -245,9 +245,14 @@ pub struct TickBidLeaderBoard {
 impl TickBidLeaderBoard {
     pub const LEN: usize = BYTE + PUBKEY_BYTES + TickBidLeaderBoardLinkedList::LEN;
 
-    pub fn initialize(&mut self) {
+    pub fn initialize(&mut self, bump: u8, session: Pubkey) {
+        self.bump = bump;
+        self.session = session;
+
         self.pool = TickBidLeaderBoardLinkedList::new();
     }
+
+    pub fn add(&mut self) {}
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
@@ -263,8 +268,8 @@ impl TickBidLeaderBoardLinkedList {
     pub const LEN: usize = UNSIGNED_32
         + UNSIGNED_32
         + UNSIGNED_32
-        + (UNSIGNED_64 + TickBidNode::LEN)
-        + (UNSIGNED_64 + (UNSIGNED_8 * 3));
+        + (UNSIGNED_128 + TickBidNode::LEN)
+        + (UNSIGNED_128 + (UNSIGNED_8 * 3));
 
     pub fn new() -> Self {
         TickBidLeaderBoardLinkedList {

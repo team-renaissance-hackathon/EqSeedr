@@ -305,10 +305,94 @@ describe("launch_pad", () => {
 
     })
 
+    const target = 15
+    const users = []
+
+    before(async () => {
+
+      const list = []
+
+      function random(min, max) { // min and max included 
+        return Math.floor(Math.random() * (max - min + 1) + min)
+      }
+
+      for (let i = 0; i < target; i++) {
+
+        const keypair = anchor.web3.Keypair.generate()
+
+        const tx = await provider.connection.requestAirdrop(
+          keypair.publicKey,
+          10000 * anchor.web3.LAMPORTS_PER_SOL
+        ).then(tx => {
+
+          return provider.connection.getLatestBlockhash()
+            .then(latestBlockHash => {
+
+              return provider.connection.confirmTransaction({
+                blockhash: latestBlockHash.blockhash,
+                lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+                signature: tx,
+              })
+            })
+
+        }).then(() => {
+
+          return bidTokenMint
+            .mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
+        }).then(() => {
+
+          return stakeTokenMint
+            .mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
+        })
+
+        list.push(tx)
+
+
+        const passPhrase = "secret-" + i.toString()
+        const secret = createHash('sha256')
+          // will use session + passPhrase
+          .update(keypair.publicKey.toBuffer())
+          .update(passPhrase)
+          .digest()
+
+        const amount = new anchor.BN(100 + (random(i, i + target) * 100))
+        const commitHash = createHash('sha256')
+          .update(Buffer.from(amount.toString()))
+          .update(keypair.publicKey.toBuffer())
+          .update(secret)
+          .digest()
+
+        users.push({
+          keypair,
+          amount,
+          secret,
+          commitHash: new anchor.web3.PublicKey(commitHash),
+          index: i + 1,
+          bidTokenAccount: await getAssociatedTokenAddress(
+            bidTokenMint.mint.publicKey,
+            keypair.publicKey,
+            true,
+            TOKEN_PROGRAM_ID,
+            ASSOCIATED_TOKEN_PROGRAM_ID
+          ),
+          bidderStakeTokenAccount: await getAssociatedTokenAddress(
+            stakeTokenMint.mint.publicKey,
+            keypair.publicKey,
+            true,
+            TOKEN_PROGRAM_ID,
+            ASSOCIATED_TOKEN_PROGRAM_ID
+          )
+        })
+      }
+
+      await Promise.all(list)
+    })
+
     describe("Initialize Session State Contracts", () => {
 
-      it("Create New Session", async () => {
 
+
+      it("Create New Session", async () => {
         await script.createSession({
           connection: provider.connection,
           authority: tokenMint.mintAuthority,
@@ -321,6 +405,7 @@ describe("launch_pad", () => {
             tokenAllocation: new anchor.BN(1_000_000_000 * 1_000_000),
           }
         })
+
 
       })
 
@@ -516,90 +601,6 @@ describe("launch_pad", () => {
 
     describe("Interact with Sealed Bid System", () => {
 
-      const target = 15
-      const users = []
-
-      before(async () => {
-
-        const list = []
-
-        function random(min, max) { // min and max included 
-          return Math.floor(Math.random() * (max - min + 1) + min)
-        }
-
-        for (let i = 0; i < target; i++) {
-
-          const keypair = anchor.web3.Keypair.generate()
-
-          const tx = await provider.connection.requestAirdrop(
-            keypair.publicKey,
-            10000 * anchor.web3.LAMPORTS_PER_SOL
-          ).then(tx => {
-
-            return provider.connection.getLatestBlockhash()
-              .then(latestBlockHash => {
-
-                return provider.connection.confirmTransaction({
-                  blockhash: latestBlockHash.blockhash,
-                  lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-                  signature: tx,
-                })
-              })
-
-          }).then(() => {
-
-            return bidTokenMint
-              .mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
-          }).then(() => {
-
-            return stakeTokenMint
-              .mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
-          })
-
-          list.push(tx)
-
-
-          const passPhrase = "secret-" + i.toString()
-          const secret = createHash('sha256')
-            // will use session + passPhrase
-            .update(keypair.publicKey.toBuffer())
-            .update(passPhrase)
-            .digest()
-
-          const amount = new anchor.BN(100 + (random(i, i + target) * 100))
-          const commitHash = createHash('sha256')
-            .update(Buffer.from(amount.toString()))
-            .update(keypair.publicKey.toBuffer())
-            .update(secret)
-            .digest()
-
-          users.push({
-            keypair,
-            amount,
-            secret,
-            commitHash: new anchor.web3.PublicKey(commitHash),
-            index: i + 1,
-            bidTokenAccount: await getAssociatedTokenAddress(
-              bidTokenMint.mint.publicKey,
-              keypair.publicKey,
-              true,
-              TOKEN_PROGRAM_ID,
-              ASSOCIATED_TOKEN_PROGRAM_ID
-            ),
-            bidderStakeTokenAccount: await getAssociatedTokenAddress(
-              stakeTokenMint.mint.publicKey,
-              keypair.publicKey,
-              true,
-              TOKEN_PROGRAM_ID,
-              ASSOCIATED_TOKEN_PROGRAM_ID
-            )
-          })
-        }
-
-        await Promise.all(list)
-
-
-      })
 
       it("Submit Sealed Bid", async () => {
 
@@ -736,6 +737,28 @@ describe("launch_pad", () => {
 
       // before
       // create 15 more users to test the tick bid system
+
+      // registerVestedAccount -> pre ix
+      it("Session Registration", async () => {
+        try {
+          await script.sessionRegistration({
+            connection: provider.connection,
+            authority: users[0].keypair,
+            program,
+            tokenMint,
+            bidTokenMint,
+            input: {
+              vestedIndex: 1,
+              vestedOwner: users[0].keypair.publicKey
+            }
+          })
+        } catch (err) {
+          console.log(err)
+        }
+
+      })
+      // openBid
+      // executeBid
 
       // registerVestedAccount
       // process commit for round, opens the round
