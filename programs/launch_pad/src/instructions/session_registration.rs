@@ -64,33 +64,33 @@ pub struct SessionRegistration<'info> {
 pub fn handler(ctx: Context<SessionRegistration>) -> Result<()> {
     let SessionRegistration {
         authority,
-        // vested_config,
-        // new_vested_account_by_owner,
-        // new_vested_account_by_index,
-        // // tick_bid_leader_board,
-        // session,
+        vested_config,
+        new_vested_account_by_owner,
+        new_vested_account_by_index,
+        // tick_bid_leader_board,
+        session,
         ..
     } = ctx.accounts;
 
     // vested_config.update_index();
 
-    // new_vested_account_by_index.initialize(
-    //     ctx.bumps.new_vested_account_by_index,
-    //     vested_config.vested_index,
-    //     authority.key(),
-    //     session.key(),
-    //     vested_config.key(),
-    //     // tick_bid_leader_board,
-    // );
+    new_vested_account_by_index.initialize(
+        ctx.bumps.new_vested_account_by_index,
+        vested_config.vested_index,
+        authority.key(),
+        session.key(),
+        vested_config.key(),
+        // tick_bid_leader_board,
+    );
 
-    // new_vested_account_by_owner.initialize(
-    //     ctx.bumps.new_vested_account_by_owner,
-    //     vested_config.vested_index,
-    //     authority.key(),
-    //     session.key(),
-    //     vested_config.key(),
-    //     // tick_bid_leader_board,
-    // );
+    new_vested_account_by_owner.initialize(
+        ctx.bumps.new_vested_account_by_owner,
+        vested_config.vested_index,
+        authority.key(),
+        session.key(),
+        vested_config.key(),
+        // tick_bid_leader_board,
+    );
 
     // I have thoughts on this...
     // need to revisit this
