@@ -47,7 +47,6 @@ export default function Home() {
               <div className={style.wrapper}>
                 <Header />
                 <AccountInfoCard />
-                <Table /> 
               </div>
               
             </AppProvider>

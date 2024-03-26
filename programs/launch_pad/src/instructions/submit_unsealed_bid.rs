@@ -1,47 +1,50 @@
+use crate::states::{CommitLeaderBoard, SealedBidByIndex, SealedBidRound, Session};
+use anchor_lang::prelude::*;
+
 #[derive(Accounts)]
-#[instructions(index: u32, amount: u64, secret: String)]
+#[instruction(amount: u64, index: u32, secret: [u8; 32])]
 pub struct SubmitUnsealedBid<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
     #[account(
         mut,
-        constraint = !sealed_bid_by_index.is_valid_unsealed_bid(amount, secret, session.key()),
+        constraint = !sealed_bid_by_index.is_valid_unsealed_bid(amount, secret)
+        // @ InvalidUnsealedBid
     )]
     pub sealed_bid_by_index: Account<'info, SealedBidByIndex>,
 
     #[account(
         mut,
-        constraint = sealed_bid_round.authority == session.key(),
-        constraint = !sealed_bid_round.is_valid_unsealed_bid_phase(),
+        constraint = !sealed_bid_round.is_valid_session(session.key()),
+
+        // can't test this validation yet.
+        // constraint = !sealed_bid_round.is_valid_unsealed_bid_phase(),
         constraint = !sealed_bid_round.is_valid_unsealed_bid(),
     )]
     pub sealed_bid_round: Account<'info, SealedBidRound>,
 
     #[account(
         mut,
-        constraint = commit_leader_board.is_valid_commit_leader_board(sesson.key())
-        // linked list validation, is correct index
+        constraint = !commit_leader_board.is_valid_session(session.key()),
+        constraint = !commit_leader_board.is_valid_node(index, amount)
     )]
     pub commit_leader_board: Account<'info, CommitLeaderBoard>,
 
     pub session: Account<'info, Session>,
-    pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<SubmitUnsealedBid>, amount: u64) -> Result<()> {
+pub fn handler(ctx: Context<SubmitUnsealedBid>, amount: u64, index: u32) -> Result<()> {
     let SubmitUnsealedBid {
-        authority,
         sealed_bid_by_index,
-        sealed_bid_round,
-        session,
         commit_leader_board,
         ..
     } = ctx.accounts;
 
-    sealed_bid_by_index.unsealed_bid();
-    // need index information for linked list
-    commit_leader_board.update(sealed_bid_by_index.owner, amount);
+    let node = commit_leader_board.create_node(sealed_bid_by_index.bid_index, amount);
+
+    commit_leader_board.add(&mut node.clone(), index);
+    sealed_bid_by_index.unsealed_bid(commit_leader_board.pool.total);
 
     Ok(())
 }

@@ -47,6 +47,45 @@ pub mod launch_pad {
     pub fn create_tick_bid_round(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {
         instructions::create_tick_bid_round::handler(ctx)
     }
+
+    pub fn create_session_tick_bid_leader_board(
+        ctx: Context<CreateSessionTickBidLeaderBoard>,
+    ) -> Result<()> {
+        instructions::create_session_tick_bid_leader_board::handler(ctx)
+    }
+
+    pub fn create_session_marketplace(
+        ctx: Context<CreateSessionMarketplacePositions>,
+    ) -> Result<()> {
+        instructions::create_session_marketplace::handler(ctx)
+    }
+
+    pub fn create_vested_config_by_session(
+        ctx: Context<CreateVestedConfigBySession>,
+    ) -> Result<()> {
+        instructions::create_vested_config_by_session::handler(ctx)
+    }
+
+    pub fn submit_sealed_bid(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()> {
+        instructions::submit_sealed_bid::handler(ctx, commit_hash)
+    }
+
+    pub fn submit_unsealed_bid(
+        ctx: Context<SubmitUnsealedBid>,
+        amount: u64,
+        index: u32,
+        _secret: [u8; 32],
+    ) -> Result<()> {
+        instructions::submit_unsealed_bid::handler(ctx, amount, index)
+    }
+
+    pub fn submit_commit_bid(ctx: Context<CommitBidBySession>) -> Result<()> {
+        instructions::submit_commit_bid::handler(ctx)
+    }
+
+    pub fn session_registration(ctx: Context<SessionRegistration>) -> Result<()> {
+        instructions::session_registration::handler(ctx)
+    }
 }
 
 // TICK-BID

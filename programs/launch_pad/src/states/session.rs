@@ -25,7 +25,7 @@ pub struct Session {
     // session
     pub token_allocation: u64,
     pub total_rounds: u8, // incremental to 10, starts at 1
-    launch_status: Status,
+    pub launch_status: SessionStatus,
 
     // dates
     pub intialized_timestamp: i64,
@@ -79,6 +79,7 @@ impl Session {
 
     pub fn initialize(
         &mut self,
+        bump: u8,
         authority: Pubkey,
         indexer: Indexer,
         token_mint: Pubkey,
@@ -87,15 +88,22 @@ impl Session {
     ) -> Result<()> {
         let clock = Clock::get()?;
 
+        self.bump = bump;
         self.id = indexer.clone();
-        self.token_mint = token_mint.key();
         self.authority = authority;
+
+        self.token_mint = token_mint.key();
+        self.token_name = input.token_name;
+
+        // not being set atm.
+        // self.staking_mint;
+        // self.staking_account;
+        // self.staking_amount = 0;
 
         self.intialized_timestamp = clock.unix_timestamp;
         self.initialized_slot = clock.slot;
 
         self.launch_date = input.launch_date;
-        self.token_name = input.token_name;
         self.token_allocation = input.token_allocation;
 
         self.total_rounds = 0;
@@ -110,6 +118,11 @@ impl Session {
         self.has_commit_leader_board = false;
         self.has_commit_queue = false;
         self.has_max_rounds = false;
+
+        self.launch_status = SessionStatus::Enqueue;
+
+        // need implement
+        // self.staking_account = staking_account
 
         msg!("TESTING");
 
@@ -136,8 +149,20 @@ impl Session {
         self.has_commit_queue = true;
     }
 
+    pub fn add_tick_bid_leader_board(&mut self) {
+        self.has_tick_bid_leader_board = true;
+    }
+
+    pub fn add_marketplace_positions(&mut self) {
+        self.has_marketplace_positions = true;
+    }
+
+    pub fn add_vested_config_by_session(&mut self) {
+        self.has_vested_config = true;
+    }
+
     pub fn allocate_tokens(&self) -> u64 {
-        return self.token_allocation / MAX_ROUNDS as u64;
+        return (self.token_allocation - self.token_allocation / PERCENT_10) / MAX_ROUNDS as u64;
     }
 
     // CloseRoundStatus
@@ -171,8 +196,12 @@ impl Session {
     }
 }
 
+// session should be called instance?
+// launchInstance
+// launchStatus
+// launchInstanceStatus
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
-enum Status {
+pub enum SessionStatus {
     Enqueue,
     SealBid,
     TickBid,

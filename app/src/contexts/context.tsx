@@ -33,6 +33,12 @@ export const AppProvider = ({ children }) => {
   // State variables
   const [walletAddress, setwalletAddress] = useState("");
   const [walletBalance, setWalletBalance] = useState(0);
+  const [indexerStatus, setIndexerStatus] = useState('');
+  const [newAuthority, setNewAuthority] = useState('');
+  const [activeSessionIndexer, setActiveSessionIndexer] = useState('');
+  const [enqueueSessionIndexer, setEnqueueSessionIndexer] = useState('');
+  const [tokenMint, setTokenMint] = useState("");
+  
 
   /* For Initializing the Program */
   const [indexerStatus, setIndexerStatus] = useState('');
@@ -75,19 +81,27 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  /* Call Solana Program Instructions */
+  /* Calling of Smart Contract Instructions */
 
+  // Initialize
   const initLaunchPad = async () => {
     try{
+      // Derive the New Authority address
       const newAuthorityAddress = await getNewAuthority();
-      console.log("New Authority: ", newAuthorityAddress[0].toBase58());
+      setNewAuthority(newAuthorityAddress[0].toBase58());
+      console.log("New Authority: ", newAuthority);
 
+      // Derive the New Indexer Status address
       const newIndexerStatusAddress = await getNewIndexerStatus(newAuthorityAddress);
-      console.log("New Indexer Status: ", newIndexerStatusAddress[0].toBase58());
+      setIndexerStatus(newIndexerStatusAddress[0].toBase58())
+      console.log("New Indexer Status: ", indexerStatus);
 
+      // Derive the New Active Session Indexer address
       const newActiveSessionIndexerAddress = await getNewActiveSessionIndexer(newAuthorityAddress);
-      console.log("New Active Session Indexer Status: ", newActiveSessionIndexerAddress[0].toBase58());
+      setActiveSessionIndexer(newActiveSessionIndexerAddress[0].toBase58());
+      console.log("New Active Session Indexer Status: ", activeSessionIndexer);
       
+      // Derive the New Enqueue Session Indexer address
       const newEnqueueSessionIndexerAddress = await getNewEnqueueSessionIndexer(newAuthorityAddress);
       setEnqueueSessionIndexer(newEnqueueSessionIndexerAddress[0].toBase58());
       console.log("New Enqueue Session Indexer Status: ", enqueueSessionIndexer);
@@ -195,6 +209,7 @@ export const AppProvider = ({ children }) => {
         walletBalance: walletBalance,
         walletAddress : walletAddress,
         initLaunchPad,
+        createSession,
       }}
     >
       {children}

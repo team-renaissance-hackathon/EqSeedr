@@ -1,3 +1,9 @@
+use crate::{
+    states::{Session, TickBidLeaderBoard},
+    // utils::ProgramError,
+};
+use anchor_lang::prelude::*;
+
 #[derive(Accounts)]
 pub struct CreateSessionTickBidLeaderBoard<'info> {
     #[account(mut)]
@@ -17,8 +23,9 @@ pub struct CreateSessionTickBidLeaderBoard<'info> {
 
     #[account(
         mut,
-        has_one = authority
-        constraint = !session.has_tick_bid_leader_board @ ProgramError::SessionTickBidLeaderBoardAlreadyExist
+        has_one = authority,
+        constraint = !session.has_tick_bid_leader_board 
+        // @ ProgramError::SessionTickBidLeaderBoardAlreadyExist
     )]
     pub session: Account<'info, Session>,
 
@@ -32,7 +39,8 @@ pub fn handler(ctx: Context<CreateSessionTickBidLeaderBoard>) -> Result<()> {
         ..
     } = ctx.accounts;
 
-    // need set state logic
+    new_tick_bid_leader_board.initialize(ctx.bumps.new_tick_bid_leader_board, session.key());
+    session.add_tick_bid_leader_board();
 
     Ok(())
 }
