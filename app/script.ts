@@ -20,6 +20,8 @@ const getAccounts = ({
     roundIndex,
     program,
     sealedBidIndex,
+    vestedIndex,
+    vestedOwner
 }: any) => {
 
     const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -139,6 +141,24 @@ const getAccounts = ({
         program.programId
     ) : [undefined]
 
+    const [vestedAccountByIndex] = vestedIndex != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            Buffer.from(vestedIndex.toString()),
+            session.toBuffer(),
+            Buffer.from("vested-account-by-index"),
+        ],
+        program.programId
+    ) : [undefined]
+
+    const [vestedAccountByOwner] = vestedOwner != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            vestedOwner.toBuffer(),
+            session.toBuffer(),
+            Buffer.from("vested-account-by-owner"),
+        ],
+        program.programId
+    ) : [undefined]
+
 
     const sealedBidTokenStakeAccount = stakeTokenMint != undefined ? getAssociatedTokenAddressSync(
         stakeTokenMint.mint.publicKey,
@@ -183,6 +203,8 @@ const getAccounts = ({
         marketplaceMatchers,
         vestedConfigBySession,
         sealedBidAccount,
+        vestedAccountByIndex,
+        vestedAccountByOwner,
     }
 }
 
@@ -259,10 +281,12 @@ const createSession = async ({
     } = getAccounts({ tokenMint, program: program })
 
     const tx = await program.methods
-        .createSession({
-            tokenName: "",
-            ...input
-        })
+        // .createSession({
+        //     tokenName: "",
+        //     ...input
+        // })
+        .createSession(input)
+        // .createSession()
         .accounts({
             authority: authority.publicKey,
             indexer: indexerStatus,
@@ -280,7 +304,16 @@ const createSession = async ({
         signature: tx,
     });
 
-    // return the session?
+    try {
+        // return the session?
+        const data = await program.account.session.fetch(session);
+        // const data = await web3.connection.getAccountInfo(session)
+        console.log(data)
+    } catch (err) {
+        console.log(err)
+    }
+
+
 }
 
 const createSessionSealedBidRound = async ({
@@ -906,6 +939,61 @@ const submitCommitBid = async ({
 }
 
 
+const sessionRegistration = async ({
+    connection,
+    authority,
+    program,
+    tokenMint,
+    bidTokenMint,
+    input,
+}) => {
+
+    const {
+        session,
+        vestedConfigBySession,
+        vestedAccountByIndex,
+        vestedAccountByOwner,
+        // commitLeaderBoard,
+    } = getAccounts({
+        tokenMint,
+        program,
+        bidTokenMint,
+        vestedIndex: input.vestedIndex,
+        vestedOwner: input.vestedOwner,
+    })
+
+    console.log(vestedAccountByIndex, vestedAccountByOwner, vestedConfigBySession)
+
+    const tx = await program.methods
+        .sessionRegistration()
+        .accounts({
+
+            authority: authority.publicKey,
+
+            newVestedAccountByIndex: vestedAccountByIndex,
+            newVestedAccountByOwner: vestedAccountByOwner,
+
+            // commitLeaderBoard: commitLeaderBoard,
+
+            vestedConfig: vestedConfigBySession,
+
+            session: session,
+
+            tokenMint: tokenMint.mint.publicKey,
+            tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([authority])
+        .rpc({ skipPreflight: false });
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
+
 export const script = {
     init,
     createCommitTokenAccount,
@@ -933,6 +1021,7 @@ export const script = {
 
     // interact with tick bid round
     // register
+    sessionRegistration,
     // openBid,
     // executeBid,
 

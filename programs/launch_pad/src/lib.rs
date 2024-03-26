@@ -75,14 +75,17 @@ pub mod launch_pad {
         amount: u64,
         // I don't think I need the index, I can get it from the SealedBidByIndex,
         index: u32,
-        secret: [u8; 32],
+        _secret: [u8; 32],
     ) -> Result<()> {
-        instructions::submit_unsealed_bid::handler(ctx, amount, index, secret)
-        // instructions::submit_unsealed_bid::handler(ctx, amount, index)
+        instructions::submit_unsealed_bid::handler(ctx, amount, index)
     }
 
     pub fn submit_commit_bid(ctx: Context<CommitBidBySession>) -> Result<()> {
         instructions::submit_commit_bid::handler(ctx)
+    }
+
+    pub fn session_registration(ctx: Context<SessionRegistration>) -> Result<()> {
+        instructions::session_registration::handler(ctx)
     }
 }
 
