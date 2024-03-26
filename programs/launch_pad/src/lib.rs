@@ -73,7 +73,6 @@ pub mod launch_pad {
     pub fn submit_unsealed_bid(
         ctx: Context<SubmitUnsealedBid>,
         amount: u64,
-        // I don't think I need the index, I can get it from the SealedBidByIndex,
         index: u32,
         _secret: [u8; 32],
     ) -> Result<()> {
