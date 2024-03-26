@@ -44,7 +44,7 @@ pub fn handler(ctx: Context<CreateVestedConfigBySession>) -> Result<()> {
         ..
     } = ctx.accounts;
 
-    new_vested_config.initialize(ctx.bumps.new_vested_config, &session.clone(), token_mint.key());
+    new_vested_config.initialize(ctx.bumps.new_vested_config, &session, token_mint.key());
     session.add_vested_config_by_session();
 
     Ok(())
