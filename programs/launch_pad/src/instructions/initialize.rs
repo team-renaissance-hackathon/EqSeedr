@@ -23,13 +23,13 @@ pub struct Initialize<'info> {
         ],
         bump
     )]
-    pub new_authority: Account<'info, ProgramAuthority>,
+    pub new_authority: Box<Account<'info, ProgramAuthority>>,
 
     #[account(
         init,
         payer = authority,
         seeds = [
-            new_authority.key().as_ref(),
+            new_authority.key().clone().as_ref(),
             b"token-mint",
         ],
         bump,
@@ -37,7 +37,7 @@ pub struct Initialize<'info> {
         mint::decimals = 9,
         mint::freeze_authority = new_authority,
     )]
-    pub new_token_mint: Account<'info, Mint>,
+    pub new_token_mint: Box<Account<'info, Mint>>,
 
     #[account(
         init,
@@ -46,7 +46,7 @@ pub struct Initialize<'info> {
         associated_token::authority = new_authority,
         associated_token::token_program = token_program,
     )]
-    pub new_authority_token_account: Account<'info, TokenAccount>,
+    pub new_authority_token_account: Box<Account<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -54,11 +54,11 @@ pub struct Initialize<'info> {
         space = IndexerStatus::LEN,
         seeds = [
             b"indexer-status",
-            new_authority.key().as_ref(),
+            new_authority.key().clone().as_ref(),
         ],
         bump
     )]
-    pub new_indexer_status: Account<'info, IndexerStatus>,
+    pub new_indexer_status: Box<Account<'info, IndexerStatus>>,
 
     #[account(
         init,
@@ -66,11 +66,11 @@ pub struct Initialize<'info> {
         space = SessionIndexer::LEN,
         seeds = [
             b"active-session-indexer",
-            new_authority.key().as_ref(),
+            new_authority.key().clone().as_ref(),
         ],
         bump
     )]
-    pub new_active_session_indexer: Account<'info, ActiveSessionIndex>,
+    pub new_active_session_indexer: Box<Account<'info, ActiveSessionIndex>>,
 
     #[account(
         init,
@@ -78,11 +78,11 @@ pub struct Initialize<'info> {
         space = SessionIndexer::LEN,
         seeds = [
             b"enqueue-session-indexer",
-            new_authority.key().as_ref(),
+            new_authority.key().clone().as_ref(),
         ],
         bump
     )]
-    pub new_enqueue_session_indexer: Account<'info, EnqueueSessionIndex>,
+    pub new_enqueue_session_indexer: Box<Account<'info, EnqueueSessionIndex>>,
 
     #[account(
         init,
@@ -90,11 +90,11 @@ pub struct Initialize<'info> {
         space = MarketplaceMatchers::LEN,
         seeds = [
             b"marketplace-matchers",
-            new_authority.key().as_ref(),
+            new_authority.key().clone().as_ref(),
         ],
         bump
     )]
-    pub new_marketplace_matchers: Account<'info, MarketplaceMatchers>,
+    pub new_marketplace_matchers: Box<Account<'info, MarketplaceMatchers>>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
@@ -112,29 +112,17 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
         ..
     } = ctx.accounts;
 
-    msg!(
-        " BUMPS: {}, {}, {}, {}, {}",
-        ctx.bumps.new_authority,
-        ctx.bumps.new_indexer_status,
-        ctx.bumps.new_active_session_indexer,
-        ctx.bumps.new_enqueue_session_indexer,
-        ctx.bumps.new_marketplace_matchers
-    );
+    new_authority.initialize(ctx.bumps.new_authority, authority.key());
 
-    // new_authority.authority = authority.key();???
-    // for some reason, bumps is broken when I initialize all these state contracts
-    // so I am hard coding the bumps in, at least for now until
-    // I figure out how to resolve this bumps issue.
-    // I speculate that it's a bug with anchor of some kind.
-    new_authority.initialize(255, authority.key());
+    new_indexer_status.initialize(ctx.bumps.new_indexer_status, new_authority.key());
 
-    new_indexer_status.initialize(253, new_authority.key());
+    new_active_session_indexer
+        .initialize(ctx.bumps.new_active_session_indexer, new_authority.key());
 
-    new_active_session_indexer.initialize(255, new_authority.key());
+    new_enqueue_session_indexer
+        .initialize(ctx.bumps.new_enqueue_session_indexer, new_authority.key());
 
-    new_enqueue_session_indexer.initialize(255, new_authority.key());
-
-    new_marketplace_matchers.initialize(254, new_authority.key());
+    new_marketplace_matchers.initialize(ctx.bumps.new_marketplace_matchers, new_authority.key());
 
     // emit event ->
     //  -> MSG!program deployed and initialized,
