@@ -14,10 +14,13 @@ import {
   getNewEnqueueSessionIndexer,
   getNewIndexerStatus,
   getProgram,
+  getNewSession,
 } from "../utils/program";
 
 import { confirmTx, mockWallet } from "../utils/helper";
 import toast from "react-hot-toast";
+import { getMint } from "@solana/spl-token";
+import { BN } from "@coral-xyz/anchor";
 
 export const AppContext = createContext(null);
 
@@ -25,6 +28,12 @@ export const AppProvider = ({ children }) => {
   // State variables
   const [walletAddress, setwalletAddress] = useState("");
   const [walletBalance, setWalletBalance] = useState(0);
+  const [indexerStatus, setIndexerStatus] = useState('');
+  const [newAuthority, setNewAuthority] = useState('');
+  const [activeSessionIndexer, setActiveSessionIndexer] = useState('');
+  const [enqueueSessionIndexer, setEnqueueSessionIndexer] = useState('');
+  const [tokenMint, setTokenMint] = useState("");
+  
 
   // Get provider
   const { connection } = useConnection();
@@ -56,22 +65,32 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  /* Call Solana Program Instructions */
+  /* Calling of Smart Contract Instructions */
 
+  // Initialize
   const initLaunchPad = async () => {
     try{
+      // Derive the New Authority address
       const newAuthorityAddress = await getNewAuthority();
-      console.log("New Authority: ", newAuthorityAddress[0].toBase58());
+      setNewAuthority(newAuthorityAddress[0].toBase58());
+      console.log("New Authority: ", newAuthority);
 
+      // Derive the New Indexer Status address
       const newIndexerStatusAddress = await getNewIndexerStatus(newAuthorityAddress);
-      console.log("New Indexer Status: ", newIndexerStatusAddress[0].toBase58());
+      setIndexerStatus(newIndexerStatusAddress[0].toBase58())
+      console.log("New Indexer Status: ", indexerStatus);
 
+      // Derive the New Active Session Indexer address
       const newActiveSessionIndexerAddress = await getNewActiveSessionIndexer(newAuthorityAddress);
-      console.log("New Active Session Indexer Status: ", newActiveSessionIndexerAddress[0].toBase58());
+      setActiveSessionIndexer(newActiveSessionIndexerAddress[0].toBase58());
+      console.log("New Active Session Indexer Status: ", activeSessionIndexer);
       
+      // Derive the New Enqueue Session Indexer address
       const newEnqueueSessionIndexerAddress = await getNewEnqueueSessionIndexer(newAuthorityAddress);
-      console.log("New Enqueue Session Indexer Status: ", newEnqueueSessionIndexerAddress[0].toBase58());
+      setEnqueueSessionIndexer(newEnqueueSessionIndexerAddress[0].toBase58())
+      console.log("New Enqueue Session Indexer Status: ", enqueueSessionIndexer);
 
+      // Invoking the initialize instruction on the smart contract
       const txHash = await program.methods.initialize()
       .accounts({ 
         authority: new PublicKey(walletAddress),
@@ -86,9 +105,61 @@ export const AppProvider = ({ children }) => {
       toast.success("Session states initialized!");
     }catch(err){
       console.log(err.message);
-      toast.error(err.message)
+      toast.error(err.message);
     }
   }
+
+  // Create Session
+  const createSession = async (sessionParams) => {
+    try{
+      // Get Mint Account Information
+      const token_Mint = new PublicKey("5424Nqzfm4z7hahk4C3N5G3qDobt9d9s5kef2C2dNTs1");
+      const mintInfo = await getMint(connection, token_Mint);
+      const mint_decimals = mintInfo.decimals;
+      setTokenMint(token_Mint.toBase58());
+
+      // Format Token Allocatio to the mint decimals
+      const tokenAllocation_decimal = sessionParams.tokenAllocation * (10**(mint_decimals));
+      const tokenAllocation_BN = new BN(tokenAllocation_decimal);
+      sessionParams.tokenAllocation = tokenAllocation_BN;
+
+      // Get the value of newSession
+      const newSession = await getNewSession(new PublicKey(tokenMint));
+
+      console.log("Token Name:",sessionParams.tokenName);
+      console.log("Token Allocation:",sessionParams.tokenAllocation.toNumber());
+      console.log("Launch Date:",sessionParams.launchDate.toNumber());
+      
+      console.log("New Session: ", newSession[0].toBase58());
+      console.log("Authority: ",wallet.publicKey.toBase58());
+      console.log("Indexer: ", indexerStatus);
+      console.log("Token Mint: ", token_Mint.toBase58());
+
+      // Invoking the createSession instruction on the smart contract
+      const txHash = await program.methods
+      .createSession(sessionParams)
+      .accounts({
+        authority: wallet.publicKey,
+        indexer: new PublicKey(indexerStatus),
+        newSession: newSession[0],
+        tokenMint: new PublicKey(tokenMint),
+      })
+      // .prepare()
+      .rpc()
+
+      // console.log(txHash)
+      await confirmTx(txHash, connection);
+
+      console.log("Transaction: ", txHash);
+
+      toast.success("Session created!")
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
+  }
+
+  // 
 
   return (
     <AppContext.Provider
@@ -98,6 +169,7 @@ export const AppProvider = ({ children }) => {
         walletBalance: walletBalance,
         walletAddress : walletAddress,
         initLaunchPad,
+        createSession,
       }}
     >
       {children}

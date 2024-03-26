@@ -4,14 +4,17 @@ import { useAppContext } from "../contexts/context";
 import { shortenPk } from "../utils/helper";
 import { Toaster } from 'react-hot-toast';
 import { useEffect } from "react";
+import CreateSessionCard from "./CreateSessionCard";
+import Table from "./Table";
 
 const AccountInfoCard = () => {
 
+  // Getting the contexts
   const {
     connected,
     walletAddress,
     walletBalance,
-    initLaunchPad
+    initLaunchPad,
   } = useAppContext();
 
   console.log(connected, "CONNECTION STATUS");
@@ -48,8 +51,11 @@ const AccountInfoCard = () => {
 
         <div className={style.wrapper}>
             <div className={style.title}>Initialize</div>
-            <button onClick={initLaunchPad}>Initialize System</button>
+            <button className={style.btn} onClick={initLaunchPad}>Initialize System</button>
         </div>
+
+        <Table /> 
+        <CreateSessionCard />
       </div>) : (
       <div className={style.wrapperCenter}>
         <div className={style.title}>

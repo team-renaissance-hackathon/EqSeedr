@@ -89,7 +89,7 @@
         },
         {
           "name": "indexer",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -970,6 +970,6 @@
     }
   ],
   "metadata": {
-    "address": "9ZgbGPRMANYkub7n798cEFneSXGcpZBA2jrXJdAVTwoS"
+    "address": "3uaSBBuVWuS1FzPY5AoTk38nG2iKGQHxuDLnSvGsrziS"
   }
 }

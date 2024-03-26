@@ -56,6 +56,16 @@ export const getNewEnqueueSessionIndexer = async (newAuthorityPk) => {
   );
 };
 
+// Get New Session
+export const getNewSession = async (token_mint) => {
+  return (
+    await PublicKey.findProgramAddressSync([
+      token_mint.toBuffer(),
+      Buffer.from("session")],
+      PROGRAM_ID)
+  );
+};
+
 
 
 

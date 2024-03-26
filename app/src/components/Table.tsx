@@ -1,4 +1,3 @@
-import { useAppContext } from "../context/context";
 import style from "../styles/Table.module.css";
 import TableRow from "./TableRow";
 
