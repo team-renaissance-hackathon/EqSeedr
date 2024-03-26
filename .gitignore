@@ -7,3 +7,6 @@ node_modules
 test-ledger
 .yarn
 Anchor.toml
+
+Anchor.toml
+.gitignore
