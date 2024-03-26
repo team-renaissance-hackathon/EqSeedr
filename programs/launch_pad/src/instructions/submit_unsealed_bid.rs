@@ -33,12 +33,7 @@ pub struct SubmitUnsealedBid<'info> {
     pub session: Account<'info, Session>,
 }
 
-pub fn handler(
-    ctx: Context<SubmitUnsealedBid>,
-    amount: u64,
-    index: u32,
-    secret: [u8; 32],
-) -> Result<()> {
+pub fn handler(ctx: Context<SubmitUnsealedBid>, amount: u64, index: u32) -> Result<()> {
     let SubmitUnsealedBid {
         sealed_bid_by_index,
         commit_leader_board,
@@ -50,8 +45,6 @@ pub fn handler(
 
     commit_leader_board.add(&mut node.clone(), index);
     sealed_bid_by_index.unsealed_bid(commit_leader_board.pool.total);
-
-    msg!("SUBMITTED SECRET: {}", Pubkey::new_from_array(secret));
 
     Ok(())
 }

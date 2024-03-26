@@ -15,21 +15,21 @@ pub mod submit_sealed_bid;
 pub mod submit_unsealed_bid;
 
 // how do I resolve this? other than using a different name for handler?
-// pub use create_commit_leader_board::*;
-// pub use create_commit_queue::*;
-// pub use create_commit_token_account::*;
-// pub use create_sealed_bid_round::*;
-// pub use create_sealed_bid_token_stake_account::*;
-// pub use create_session::*;
-// pub use create_session_marketplace::*;
-// pub use create_session_tick_bid_leader_board::*;
-// pub use create_tick_bid_round::*;
-// pub use create_vested_config_by_session::*;
-// pub use initialize::*;
-// pub use session_registration::*;
-// pub use submit_commit_bid::*;
-// pub use submit_sealed_bid::*;
-// pub use submit_unsealed_bid::*;
+pub use create_commit_leader_board::*;
+pub use create_commit_queue::*;
+pub use create_commit_token_account::*;
+pub use create_sealed_bid_round::*;
+pub use create_sealed_bid_token_stake_account::*;
+pub use create_session::*;
+pub use create_session_marketplace::*;
+pub use create_session_tick_bid_leader_board::*;
+pub use create_tick_bid_round::*;
+pub use create_vested_config_by_session::*;
+pub use initialize::*;
+pub use session_registration::*;
+pub use submit_commit_bid::*;
+pub use submit_sealed_bid::*;
+pub use submit_unsealed_bid::*;
 
 // flow:
 // init bid

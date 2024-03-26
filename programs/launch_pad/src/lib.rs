@@ -87,10 +87,6 @@ pub mod launch_pad {
     pub fn session_registration(ctx: Context<SessionRegistration>) -> Result<()> {
         instructions::session_registration::handler(ctx)
     }
-
-    pub fn submit_commit_bid(ctx: Context<CommitBidBySession>) -> Result<()> {
-        instructions::submit_commit_bid::handler(ctx)
-    }
 }
 
 // TICK-BID

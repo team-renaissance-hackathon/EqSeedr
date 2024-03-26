@@ -39,7 +39,7 @@ pub fn handler(ctx: Context<CreateSessionTickBidLeaderBoard>) -> Result<()> {
         ..
     } = ctx.accounts;
 
-    new_tick_bid_leader_board.initialize();
+    new_tick_bid_leader_board.initialize(ctx.bumps.new_tick_bid_leader_board, session.key());
     session.add_tick_bid_leader_board();
 
     Ok(())
