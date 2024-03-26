@@ -23,6 +23,7 @@ pub struct SubmitUnsealedBid<'info> {
         constraint = !sealed_bid_round.is_valid_unsealed_bid(),
     )]
     pub sealed_bid_round: Account<'info, SealedBidRound>,
+
     #[account(
         mut,
         constraint = !commit_leader_board.is_valid_session(session.key()),
@@ -40,7 +41,6 @@ pub fn handler(ctx: Context<SubmitUnsealedBid>, amount: u64, index: u32) -> Resu
         ..
     } = ctx.accounts;
 
-    // SOMETHING WRONG HERE
     let node = commit_leader_board.create_node(sealed_bid_by_index.bid_index, amount);
 
     commit_leader_board.add(&mut node.clone(), index);

@@ -20,7 +20,7 @@ pub struct TickBidRound {
     // user token amount distribution -> token_allocation * token share distribution
 
     // status
-    status: Status,
+    pub status: TickBidRoundStatus,
 
     // ticket ticket status
     pub total: u64,
@@ -52,7 +52,7 @@ impl TickBidRound {
         + UNSIGNED_8
         + UNSIGNED_64
         + UNSIGNED_64
-        + Status::LEN
+        + TickBidRoundStatus::LEN
         + UNSIGNED_64
         + UNSIGNED_64
         + UNSIGNED_64
@@ -82,7 +82,7 @@ impl TickBidRound {
         self.bump = bump;
         self.index = session.next_round();
         self.token_allocation = session.allocate_tokens();
-        self.status = Status::Enqueue;
+        self.status = TickBidRoundStatus::Enqueue;
 
         self.scaler = 64;
 
@@ -98,14 +98,14 @@ impl TickBidRound {
     }
 
     // OpenRoundStatus
-    fn open_round(&mut self) -> Result<()> {
-        self.status = Status::Open;
+    pub fn open_round(&mut self) -> Result<()> {
+        self.status = TickBidRoundStatus::Open;
         Ok(())
     }
 
     // CloseRoundStatus
-    fn close_round(&mut self) -> Result<()> {
-        self.status = Status::Closed;
+    pub fn close_round(&mut self) -> Result<()> {
+        self.status = TickBidRoundStatus::Closed;
 
         // redistribute bag
         // update round bag
@@ -126,7 +126,7 @@ impl TickBidRound {
     // transfer()
 
     // OpenBid - 0
-    fn open_bid(&mut self, bid: u64, current: Clock) -> Result<()> {
+    pub fn open_bid(&mut self, bid: u64, current: Clock) -> Result<()> {
         // need update average something
         // are these the same???? most resolve
         self.last_market_bid = bid;
@@ -142,14 +142,14 @@ impl TickBidRound {
     }
 
     // ExecuteBid - 0
-    fn can_bid_delta(&self, current: Clock) -> bool {
+    pub fn can_bid_delta(&self, current: Clock) -> bool {
         let delta = current.slot - self.last_bid_slot;
         // log message can't bid because of delta variance
         return !(delta < 10);
     }
 
     // ExecuteBid - 1
-    fn get_current_bid(&self) -> Result<(u64, u64)> {
+    pub fn get_current_bid(&self) -> Result<(u64, u64)> {
         let clock = Clock::get()?;
         let targert_delta = self.last_bid_timestamp - clock.unix_timestamp;
         let mut delta = TickBidRound::MIN * 2 as i64;
@@ -185,7 +185,7 @@ impl TickBidRound {
     // }
 
     // ExecuteBid - 3 | OpenBid?
-    fn update_bid_status(&mut self, bid: u64, tick: u64, clock: Clock) {
+    pub fn update_bid_status(&mut self, bid: u64, tick: u64, clock: Clock) {
         self.last_market_bid = bid;
         self.last_tick_bid = tick;
         self.last_bid_timestamp = clock.unix_timestamp;
@@ -196,7 +196,8 @@ impl TickBidRound {
 
     // where the bulk of the algorthm will be
     // ExecuteBid - 4 | Openbid?
-    fn update_ticket_status(&mut self, bid: u64, tick_depth: u64) {
+    // &mut self, bid: u64, tick_depth: u64
+    pub fn update_ticket_status(&mut self, tick_depth: u64) {
         let mut sum: u64 = 0;
         let mut tick = 0;
 
@@ -218,20 +219,20 @@ impl TickBidRound {
     }
 
     // ExecuteBid - 6 | OpenBid
-    fn transfer() {
+    pub fn transfer() {
         // transfer USDC into session funding account
     }
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
-enum Status {
+pub enum TickBidRoundStatus {
     Enqueue,
     Open,
     Closed,
 }
 
-impl Status {
-    const LEN: usize = 1;
+impl TickBidRoundStatus {
+    pub const LEN: usize = BYTE;
 }
 
 // LEADER BOARD ACCOUNT:

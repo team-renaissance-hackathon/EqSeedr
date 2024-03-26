@@ -9,7 +9,7 @@ pub struct SealedBidRound {
     pub authority: Pubkey,
     pub session: Pubkey,
 
-    status: Status,
+    pub status: SealedBidRoundStatus,
 
     pub total_sealed_bids: u32,
     pub total_unsealed_bids: u32,
@@ -17,10 +17,10 @@ pub struct SealedBidRound {
 
 impl SealedBidRound {
     pub const LEN: usize = DISCRIMINATOR
-        + UNSIGNED_8
+        + BYTE
         + PUBKEY_BYTES
         + PUBKEY_BYTES
-        + Status::LEN
+        + SealedBidRoundStatus::LEN
         + UNSIGNED_32
         + UNSIGNED_32;
 
@@ -29,7 +29,7 @@ impl SealedBidRound {
         self.authority = authority;
         self.session = session;
 
-        self.status = Status::Enqueue;
+        self.status = SealedBidRoundStatus::Enqueue;
 
         self.total_sealed_bids = 0;
         self.total_unsealed_bids = 0;
@@ -62,7 +62,7 @@ impl SealedBidRound {
     // transaction to set this value.
     pub fn is_valid_sealed_bid_phase(&self) -> bool {
         match self.status {
-            Status::SealedBidPhase => !true,
+            SealedBidRoundStatus::SealedBidPhase => !true,
             _ => !false,
         }
     }
@@ -72,7 +72,7 @@ impl SealedBidRound {
     // should consider the constraint by messure of time
     pub fn is_valid_unsealed_bid_phase(&self) -> bool {
         match self.status {
-            Status::UnsealBidPhase => !true,
+            SealedBidRoundStatus::UnsealBidPhase => !true,
             _ => !false,
         }
     }
@@ -335,8 +335,12 @@ impl CommitNode {
 pub struct CommitQueue {
     pub bump: u8,
     pub session: Pubkey,
-    pointer: u8,
-    queue: Vec<CommitBid>,
+
+    // seems like the private field doesn't fail, so I wonder
+    // anchor doesn't know how to serialize private enum fields.
+    // anyway will set these to public and will verify later.
+    pub pointer: u8,
+    pub queue: Vec<CommitBid>,
 }
 
 impl CommitQueue {
@@ -452,7 +456,7 @@ impl CommitBid {
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
-enum Status {
+pub enum SealedBidRoundStatus {
     Enqueue,
     SealedBidPhase,
     UnsealBidPhase,
@@ -460,8 +464,8 @@ enum Status {
     Canceled,
 }
 
-impl Status {
-    const LEN: usize = BYTE;
+impl SealedBidRoundStatus {
+    pub const LEN: usize = BYTE;
 }
 
 // sealed bid system

@@ -26,11 +26,17 @@ impl ProgramAuthority {
         + PUBKEY_BYTES;
 
     pub fn initialize(&mut self, bump: u8, authority: Pubkey) {
+        self.bump = bump;
+        self.authority = authority;
+
         self.is_initialized = true;
         self.is_signer = true;
 
-        self.bump = bump;
-        self.authority = authority;
+        self.token_mint = Vec::<Pubkey>::new();
+
+        // right now I am not creating the token mint here
+        // but in future I will set it that way.
+        // self.mint = token_Mint
     }
 
     pub fn is_valid_token(&self, token_mint: Pubkey) -> bool {

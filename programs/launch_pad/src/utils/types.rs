@@ -20,18 +20,14 @@ impl Indexer {
     const GENISUS_TIMESTAMP: i64 = 1_704_067_200;
     const INIT_YEAR: u16 = 2024;
 
-    // pub fn new() -> Self {
-    //     Indexer {
-
-    //     }
-    // }
-
-    pub fn initialize(&mut self) {
-        self.year_timestamp = Indexer::GENISUS_TIMESTAMP;
-        self.year = Indexer::INIT_YEAR;
-        self.week = 0;
-        self.nonce = 0;
-        self.delta_index = 0;
+    pub fn new() -> Self {
+        Indexer {
+            year_timestamp: Indexer::GENISUS_TIMESTAMP,
+            year: Indexer::INIT_YEAR,
+            week: 0,
+            nonce: 0,
+            delta_index: 0,
+        }
     }
 
     pub fn update(&mut self) -> Result<()> {
@@ -57,4 +53,6 @@ impl Indexer {
     }
 }
 
+// not going to need this, since I discovered that private fields on accounts causes issues with null values
+// will remove soon.
 pub enum Status {}
