@@ -13,10 +13,10 @@ pub struct MarketplaceMatchers {
     // need an advance schedular state / logic
     // current market taker
     // need to set a size limit on pool, stack, active_list
-    active_pool: MarketplaceMatchersLinkedList,
-    current_market_matcher: u32,
-    pool: Vec<u32>, // index map to market matcher, should include the pubkey?
-    stack: Vec<u32>,
+    pub active_pool: MarketplaceMatchersLinkedList,
+    pub current_market_matcher: u32,
+    pub pool: Vec<u32>, // index map to market matcher, should include the pubkey?
+    pub stack: Vec<u32>,
 }
 
 impl MarketplaceMatchers {
@@ -35,7 +35,7 @@ impl MarketplaceMatchers {
         self.stack = Vec::<u32>::new();
     }
 
-    fn add() {
+    pub fn add() {
 
         // default state
 
@@ -150,7 +150,7 @@ impl MarketMatcher {
     //     self.locked_amount += amount_delta;
     // }
 
-    fn remove(&mut self) {
+    pub fn remove(&mut self) {
         // has tobe active status false
         // remove from pool
         // index = None
@@ -164,7 +164,7 @@ impl MarketMatcher {
     //     self.is_active = !self.is_active;
     // }
 
-    fn collect(&self) {
+    pub fn collect(&self) {
         // has to be active status false
         // transfer all balance
     }

@@ -39,6 +39,7 @@ pub fn handler(ctx: Context<CreateSessionSealedBidRound>) -> Result<()> {
 
     new_sealed_bid_round.initialize(
         ctx.bumps.new_sealed_bid_round,
+        // I am not sure if I need tc clone. will test it later
         authority.key().clone(),
         session.key().clone(),
     );

@@ -15,11 +15,9 @@ impl IndexerStatus {
     pub const LEN: usize = DISCRIMINATOR + BUMP + PUBKEY_BYTES + Indexer::LEN;
 
     pub fn initialize(&mut self, bump: u8, authority: Pubkey) {
-        // bump = 253
         self.bump = bump;
         self.authority = authority;
-        self.status.initialize();
-        // self.status = Indexer::new();
+        self.status = Indexer::new();
     }
 }
 
@@ -28,12 +26,19 @@ pub struct EnqueueSessionIndex {
     // VALIDATION STATE
     pub bump: u8,
     pub authority: Pubkey,
+
     // STATE
     pub list: Vec<Indexer>,
     pub stack: Vec<u16>,
 }
 
 impl EnqueueSessionIndex {
+    const ELEMENT_SIZE: usize = 100;
+    pub const LEN: usize = DISCRIMINATOR
+        + BYTE
+        + PUBKEY_BYTES
+        + (UNSIGNED_128 + Indexer::LEN * EnqueueSessionIndex::ELEMENT_SIZE)
+        + (UNSIGNED_128 + UNSIGNED_16 * EnqueueSessionIndex::ELEMENT_SIZE);
     pub fn initialize(&mut self, bump: u8, authority: Pubkey) {
         self.bump = bump;
         self.authority = authority;
@@ -47,12 +52,20 @@ pub struct ActiveSessionIndex {
     // VALIDATION STATE
     pub bump: u8,
     pub authority: Pubkey,
+
     // STATE
     pub list: Vec<Indexer>,
     pub stack: Vec<u16>,
 }
 
 impl ActiveSessionIndex {
+    const ELEMENT_SIZE: usize = 100;
+    pub const LEN: usize = DISCRIMINATOR
+        + BYTE
+        + PUBKEY_BYTES
+        + (UNSIGNED_128 + Indexer::LEN * ActiveSessionIndex::ELEMENT_SIZE)
+        + (UNSIGNED_128 + UNSIGNED_16 * ActiveSessionIndex::ELEMENT_SIZE);
+
     pub fn initialize(&mut self, bump: u8, authority: Pubkey) {
         self.bump = bump;
         self.authority = authority;

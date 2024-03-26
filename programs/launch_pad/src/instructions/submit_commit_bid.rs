@@ -80,7 +80,6 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
         ..
     } = ctx.accounts;
 
-    // SOMETHING WRONG HERE
     let node = commit_leader_board.get_node(sealed_bid_by_index.commit_leader_board_index);
     commit_queue.insert(node, &sealed_bid_by_index);
 
