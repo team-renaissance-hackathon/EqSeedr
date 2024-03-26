@@ -12,7 +12,7 @@ url = "https://api.apr.dev"
 
 [provider]
 cluster = "Localnet"
-wallet = "/home/nomadic/.config/solana/id.json"
+wallet = "/home/yow/.config/solana/id.json"
 
 [test]
 startup_wait =20000
