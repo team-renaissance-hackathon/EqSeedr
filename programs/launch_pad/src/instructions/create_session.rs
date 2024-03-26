@@ -16,6 +16,8 @@ pub struct CreateSession<'info> {
         // so that we can check if the user has enough funds before starting the process
     )]
     pub authority: Signer<'info>,
+
+    #[account(mut)]
     pub indexer: Account<'info, IndexerStatus>,
 
     #[account(
@@ -93,6 +95,7 @@ pub fn handler(ctx: Context<CreateSession>, input: SessionParams) -> Result<()> 
 
     indexer.status.update()?;
     new_session.initialize(
+        ctx.bumps.new_session,
         authority.key(),
         indexer.status.clone(),
         token_mint.key(),
