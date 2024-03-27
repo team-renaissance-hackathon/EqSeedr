@@ -1,6 +1,9 @@
 import { AnchorProvider, BN, Program } from "@coral-xyz/anchor";
-import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { PublicKey, LAMPORTS_PER_SOL, SystemProgram } from "@solana/web3.js";
+import { 
+  ASSOCIATED_TOKEN_PROGRAM_ID, 
+  TOKEN_PROGRAM_ID, 
+  getAssociatedTokenAddressSync } from "@solana/spl-token";
 
 import idl from "./idl.json";
 import {
@@ -21,7 +24,7 @@ export const getProgram = (connection, wallet) => {
   return program;
 };
 
-/* Initializing new Session Accounts */
+/* Deriving initialize accounts addresses */
 export const getNewAuthority = async () => {
   return (
     await PublicKey.findProgramAddressSync([
@@ -75,22 +78,18 @@ export const getNewProgramMint = async (newAuthorityPk) => {
   );
 };
 
-export const getNewAuthorityTokenAccount = async (owner, programMint) => {
-  const ATA = getAssociatedTokenAddressSync(programMint[0], owner);
-  return ATA
-}
+// getAssociatedTokenAddressSync but manually
+export const getNewAuthorityTokenAccount = async (programAuthority, programMint) => {
+  return (
+    await PublicKey.findProgramAddressSync([
+      programAuthority[0].toBuffer(),
+      TOKEN_PROGRAM_ID.toBuffer(),
+      programMint[0].toBuffer()],
+      ASSOCIATED_TOKEN_PROGRAM_ID)
+  );
+};
 
-// export const getNewAuthorityTokenAccount = async (owner, programMint) => {
-//   return (
-//     await PublicKey.findProgramAddressSync([
-//       owner.toBuffer(),
-//       PROGRAM_ID.toBuffer(),
-//       programMint[0].toBuffer()],
-//       ASSOCIATED_TOKEN_PROGRAM_ID)
-//   );
-// };
-
-// Get New Session
+/* Derive New Session address */ 
 export const getNewSession = async (token_mint) => {
   return (
     await PublicKey.findProgramAddressSync([
@@ -100,20 +99,17 @@ export const getNewSession = async (token_mint) => {
   );
 };
 
-
-
-// Get New Session
-export const getNewSession = async (token_mint) => {
-  return (
+/* Derive new Sealed Bid round */
+export const getNewSealedBidRound = async (session) => {
+  return(
     await PublicKey.findProgramAddressSync([
-      token_mint.toBuffer(),
-      Buffer.from("session")],
+      session.toBuffer(),
+      Buffer.from("sealed-bid-round")], 
       PROGRAM_ID)
   );
 };
 
-
-
+// 
 
 // export const getLotteryAddress = async (id) => {
 //   return (

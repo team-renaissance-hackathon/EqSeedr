@@ -43,31 +43,11 @@
     {
       "name": "createSession",
       "accounts": [
-        {
-          "name": "authority",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "indexer",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "newSession",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "tokenMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "indexer", "isMut": true, "isSigner": false },
+        { "name": "newSession", "isMut": true, "isSigner": false },
+        { "name": "tokenMint", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": [{ "name": "input", "type": { "defined": "SessionParams" } }]
     },
@@ -334,7 +314,7 @@
           { "name": "bump", "type": "u8" },
           { "name": "authority", "type": "publicKey" },
           { "name": "session", "type": "publicKey" },
-          { "name": "status", "type": { "defined": "Status" } },
+          { "name": "status", "type": { "defined": "SealedBidRoundStatus" } },
           { "name": "totalSealedBids", "type": "u32" },
           { "name": "totalUnsealedBids", "type": "u32" }
         ]
@@ -419,7 +399,7 @@
           { "name": "index", "type": "u8" },
           { "name": "tokenAllocation", "type": "u64" },
           { "name": "ticketAllocation", "type": "u64" },
-          { "name": "status", "type": { "defined": "Status" } },
+          { "name": "status", "type": { "defined": "TickBidRoundStatus" } },
           { "name": "total", "type": "u64" },
           { "name": "bonusPool", "type": "u64" },
           { "name": "scaler", "type": "u64" },
@@ -797,6 +777,19 @@
       }
     },
     {
+      "name": "SealedBidRoundStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          { "name": "Enqueue" },
+          { "name": "SealedBidPhase" },
+          { "name": "UnsealBidPhase" },
+          { "name": "Closed" },
+          { "name": "Canceled" }
+        ]
+      }
+    },
+    {
       "name": "SessionStatus",
       "type": {
         "kind": "enum",
@@ -806,6 +799,17 @@
           { "name": "TickBid" },
           { "name": "Closed" },
           { "name": "Canceled" }
+        ]
+      }
+    },
+    {
+      "name": "TickBidRoundStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          { "name": "Enqueue" },
+          { "name": "Open" },
+          { "name": "Closed" }
         ]
       }
     },
@@ -884,6 +888,6 @@
     }
   ],
   "metadata": {
-    "address": "3uaSBBuVWuS1FzPY5AoTk38nG2iKGQHxuDLnSvGsrziS"
+    "address": "BXs417UUPyNpHc44Q9v6xPNWQxhWqsFxG9pTqaQ9uma6"
   }
 }

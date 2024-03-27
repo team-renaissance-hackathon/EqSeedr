@@ -19,6 +19,7 @@ import {
   getNewMarketPlaceMatchers,
   getNewProgramMint,
   getNewAuthorityTokenAccount,
+  getNewSealedBidRound,
 } from "../utils/program";
 
 import { confirmTx, mockWallet } from "../utils/helper";
@@ -30,17 +31,11 @@ import { WalletKeypairError } from "@solana/wallet-adapter-base";
 export const AppContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
-  // State variables
+  // Wallet state variables
   const [walletAddress, setwalletAddress] = useState("");
   const [walletBalance, setWalletBalance] = useState(0);
-  const [indexerStatus, setIndexerStatus] = useState('');
-  const [newAuthority, setNewAuthority] = useState('');
-  const [activeSessionIndexer, setActiveSessionIndexer] = useState('');
-  const [enqueueSessionIndexer, setEnqueueSessionIndexer] = useState('');
-  const [tokenMint, setTokenMint] = useState("");
-  
-
-  /* For Initializing the Program */
+ 
+  /* Initializing the Program state variables*/
   const [indexerStatus, setIndexerStatus] = useState('');
   const [newAuthority, setNewAuthority] = useState('');
   const [activeSessionIndexer, setActiveSessionIndexer] = useState('');
@@ -48,8 +43,13 @@ export const AppProvider = ({ children }) => {
   const [marketplaceMatcher, setMarketplaceMatcher] = useState('');
   const [programMint, setProgramMint] = useState('');
   const [authorityTokenAccount, setAuthorityTokenAccount] = useState('');
-
+  
+  /* Session creation state variables */
   const [tokenMint, setTokenMint] = useState("");
+  const [currentSession, setSession] = useState("");
+  
+  /* Sealed bid round creation state variables */
+  const [sealedBidRound, setSealedBidRound] = useState("");
 
   // Get provider
   const { connection } = useConnection();
@@ -83,7 +83,7 @@ export const AppProvider = ({ children }) => {
 
   /* Calling of Smart Contract Instructions */
 
-  // Initialize
+  /* Initialize instruction */ 
   const initLaunchPad = async () => {
     try{
       // Derive the New Authority address
@@ -112,8 +112,8 @@ export const AppProvider = ({ children }) => {
       console.log("Program Mint: ", programMint);
 
       // Derive the New Authority Token Account
-      const newAuthorityTokenAccountAddress = await getNewAuthorityTokenAccount(wallet.publicKey, newProgramMintAddress);
-      setAuthorityTokenAccount(newAuthorityTokenAccountAddress.toBase58());
+      const newAuthorityTokenAccountAddress = await getNewAuthorityTokenAccount(newAuthorityAddress, newProgramMintAddress);
+      setAuthorityTokenAccount(newAuthorityTokenAccountAddress[0].toBase58());
       console.log("New Authority Token Account: ", authorityTokenAccount);
 
       // Derive the New Marketplace Matcher address
@@ -122,25 +122,23 @@ export const AppProvider = ({ children }) => {
       console.log("New Marketplace Matcher: ", marketplaceMatcher);
 
       // Invoking the initialize instruction on the smart contract
-      const txHash = await program.methods.initialize()
-      .accounts({ 
-        authority: new PublicKey(walletAddress),
-        newAuthority: newAuthorityAddress[0],
-        newTokenMint: newProgramMintAddress[0],
-        newAuthorityTokenAccount: newAuthorityTokenAccountAddress.toBase58(),
-        newIndexerStatus: newIndexerStatusAddress[0],
-        newActiveSessionIndexer: newActiveSessionIndexerAddress[0],
-        newEnqueueSessionIndexer: newEnqueueSessionIndexerAddress[0],
-        newMarketplaceMatchers: newMarketPlaceMatcherAddress[0],
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        systemProgram: SystemProgram.programId
-      })
-      // .prepare()
-      .rpc()
+      // const txHash = await program.methods.initialize()
+      // .accounts({ 
+      //   authority: new PublicKey(walletAddress),
+      //   newAuthority: newAuthorityAddress[0],
+      //   newTokenMint: newProgramMintAddress[0],
+      //   newAuthorityTokenAccount: newAuthorityTokenAccountAddress[0],
+      //   newIndexerStatus: newIndexerStatusAddress[0],
+      //   newActiveSessionIndexer: newActiveSessionIndexerAddress[0],
+      //   newEnqueueSessionIndexer: newEnqueueSessionIndexerAddress[0],
+      //   newMarketplaceMatchers: newMarketPlaceMatcherAddress[0],
+      //   associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      //   tokenProgram: TOKEN_PROGRAM_ID,
+      //   systemProgram: SystemProgram.programId
+      // })
+      // .rpc()
 
-      // console.log(txHash);
-      await confirmTx(txHash, connection);
+      // await confirmTx(txHash, connection);
       toast.success("Session states initialized!");
     }catch(err){
       console.log(err);
@@ -148,7 +146,7 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  // Create Session
+  /* Create Session instruction */
   const createSession = async (sessionParams) => {
     try{
       // Get Mint Account Information
@@ -165,6 +163,7 @@ export const AppProvider = ({ children }) => {
 
       // Get the value of newSession
       const newSession = await getNewSession(new PublicKey(tokenMint));
+      setSession(newSession[0].toBase58());
 
       console.log("Token Name:",sessionParams.tokenName);
       console.log("Token Allocation:",sessionParams.tokenAllocation.toNumber());
@@ -176,21 +175,18 @@ export const AppProvider = ({ children }) => {
       console.log("Token Mint: ", token_Mint.toBase58());
 
       // Invoking the createSession instruction on the smart contract
-      const txHash = await program.methods
-      .createSession(sessionParams)
-      .accounts({
-        authority: wallet.publicKey,
-        indexer: new PublicKey(indexerStatus),
-        newSession: newSession[0],
-        tokenMint: new PublicKey(tokenMint),
-      })
-      // .prepare()
-      .rpc()
+      // const txHash = await program.methods
+      // .createSession(sessionParams)
+      // .accounts({
+      //   authority: wallet.publicKey,
+      //   indexer: new PublicKey(indexerStatus),
+      //   newSession: newSession[0],
+      //   tokenMint: new PublicKey(tokenMint),
+      // })
+      // .rpc()
 
-      // console.log(txHash)
-      await confirmTx(txHash, connection);
-
-      console.log("Transaction: ", txHash);
+      // await confirmTx(txHash, connection);
+      // console.log("Transaction: ", txHash);
 
       toast.success("Session created!")
     }catch(err){
@@ -199,7 +195,46 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  // 
+  // TODO SKIP FOR NOW
+  /* Create Commit Token Account instruction */
+  // const createCommitTokenAccount = async () => {
+  //   try{
+  //     const txHash = await program.methods.createCommitTokenAccount()
+  //     .accounts({
+  //       authority: wallet.publicKey,
+  //       programAuthority: new PublicKey(newAuthority),
+  //       newCommitTokenAccount: ,
+  //       bidTokenMint: ,
+  //     })
+  //     .rpc()
+  //   }
+  // }
+
+  /* Create Session Sealed Bid Round */
+  const createSessionSealedBidRound = async () => {
+    try{
+      // Get the new Sealed Bid Round address
+      const newSealedBidRoundAddress = getNewSealedBidRound(new PublicKey(currentSession));
+      setSealedBidRound(newSealedBidRoundAddress[0].toBase58());
+
+      console.log("New Sealed Bid Round: ", sealedBidRound);
+
+      // const txHash = await program.methods
+      // .createSessionSealedBidRound()
+      // .accounts({
+      //   authority: wallet.publicKey,
+      //   newSealedBidRound: newSealedBidRoundAddress[0],
+      //   session: new PublicKey(currentSession),
+      // })
+      // .rpc()
+
+      // await confirmTx(txHash, connection);
+      console.log("Sealed Bid Round created successfully!")
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
+  }
 
   return (
     <AppContext.Provider
