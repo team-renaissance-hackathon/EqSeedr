@@ -2,8 +2,7 @@ import { AnchorProvider, BN, Program } from "@coral-xyz/anchor";
 import { PublicKey, LAMPORTS_PER_SOL, SystemProgram } from "@solana/web3.js";
 import { 
   ASSOCIATED_TOKEN_PROGRAM_ID, 
-  TOKEN_PROGRAM_ID, 
-  getAssociatedTokenAddressSync } from "@solana/spl-token";
+  TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 import idl from "./idl.json";
 import {
@@ -101,15 +100,88 @@ export const getNewSession = async (token_mint) => {
 
 /* Derive new Sealed Bid round */
 export const getNewSealedBidRound = async (session) => {
-  return(
-    await PublicKey.findProgramAddressSync([
-      session.toBuffer(),
-      Buffer.from("sealed-bid-round")], 
-      PROGRAM_ID)
-  );
+  const newSealedBidRound =  await PublicKey.findProgramAddressSync([
+    session.toBuffer(),
+    Buffer.from("sealed-bid-round")], 
+    PROGRAM_ID);
+
+  return newSealedBidRound;
 };
 
-// 
+/* Derive New Session Commit Leaderboard */
+export const getNewSessionCommitLeaderboard = async (session) => {
+  const newSessionCommitLeaderboard = await PublicKey.findProgramAddressSync([
+    session.toBuffer(),
+    Buffer.from("commit-leader-board")],
+    PROGRAM_ID);
+
+  return newSessionCommitLeaderboard;
+}
+
+/* Derive New Session Commit Queue */
+export const getNewSessionCommitQueue = async (session) => {
+  const newSessionCommitQueue = await PublicKey.findProgramAddressSync([
+    session.toBuffer(),
+    Buffer.from("commit-queue")],
+    PROGRAM_ID);
+
+  return newSessionCommitQueue;
+}
+
+/* TODO Derive New Sealed Bid Token Stake Account*/
+// export const getNewSealedBidTokenStakeAccount = async (session) => {
+//   const newSealedBidTokenStakeAccount = await PublicKey.findProgramAddressSync([
+//   ],
+//   PROGRAM_ID)
+
+//   return newSealedBidTokenStakeAccount;
+// }
+
+/* TODO Derive New Tick Bid Round */
+export const getNewTickBidRound = async (session, sessionNextRound) => {
+  
+  const newTickBidRound = await PublicKey.findProgramAddressSync([
+    sessionNextRound.toBuffer(),
+    session.toBuffer(),
+    Buffer.from("tick-bid-round")],
+    PROGRAM_ID);
+
+  return newTickBidRound;
+}
+
+/* Derive New Session Tick Bid Leaderboard */
+export const getNewSessionTickBidLeaderboard = async (session) => {
+  const newSessioinTickBidLeaderboard = await PublicKey.findProgramAddressSync([
+    session.toBuffer(),
+    Buffer.from("tick-bid-leader-board")],
+    PROGRAM_ID);
+
+  return newSessioinTickBidLeaderboard;    
+}
+
+/* Derive New Marketplace Positions */
+export const getNewMarketplacePositions = async (session) => {
+  const newMarketplacePosition = await PublicKey.findProgramAddressSync([
+    session.toBuffer(),
+    Buffer.from("session-marketplace")],
+    PROGRAM_ID);
+
+  return newMarketplacePosition;
+}
+
+/* Derive New Vested Config By Session */
+export const getNewVestedConfigBySession = async (session) => {
+  const newVestedConfigBySession = await PublicKey.findProgramAddressSync([
+    session.toBuffer(),
+    Buffer.from("vested-config")],
+    PROGRAM_ID)
+
+  return newVestedConfigBySession;
+}
+
+
+
+/* reference */
 
 // export const getLotteryAddress = async (id) => {
 //   return (
@@ -120,18 +192,6 @@ export const getNewSealedBidRound = async (session) => {
 //   )[0];
 // };
 
-// export const getTicketAddress = async (lotteryPk, id) => {
-//   return (
-//     await PublicKey.findProgramAddress(
-//       [
-//         Buffer.from(TICKET_SEED),
-//         lotteryPk.toBuffer(),
-//         new BN(id).toArrayLike(Buffer, "le", 4),
-//       ],
-//       PROGRAM_ID
-//     )
-//   )[0];
-// };
 
 // // Return the lastTicket ID and multiply the ticket price and convert LAMPORTS PER SOL and convert it to String
 // export const getTotalPrize = (lottery) => {

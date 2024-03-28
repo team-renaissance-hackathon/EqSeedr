@@ -20,6 +20,12 @@ import {
   getNewProgramMint,
   getNewAuthorityTokenAccount,
   getNewSealedBidRound,
+  getNewSessionCommitLeaderboard,
+  getNewSessionCommitQueue,
+  getNewSessionTickBidLeaderboard,
+  getNewMarketplacePositions,
+  getNewVestedConfigBySession,
+  getNewTickBidRound,
 } from "../utils/program";
 
 import { confirmTx, mockWallet } from "../utils/helper";
@@ -48,8 +54,14 @@ export const AppProvider = ({ children }) => {
   const [tokenMint, setTokenMint] = useState("");
   const [currentSession, setSession] = useState("");
   
-  /* Sealed bid round creation state variables */
-  const [sealedBidRound, setSealedBidRound] = useState("");
+  /* Session Sealed bid round creation state variables */
+  const [sessionSealedBidRound, setSessionSealedBidRound] = useState("");
+
+  /* Session Commit Leaderboard creation state variables */
+  const [sessionCommitLeaderboard, setSessionCommitLeaderboard] = useState("");
+
+  /* Session Commit Queue creation state variables */
+  const [sessionCommitQueue, setSessionCommitQueue] = useState("");
 
   // Get provider
   const { connection } = useConnection();
@@ -214,27 +226,223 @@ export const AppProvider = ({ children }) => {
   const createSessionSealedBidRound = async () => {
     try{
       // Get the new Sealed Bid Round address
-      const newSealedBidRoundAddress = getNewSealedBidRound(new PublicKey(currentSession));
-      setSealedBidRound(newSealedBidRoundAddress[0].toBase58());
+      const currentSessionPk = new PublicKey(currentSession);
+      const newSealedBidRoundAddress = await getNewSealedBidRound(currentSessionPk);
+      setSessionSealedBidRound(newSealedBidRoundAddress[0].toBase58());
 
-      console.log("New Sealed Bid Round: ", sealedBidRound);
+      console.log("New Sealed Bid Round: ", newSealedBidRoundAddress[0].toBase58());
 
       // const txHash = await program.methods
       // .createSessionSealedBidRound()
       // .accounts({
       //   authority: wallet.publicKey,
       //   newSealedBidRound: newSealedBidRoundAddress[0],
-      //   session: new PublicKey(currentSession),
+      //   session: currentSessionPk,
       // })
       // .rpc()
 
       // await confirmTx(txHash, connection);
       console.log("Sealed Bid Round created successfully!")
+      toast.success("Session Commit Leaderboard created successfully!");
     }catch(err){
       console.log(err);
       toast.error(err.message);
     }
   }
+
+  /* Create Session Commit LeaderBoard */
+  const createSessionCommitLeaderBoard = async () => {
+    try{
+      // Get the New Session Commit Leaderboard address
+      const currentSessionPk = new PublicKey(currentSession);
+      const newSessionCommitLeaderboardAddress = await getNewSessionCommitLeaderboard(currentSessionPk);
+      setSessionCommitLeaderboard(newSessionCommitLeaderboardAddress[0].toBase58());
+    
+      // const txHash = await program.methods
+      // .createSessionCommitLeaderBoard()
+      // .accounts({
+      //   authority: wallet.publicKey,
+      //   newCommitLeaderBoard: newSessionCommitLeaderboardAddress[0],
+      //   session: currentSessionPk,
+      // })
+      // .rpc()
+
+      // await confirmTx(txHash, connection);
+      console.log("Session Commit Leaderboard created successfully!");
+      toast.success("Session Commit Leaderboard created successfully!");
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
+  }
+
+  /* Create Session Commit Queue */
+  const createSessionCommitQueue = async () => {
+    try{
+      // Get the New Session Commit Queue address
+      const currentSessionPk = new PublicKey(currentSession);
+      const newSessionCommitQueueAddress = await getNewSessionCommitQueue(currentSessionPk);
+      setSessionCommitLeaderboard(newSessionCommitQueueAddress[0].toBase58());
+    
+      // const txHash = await program.methods
+      // .createSessionCommitQueue()
+      // .accounts({
+      //   authority: wallet.publicKey,
+      //   newCommitQueue: newSessionCommitQueueAddress[0],
+      //   session: currentSessionPk,
+      // })
+      // .rpc()
+      // await confirmTx(txHash, connection);
+
+      console.log("Session Commit Queue created successfully!");
+      toast.success("Session Commit Queue created successfully!");
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
+  }
+
+  // TODO
+  // /* Create Sealed Bid Token Stake Account */
+  // const createSealedBidTokenStakeAccount = async () => {
+  //   try{
+  //     // Get the New Session Commit Queue address
+  //     const currentSessionPk = new PublicKey(currentSession);
+  //     const newSealedBidTokenStakeAccount = await getNewSessionCommitQueue(currentSessionPk);
+  //     setSessionCommitLeaderboard(newSealedBidTokenStakeAccount[0].toBase58());
+    
+  //     // const txHash = await program.methods
+  //     // .createSessionCommitQueue()
+  //     // .accounts({
+  //     //   authority: wallet.publicKey,
+  //     //   newCommitQueue: newSessionCommitQueueAddress[0],
+  //     //   session: currentSessionPk,
+  //     // })
+  //     // .rpc()
+  //     // await confirmTx(txHash, connection);
+
+  //     console.log("Session Commit Queue created successfully!");
+  //     toast.success("Session Commit Queue created successfully!");
+  //   }catch(err){
+  //     console.log(err);
+  //     toast.error(err.message);
+  //   }
+  // }
+
+  // /* TODO Create Tick Bid Round */
+  const createTickBidRound = async () => {
+    try{
+      const currentSessionPk = new PublicKey(currentSession);
+
+      // Fetch Session data
+      const sessionData = await program.account.session.fetch(currentSessionPk);
+      console.log(sessionData)
+
+      // // Get the New Tick Bid Round address
+      // const newTickBidRoundAddress = await getNewTickBidRound(currentSessionPk);
+      // setSessionCommitLeaderboard(newTickBidRoundAddress[0].toBase58());
+    
+      // const txHash = await program.methods
+      // .createSessionCommitQueue()
+      // .accounts({
+      //   authority: wallet.publicKey,
+      //   newCommitQueue: newSessionCommitQueueAddress[0],
+      //   session: currentSessionPk,
+      // })
+      // .rpc()
+      // await confirmTx(txHash, connection);
+
+      console.log("Tick Bid Round created successfully!");
+      toast.success("Tick Bid Round created successfully!");
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
+  }
+
+  /* Create Session Tick Bid Leaderboard */
+  const createSessionTickBidLeaderboard = async () => {
+    try{
+      // Get the New Session Tick Bid Leaderboard address
+      const currentSessionPk = new PublicKey(currentSession);
+      const newTickBidLeaderboardAddress = await getNewSessionTickBidLeaderboard(currentSessionPk);
+      setSessionCommitLeaderboard(newTickBidLeaderboardAddress[0].toBase58());
+    
+      // const txHash = await program.methods
+      // .createSessionTickBidLeaderBoard()
+      // .accounts({
+      //   authority: wallet.publicKey,
+      //   newTickBidLeaderBoard: newTickBidLeaderboardAddress[0],
+      //   session: currentSessionPk,
+      // })
+      // .rpc()
+      // await confirmTx(txHash, connection);
+
+      console.log("Tick Bid Leaderboard created successfully!");
+      toast.success("Tick Bid Leaderboard created successfully!");
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
+  }
+
+  /* Create Session Marketplace */
+  const createSessionMarketplace = async () => {
+    try{
+      // Get the New Session Marketplace address
+      const currentSessionPk = new PublicKey(currentSession);
+      const newSessionMarketplaceAddress = await getNewMarketplacePositions(currentSessionPk);
+      setSessionCommitLeaderboard(newSessionMarketplaceAddress[0].toBase58());
+    
+      // const txHash = await program.methods
+      // .createSessionMarketplace()
+      // .accounts({
+      //   authority: wallet.publicKey,
+      //   newMarketplacePositions: newSessionMarketplaceAddress[0],
+      //   session: currentSessionPk,
+      // })
+      // .rpc()
+      // await confirmTx(txHash, connection);
+
+      console.log("Session Marketplace created successfully!");
+      toast.success("Session Marketplace created successfully!");
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
+  }
+
+  /* Create Vested Config by Session */
+  const createVestedConfigBySession = async () => {
+    try{
+      // References sessoin token mint address
+      const token_mint = new PublicKey(tokenMint);
+
+      // Get the Vested Config address
+      const currentSessionPk = new PublicKey(currentSession);
+      const newVestedConfigBySession = await getNewVestedConfigBySession(currentSessionPk);
+      setSessionCommitLeaderboard(newVestedConfigBySession[0].toBase58());
+    
+      // const txHash = await program.methods
+      // .createVestedConfigBySession()
+      // .accounts({
+      //   authority: wallet.publicKey,
+      //   newVestedConfig: newVestedConfigBySession[0],
+      //   session: currentSessionPk,
+      //   tokenMint: token_mint,
+      // })
+      // .rpc()
+      // await confirmTx(txHash, connection);
+
+      console.log("Vested Config created successfully!");
+      toast.success("Vested Config created successfully!");
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
+  }
+
+  
 
   return (
     <AppContext.Provider
@@ -245,6 +453,13 @@ export const AppProvider = ({ children }) => {
         walletAddress : walletAddress,
         initLaunchPad,
         createSession,
+        createSessionSealedBidRound,
+        createSessionCommitLeaderBoard,
+        createSessionCommitQueue,
+        createSessionTickBidLeaderboard,
+        createSessionMarketplace,
+        createVestedConfigBySession,
+        createTickBidRound,
       }}
     >
       {children}
