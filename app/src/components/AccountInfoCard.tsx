@@ -5,6 +5,7 @@ import { shortenPk } from "../utils/helper";
 import { Toaster } from 'react-hot-toast';
 import { useEffect } from "react";
 import CreateSessionCard from "./CreateSessionCard";
+import CreateCard from "./CreateCard";
 import Table from "./Table";
 
 const AccountInfoCard = () => {
@@ -54,8 +55,8 @@ const AccountInfoCard = () => {
             <button className={style.btn} onClick={initLaunchPad}>Initialize System</button>
         </div>
 
-        <Table /> 
         <CreateSessionCard />
+        <CreateCard />
       </div>) : (
       <div className={style.wrapperCenter}>
         <div className={style.title}>
