@@ -4,7 +4,8 @@ import {
   PublicKey, 
   LAMPORTS_PER_SOL, 
   clusterApiUrl,
-  SystemProgram } from '@solana/web3.js';
+  SystemProgram, 
+  Transaction} from '@solana/web3.js';
 import { useWallet, useConnection, useAnchorWallet } from "@solana/wallet-adapter-react";
 import bs58 from "bs58";
 import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID  } from "@solana/spl-token";
@@ -329,28 +330,60 @@ export const AppProvider = ({ children }) => {
   //   }
   // }
 
-  // /* TODO Create Tick Bid Round */
+  /* Create 10 Tick Bid Round */ 
   const createTickBidRound = async () => {
     try{
       const currentSessionPk = new PublicKey(currentSession);
+      const txHash = [];
 
-      // Fetch Session data
-      const sessionData = await program.account.session.fetch(currentSessionPk);
-      console.log(sessionData)
+      // Create 10 instance of create New Tick Bid Round
+      // and store to transactions as a bundle
+      for (let i = 1; i <= 10; i++){
+        // Get the New Tick Bid Round address
+        const newTickBidRoundAddress = await getNewTickBidRound(currentSessionPk, i.toString());
+        setSessionCommitLeaderboard(newTickBidRoundAddress[0].toBase58());
 
-      // // Get the New Tick Bid Round address
-      // const newTickBidRoundAddress = await getNewTickBidRound(currentSessionPk);
-      // setSessionCommitLeaderboard(newTickBidRoundAddress[0].toBase58());
-    
-      // const txHash = await program.methods
-      // .createSessionCommitQueue()
-      // .accounts({
-      //   authority: wallet.publicKey,
-      //   newCommitQueue: newSessionCommitQueueAddress[0],
-      //   session: currentSessionPk,
-      // })
-      // .rpc()
-      // await confirmTx(txHash, connection);
+        // If it's the 10th Tick Bid Round execuate and send the transaction
+        if (i == 10){
+          console.log(`Tick Bid Round [${i}]: `,newTickBidRoundAddress[0].toBase58());
+
+          // Create a new transaction for the 10th round and perform pre instruction
+          // txHash[i] = await program.methods
+          // .createTickBidRound()
+          // .preInstructions([
+          //   txHash[1].instruction,
+          //   txHash[2].instruction,
+          //   txHash[3].instruction,
+          //   txHash[4].instruction,
+          //   txHash[5].instruction,
+          //   txHash[6].instruction,
+          //   txHash[7].instruction,
+          //   txHash[8].instruction,
+          //   txHash[9].instruction,
+          // ])
+          // .accounts({
+          //   authority: wallet.publicKey,
+          //   newTickBidRound: newTickBidRoundAddress[0],
+          //   session: currentSessionPk
+          // })
+          // .rpc()
+
+          // await confirmTx(txHash[i], connection);
+
+        } else {
+          console.log(`Tick Bid Round [${i}]: `,newTickBidRoundAddress[0].toBase58());
+
+          // Create a new transaction for the current round
+          txHash[i] = await program.methods
+          .createTickBidRound()
+          .accounts({
+            authority: wallet.publicKey,
+            newTickBidRound: newTickBidRoundAddress[0],
+            session: currentSessionPk
+          })
+          .prepare()
+        }
+      }
 
       console.log("Tick Bid Round created successfully!");
       toast.success("Tick Bid Round created successfully!");

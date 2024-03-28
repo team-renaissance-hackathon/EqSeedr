@@ -137,11 +137,11 @@ export const getNewSessionCommitQueue = async (session) => {
 //   return newSealedBidTokenStakeAccount;
 // }
 
-/* TODO Derive New Tick Bid Round */
+/* Derive New Tick Bid Round */
 export const getNewTickBidRound = async (session, sessionNextRound) => {
   
   const newTickBidRound = await PublicKey.findProgramAddressSync([
-    sessionNextRound.toBuffer(),
+    Buffer.from(sessionNextRound),
     session.toBuffer(),
     Buffer.from("tick-bid-round")],
     PROGRAM_ID);
