@@ -179,24 +179,24 @@ export const getNewVestedConfigBySession = async (session) => {
   return newVestedConfigBySession;
 }
 
+/* Derive New Vested Account by Owner */
+export const getNewVestedAccountByOwner = async (session, authority) => {
+  const newVestedConfigAccountByOwner = await PublicKey.findProgramAddressSync([
+    authority.toBuffer(),
+    session.toBuffer(),
+    Buffer.from("vested-account-by-owner")],
+    PROGRAM_ID)
 
+  return newVestedConfigAccountByOwner;
+}
 
-/* reference */
+/* Derive New Vested Account by Owner */
+export const getNewVestedAccountByIndex = async (session, index) => {
+  const newVestedConfigAccountByIndex = await PublicKey.findProgramAddressSync([
+    Buffer.from(index.toString()),
+    session.toBuffer(),
+    Buffer.from("vested-account-by-index")],
+    PROGRAM_ID)
 
-// export const getLotteryAddress = async (id) => {
-//   return (
-//     await PublicKey.findProgramAddress(
-//       [Buffer.from(LOTTERY_SEED), new BN(id).toArrayLike(Buffer, "le", 4)],
-//       PROGRAM_ID
-//     )
-//   )[0];
-// };
-
-
-// // Return the lastTicket ID and multiply the ticket price and convert LAMPORTS PER SOL and convert it to String
-// export const getTotalPrize = (lottery) => {
-//   return new BN(lottery.lastTicketId)
-//     .mul(lottery.ticketPrice)
-//     .div(new BN(LAMPORTS_PER_SOL))
-//     .toString();
-// };
+  return newVestedConfigAccountByIndex;
+}

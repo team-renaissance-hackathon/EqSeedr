@@ -10,7 +10,8 @@ const CreateSessionCard = () => {
         createSessionTickBidLeaderboard,
         createSessionMarketplace,
         createVestedConfigBySession,
-        createTickBidRound
+        createTickBidRound,
+        createSessionRegistration,
         
     } = useAppContext();
 
@@ -40,6 +41,11 @@ const CreateSessionCard = () => {
                 className={style.btn} 
                 onClick={createVestedConfigBySession}>
                     Create Vested Config
+            </button>
+            <button 
+                className={style.btn} 
+                onClick={createSessionRegistration}>
+                    Session Registration
             </button>
         </div>
              

@@ -27,6 +27,8 @@ import {
   getNewMarketplacePositions,
   getNewVestedConfigBySession,
   getNewTickBidRound,
+  getNewVestedAccountByOwner,
+  getNewVestedAccountByIndex,
 } from "../utils/program";
 
 import { confirmTx, mockWallet } from "../utils/helper";
@@ -63,6 +65,19 @@ export const AppProvider = ({ children }) => {
 
   /* Session Commit Queue creation state variables */
   const [sessionCommitQueue, setSessionCommitQueue] = useState("");
+
+  /* Session Tick Bid Leaderboard creation state variables */
+  const [sessionTickBidLeaderBoard, setSessionTickBidLeaderboard] = useState("");
+
+  /* Session Marketplace creation state variables */
+  const [sessionMarketplace, setSessionMarketplace] = useState("");
+
+  /* Vested Config by Session creation state variables */
+  const [vestedConfigBySession, setVestedConfigBySession] = useState("");
+
+  /* Session Registration creation state variables */
+  const [vestedAccountByOwner, setVestedAccountByOwner] = useState("");
+  const [vestedAccountByIndex, setVestedAccountByIndex] = useState([]);
 
   // Get provider
   const { connection } = useConnection();
@@ -283,7 +298,7 @@ export const AppProvider = ({ children }) => {
       // Get the New Session Commit Queue address
       const currentSessionPk = new PublicKey(currentSession);
       const newSessionCommitQueueAddress = await getNewSessionCommitQueue(currentSessionPk);
-      setSessionCommitLeaderboard(newSessionCommitQueueAddress[0].toBase58());
+      setSessionCommitQueue(newSessionCommitQueueAddress[0].toBase58());
     
       // const txHash = await program.methods
       // .createSessionCommitQueue()
@@ -303,7 +318,7 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  // TODO
+  // TODO -RELATED TO TOKEN ACCOUNT INSTRUCTION
   // /* Create Sealed Bid Token Stake Account */
   // const createSealedBidTokenStakeAccount = async () => {
   //   try{
@@ -399,7 +414,7 @@ export const AppProvider = ({ children }) => {
       // Get the New Session Tick Bid Leaderboard address
       const currentSessionPk = new PublicKey(currentSession);
       const newTickBidLeaderboardAddress = await getNewSessionTickBidLeaderboard(currentSessionPk);
-      setSessionCommitLeaderboard(newTickBidLeaderboardAddress[0].toBase58());
+      setSessionTickBidLeaderboard(newTickBidLeaderboardAddress[0].toBase58());
     
       // const txHash = await program.methods
       // .createSessionTickBidLeaderBoard()
@@ -425,7 +440,7 @@ export const AppProvider = ({ children }) => {
       // Get the New Session Marketplace address
       const currentSessionPk = new PublicKey(currentSession);
       const newSessionMarketplaceAddress = await getNewMarketplacePositions(currentSessionPk);
-      setSessionCommitLeaderboard(newSessionMarketplaceAddress[0].toBase58());
+      setSessionMarketplace(newSessionMarketplaceAddress[0].toBase58());
     
       // const txHash = await program.methods
       // .createSessionMarketplace()
@@ -454,7 +469,7 @@ export const AppProvider = ({ children }) => {
       // Get the Vested Config address
       const currentSessionPk = new PublicKey(currentSession);
       const newVestedConfigBySession = await getNewVestedConfigBySession(currentSessionPk);
-      setSessionCommitLeaderboard(newVestedConfigBySession[0].toBase58());
+      setVestedConfigBySession(newVestedConfigBySession[0].toBase58());
     
       // const txHash = await program.methods
       // .createVestedConfigBySession()
@@ -475,12 +490,64 @@ export const AppProvider = ({ children }) => {
     }
   }
 
-  
+  /* Create Session Registration */
+  const createSessionRegistration = async () => {
+    try{
+      // References session token mint address
+      const token_mint = new PublicKey(tokenMint);
+
+      // Reference the Session address
+      const currentSessionPk = new PublicKey(currentSession);
+
+      // Get the New Vested Account By Owner address
+      const newVestedAccountByOwnerAddress = await getNewVestedAccountByOwner(currentSessionPk, wallet.publicKey);
+      setVestedAccountByOwner(newVestedAccountByOwnerAddress[0].toBase58());
+
+      console.log("New Vested Account by Owner: ", newVestedAccountByOwnerAddress[0].toBase58());
+
+      // Reference the Vested Config by Session address
+      const vestedConfigBySessionPk = new PublicKey(vestedConfigBySession);
+      
+      // Fetch the index of vested config by session
+      const vestedConfigData = await program.account.vestedConfigBySession.fetch(vestedConfigBySessionPk);
+      const vestedConfigdIndex = (vestedConfigData.vestedIndex + 1);
+
+      console.log("Vested Config Index: ", vestedConfigdIndex)
+
+      // Get the New Vested Account By Index address
+      const newVestedAccountByIndexAddress = await getNewVestedAccountByIndex(currentSessionPk, vestedConfigdIndex)
+      const updatedVestedAccountByIndex = [...vestedAccountByIndex, newVestedAccountByIndexAddress[0].toBase58()];
+      setVestedAccountByIndex(updatedVestedAccountByIndex);
+      console.log("New Vested Account by Index Address: ", updatedVestedAccountByIndex);
+
+      // Invoke the sessionRegistration instruction from the smart contract
+      // const txHash = await program.methods.sessionRegistration()
+      // .accounts({
+      //   authority: wallet.publicKey,
+      //   newVestedAccountByOwner: newVestedAccountByOwnerAddress[0],
+      //   newVestedAccountByIndex: newVestedAccountByIndexAddress[0],
+      //   vestedConfig: vestedConfigBySessionPk,
+      //   session: currentSessionPk,
+      //   tokenMint: token_mint,
+      // })
+      // .rpc()
+      // await confirmTx(txHash, connection);
+
+      toast.success("Session Registration complete!")
+      console.log("Session Registration complete!")
+    }catch(err){
+      console.log(err)
+      toast.error(err.message)
+    }
+  }
+
 
   return (
     <AppContext.Provider
       value={{
-        // Put functions/variables you want to bring out of context to App in here
+        /* Put functions/variables you want to bring 
+          out of context from App in here */
+
         connected: wallet?.publicKey ? true : false,
         walletBalance: walletBalance,
         walletAddress : walletAddress,
@@ -493,6 +560,7 @@ export const AppProvider = ({ children }) => {
         createSessionMarketplace,
         createVestedConfigBySession,
         createTickBidRound,
+        createSessionRegistration,
       }}
     >
       {children}
