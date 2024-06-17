@@ -6,6 +6,7 @@ use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token::{Mint, Token, TokenAccount},
+    // token_2022::{Mint, Token, TokenAccount},
 };
 
 #[derive(Accounts)]
@@ -25,6 +26,7 @@ pub struct Initialize<'info> {
     )]
     pub new_authority: Box<Account<'info, ProgramAuthority>>,
 
+    // needs update to anchor 0.30.0
     #[account(
         init,
         payer = authority,
@@ -39,6 +41,7 @@ pub struct Initialize<'info> {
     )]
     pub new_token_mint: Box<Account<'info, Mint>>,
 
+    // needs update to anchor 0.30.0
     #[account(
         init,
         payer = authority,
@@ -130,3 +133,9 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
 
     Ok(())
 }
+
+// TODO!
+// - Needs update to interface with all SPL token standards and extensions.
+// - account inits need to reflect anchor 0.30.0
+// - need to implement event logs.
+// - need to add the program token mint creation process
