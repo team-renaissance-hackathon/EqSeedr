@@ -147,3 +147,8 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
 //                  - transfer removed invester from commit queue fund account to investor account
 //                  - record / update last index investor into commit leader board as the cut off point
 //                      where any account above that point that hasn't commited to bid will lose their staked amount
+
+// TODO!
+// - need to implement event logs
+// - add / update validations with correct and working errors, need to explore why the errors are not working
+// - implement the refund instruction in seperate file

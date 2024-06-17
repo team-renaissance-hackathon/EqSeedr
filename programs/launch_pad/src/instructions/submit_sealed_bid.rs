@@ -88,3 +88,9 @@ pub fn handler(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()>
 
     Ok(())
 }
+
+// TODO!
+// - Needs update to interface with all SPL token standards and extensions.
+// - account inits to reflect anchor 0.30.0 -> may not be relevent since only creating our own accounts
+// - need to implement event logs
+// - add / update validations with correct and working errors

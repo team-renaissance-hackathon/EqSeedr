@@ -48,3 +48,11 @@ pub fn handler(ctx: Context<SubmitUnsealedBid>, amount: u64, index: u32) -> Resu
 
     Ok(())
 }
+
+// TODO!
+// - need to implement event logs
+// - add / update validations with correct and working errors, need to explore why the errors are not working
+// - refactor the commit leader board
+// - - into generic linked list
+// - - zero copy account structure -> though the data set maybe small enough to not need a zero copy
+//     but may need go the account to the max heap size.
