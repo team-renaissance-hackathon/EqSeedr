@@ -40,6 +40,10 @@ pub struct Session {
 
     // total funds raised in USDC | SOL
     pub bid_sum: u64,
+    pub total_tokens: u64,
+    pub market_value: u64,
+
+    // pub bonus_pool: u64,
 
     // INITIALIZED STATE CONTRACTS:
     pub has_sealed_bid_round: bool,
@@ -135,6 +139,20 @@ impl Session {
         });
 
         Ok(())
+    }
+
+    pub fn execute_bid(&mut self, bid: u64, amount: u64) {
+        self.number_of_bids += 1;
+
+        self.bid_sum += bid;
+        self.total_tokens += amount;
+
+        self.market_value = self.bid_sum / self.total_tokens
+    }
+
+    pub fn add_vested_member(&mut self) {
+        // total_vested_members -> rename?
+        self.total_vested += 1;
     }
 
     pub fn add_sealed_bid_round(&mut self) {
