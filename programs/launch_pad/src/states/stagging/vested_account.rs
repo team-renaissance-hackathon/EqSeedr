@@ -73,6 +73,16 @@ impl VestedConfigBySession {
     pub fn update_index(&mut self) {
         self.vested_index += 1;
     }
+
+    pub fn add_vested_member_by_session(&mut self) {
+        // should change to total_vested_members
+        self.stats_by_session.total_vested_accounts += 1;
+    }
+
+    pub fn add_vested_member_by_round(&mut self, index: u8) {
+        // should change to total_vested_members
+        self.rounds[index as usize].stats.total_vested_accounts += 1;
+    }
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
@@ -120,6 +130,8 @@ impl Round {
             round: round_index,
 
             stats: Stats {
+                // when does the init dat get set?
+                // when a round closes?
                 // currently incorrect date being stored
                 init_date: 0,
                 // currently incorrect slot being stored
@@ -138,6 +150,7 @@ impl Round {
 
             // conditions of claiming tokens
             status: LockedStatus {
+                // when does the maturity date get set?
                 maturity_date: 0,
                 maturity_slot: 0,
 
@@ -220,7 +233,8 @@ impl VestedAccountByOwner {
         self.session = session;
 
         self.session_status = VestedSession {
-            total_tickets: 0,
+            is_vested: false,
+            total_tokens: 0,
             bid_sum: 0,
         };
 
@@ -237,11 +251,28 @@ impl VestedAccountByOwner {
             VestedRound::new(10),
         ]
     }
+
+    pub fn update(&mut self, bid: u64, amount: u64, index: u8) {
+        self.session_status.bid_sum += bid;
+        self.session_status.total_tokens += amount;
+
+        self.round_status[index as usize].bid_sum += bid;
+        self.round_status[index as usize].total_tokens += amount;
+    }
+
+    pub fn update_vested_by_session(&mut self) {
+        self.session_status.is_vested = true;
+    }
+
+    pub fn update_vested_by_round(&mut self, index: u8) {
+        self.round_status[index as usize].is_vested = true;
+    }
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
 pub struct VestedSession {
-    pub total_tickets: u64,
+    pub is_vested: bool,
+    pub total_tokens: u64,
     pub bid_sum: u64,
     // computeable state
     //  - cost_basis / bid_average

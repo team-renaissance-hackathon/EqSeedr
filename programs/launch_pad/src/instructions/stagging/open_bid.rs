@@ -218,17 +218,3 @@ pub fn handler(ctx: Context<OpenBid>) -> Result<()> {
 //      the session, but not for the specified round because there is none for the rounds
 //      but that looks like that will change since it might be needed since thinking about it more
 //      but I am still giving it more thought. but most likely will be a thing.
-
-// if I wanted to build a JS front end framework, how would I go about it?
-// what problems would I try to solve?
-// considerations
-//  - trade offs, something would have to give,
-//  - speed
-//  - effiency
-//  - least amount of work
-//  - least amount of memory
-//  - least amount of load time
-//  - easy dev experience
-//  - easy configuration
-//  - easy dev tooling
-//  - etc

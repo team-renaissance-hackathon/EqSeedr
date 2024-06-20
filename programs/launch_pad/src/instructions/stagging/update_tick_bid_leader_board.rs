@@ -66,3 +66,8 @@ pub struct UpdateTickBidLeaderBoard<'info> {
 //  - if buffer is not cleared, then if next bidder executes bid,
 //  - it will be at the current tick, as if the last bid never happen
 //  - in such a case, the funds dont get refunded as penalty.
+
+// there are 2 leader boards
+//  - round leader board
+//  - session leader board
+//  - which one is this one? don't remember, need to analyze code
