@@ -27,6 +27,7 @@ pub struct SessionRegistration<'info> {
         bump
     )]
     pub new_vested_account_by_owner: Box<Account<'info, VestedAccountByOwner>>,
+
     #[account(
         init,
         payer = authority,

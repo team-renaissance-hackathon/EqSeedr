@@ -14,78 +14,78 @@ pub mod launch_pad {
         instructions::initialize::handler(ctx)
     }
 
-    pub fn create_commit_token_account(ctx: Context<CreateCommitTokenAccount>) -> Result<()> {
-        instructions::create_commit_token_account::handler(ctx)
-    }
-
     pub fn create_session(ctx: Context<CreateSession>, input: SessionParams) -> Result<()> {
-        instructions::create_session::handler(ctx, input)
+        instructions::create_instance::session::handler(ctx, input)
     }
 
     pub fn create_session_sealed_bid_round(
         ctx: Context<CreateSessionSealedBidRound>,
     ) -> Result<()> {
-        instructions::create_sealed_bid_round::handler(ctx)
+        instructions::create_instance::sealed_bid_round::handler(ctx)
     }
 
     pub fn create_session_commit_leader_board(
         ctx: Context<CreateSessionCommitLeaderBoard>,
     ) -> Result<()> {
-        instructions::create_commit_leader_board::handler(ctx)
+        instructions::create_instance::commit_leader_board::handler(ctx)
     }
 
     pub fn create_session_commit_queue(ctx: Context<CreateSessionCommitQueue>) -> Result<()> {
-        instructions::create_commit_queue::handler(ctx)
+        instructions::create_instance::commit_queue::handler(ctx)
     }
+
+    // pub fn create_commit_token_account(ctx: Context<CreateCommitTokenAccount>) -> Result<()> {
+    //     instructions::create_commit_token_account::handler(ctx)
+    // }
 
     pub fn create_sealed_bid_token_stake_account(
         ctx: Context<CreateSealedBidTokenStakeAccount>,
     ) -> Result<()> {
-        instructions::create_sealed_bid_token_stake_account::handler(ctx)
+        instructions::create_instance::sealed_bid_token_stake_account::handler(ctx)
     }
 
     pub fn create_tick_bid_round(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {
-        instructions::create_tick_bid_round::handler(ctx)
+        instructions::create_instance::tick_bid_round::handler(ctx)
     }
 
     pub fn create_session_tick_bid_leader_board(
         ctx: Context<CreateSessionTickBidLeaderBoard>,
     ) -> Result<()> {
-        instructions::create_session_tick_bid_leader_board::handler(ctx)
+        instructions::create_instance::tick_bid_leader_board::handler(ctx)
     }
 
-    pub fn create_session_marketplace(
-        ctx: Context<CreateSessionMarketplacePositions>,
-    ) -> Result<()> {
-        instructions::create_session_marketplace::handler(ctx)
-    }
+    // pub fn create_session_marketplace(
+    //     ctx: Context<CreateSessionMarketplacePositions>,
+    // ) -> Result<()> {
+    //     instructions::create_session_marketplace::handler(ctx)
+    // }
 
-    pub fn create_vested_config_by_session(
-        ctx: Context<CreateVestedConfigBySession>,
-    ) -> Result<()> {
-        instructions::create_vested_config_by_session::handler(ctx)
-    }
+    // pub fn create_vested_config_by_session(
+    //     ctx: Context<CreateVestedConfigBySession>,
+    // ) -> Result<()> {
+    //     instructions::create_vested_config_by_session::handler(ctx)
+    // }
 
-    pub fn submit_sealed_bid(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()> {
-        instructions::submit_sealed_bid::handler(ctx, commit_hash)
-    }
+    // pub fn submit_sealed_bid(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()> {
+    //     instructions::submit_sealed_bid::handler(ctx, commit_hash)
+    // }
 
-    pub fn submit_unsealed_bid(
-        ctx: Context<SubmitUnsealedBid>,
-        amount: u64,
-        index: u32,
-        _secret: [u8; 32],
-    ) -> Result<()> {
-        instructions::submit_unsealed_bid::handler(ctx, amount, index)
-    }
+    // pub fn submit_unsealed_bid(
+    //     ctx: Context<SubmitUnsealedBid>,
+    //     amount: u64,
+    //     index: u32,
+    //     _secret: [u8; 32],
+    // ) -> Result<()> {
+    //     instructions::submit_unsealed_bid::handler(ctx, amount, index)
+    // }
 
-    pub fn submit_commit_bid(ctx: Context<CommitBidBySession>) -> Result<()> {
-        instructions::submit_commit_bid::handler(ctx)
-    }
+    // pub fn submit_commit_bid(ctx: Context<CommitBidBySession>) -> Result<()> {
+    //     instructions::submit_commit_bid::handler(ctx)
+    // }
 
-    pub fn session_registration(ctx: Context<SessionRegistration>) -> Result<()> {
-        instructions::session_registration::handler(ctx)
-    }
+    // pub fn session_registration(ctx: Context<SessionRegistration>) -> Result<()> {
+    //     instructions::session_registration::handler(ctx)
+    // }
 }
 
 // TICK-BID

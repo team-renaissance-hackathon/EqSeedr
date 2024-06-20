@@ -1,4 +1,4 @@
-use super::super::{
+use crate::{
     states::{CommitLeaderBoard, Session},
     utils::*,
 };

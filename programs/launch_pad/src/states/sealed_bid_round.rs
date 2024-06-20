@@ -77,6 +77,7 @@ impl SealedBidRound {
         }
     }
 
+    // -- SOME OF THESE VALIDATIONS SEAM INCOMPLETE ATM. need to explore implementing them.
     // don't think this is necessary, will combine the commit bid phase with unsealed bid phase
     pub fn is_valid_commit_bid_phase(&self) -> bool {
         return true;
@@ -331,6 +332,7 @@ impl CommitNode {
     pub const LEN: usize = UNSIGNED_32 + (BYTE + UNSIGNED_32) + (BYTE + UNSIGNED_32) + Commit::LEN;
 }
 
+// should change to name it CommitBidQueue
 #[account]
 pub struct CommitQueue {
     pub bump: u8,
@@ -354,12 +356,14 @@ impl CommitQueue {
     pub fn initialize(&mut self, bump: u8, session: Pubkey) {
         self.bump = bump;
         self.session = session;
+
+        self.pointer = 0;
         self.queue = Vec::new();
 
         // emit event
     }
 
-    // SOMETHING WRONG HERE
+    // algo: add until full, when full insert at index and remove last in queue
     pub fn insert(&mut self, commit: Commit, sealed_bid_by_index: &Account<SealedBidByIndex>) {
         let mut index = self.queue.len();
 
@@ -400,10 +404,16 @@ impl CommitQueue {
         return self.queue.pop();
     }
 
-    pub fn dequeue(&mut self) -> CommitBid {
-        let index = self.pointer;
+    pub fn dequeue(&mut self) {
         self.pointer += 1;
-        return self.queue[index as usize].clone();
+    }
+
+    pub fn get(&self) -> CommitBid {
+        return self.queue[self.pointer as usize].clone();
+    }
+
+    pub fn current(&self) -> u8 {
+        return self.pointer + 1;
     }
 
     pub fn is_valid_insert(
@@ -421,6 +431,10 @@ impl CommitQueue {
                 && commit.position.amount > self.queue[self.queue.len() - 1].amount));
     }
 
+    pub fn is_valid_open_bid(&self, owner: Pubkey) -> bool {
+        return !(self.queue[self.pointer as usize].clone().owner == owner);
+    }
+
     pub fn is_valid_dequeue(&self) -> bool {
         return self.pointer < Self::MAX_CAPACITY as u8;
     }
@@ -429,6 +443,7 @@ impl CommitQueue {
         return !(self.session == session);
     }
 
+    // not sure what this is here for...
     pub fn add(&mut self) {}
 }
 
@@ -447,6 +462,8 @@ impl Commit {
 pub struct CommitBid {
     pub owner: Pubkey,
     pub bid_index: u32,
+
+    // should this be called value?
     pub amount: u64,
     pub commit_leader_board_index: u32,
 }

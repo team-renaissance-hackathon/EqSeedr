@@ -1,4 +1,4 @@
-use super::super::states::Session;
+use crate::states::Session;
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,

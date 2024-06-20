@@ -41,6 +41,7 @@ impl SealedBidByIndex {
         + BOOL
         + UNSIGNED_32;
 
+    // sealed bid step
     pub fn initialize(
         &mut self,
         bump: u8,
@@ -62,6 +63,13 @@ impl SealedBidByIndex {
         // emit event
     }
 
+    // unsealed bid step
+    pub fn unsealed_bid(&mut self, index: u32) {
+        self.commit_leader_board_index = index - 1;
+        self.is_unsealed = true;
+    }
+
+    // commit step
     pub fn add_commit(&mut self) {
         self.is_commit = true;
     }
@@ -78,10 +86,5 @@ impl SealedBidByIndex {
         let commit = Pubkey::new_from_array(hash.to_bytes());
 
         return !(commit == self.commit_hash);
-    }
-
-    pub fn unsealed_bid(&mut self, index: u32) {
-        self.commit_leader_board_index = index - 1;
-        self.is_unsealed = true;
     }
 }

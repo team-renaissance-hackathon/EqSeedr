@@ -259,20 +259,20 @@ describe("launch_pad", () => {
   // now that I think about it. this is for the commit queue.
   // so then maybe only one instances is okay to exist?
   // and is using a valid bid token mint -> USDC / SOL / Stable coin
-  it("Create Commit Token Account", async () => {
+  // it("Create Commit Token Account", async () => {
 
-    await script.createCommitTokenAccount({
-      connection: provider.connection,
-      // is just payer and this is the session token mint
-      // is that accurate? or should be the bidTokenMint?
-      authority: tokenMint.mintAuthority,
-      program,
-      web3: anchor.web3,
-      tokenMint,
-      bidTokenMint,
-    })
+  //   await script.createCommitTokenAccount({
+  //     connection: provider.connection,
+  //     // is just payer and this is the session token mint
+  //     // is that accurate? or should be the bidTokenMint?
+  //     authority: tokenMint.mintAuthority,
+  //     program,
+  //     web3: anchor.web3,
+  //     tokenMint,
+  //     bidTokenMint,
+  //   })
 
-  })
+  // })
 
   describe("Session", () => {
 
@@ -390,8 +390,6 @@ describe("launch_pad", () => {
 
     describe("Initialize Session State Contracts", () => {
 
-
-
       it("Create New Session", async () => {
         await script.createSession({
           connection: provider.connection,
@@ -401,7 +399,7 @@ describe("launch_pad", () => {
           tokenMint,
           input: {
             tokenName: "EqSeedr",
-            launchDate: new anchor.BN(1713613050),
+            launchDate: new anchor.BN(1723613050),
             tokenAllocation: new anchor.BN(1_000_000_000 * 1_000_000),
           }
         })
@@ -575,200 +573,200 @@ describe("launch_pad", () => {
         })
       })
 
-      it("Create Tick Bid Marketplace", async () => {
+      // it("Create Tick Bid Marketplace", async () => {
 
-        await script.createSessionMarketplace({
-          connection: provider.connection,
-          authority: tokenMint.mintAuthority,
-          program,
-          web3: anchor.web3,
-          tokenMint,
-        })
-      })
+      //   await script.createSessionMarketplace({
+      //     connection: provider.connection,
+      //     authority: tokenMint.mintAuthority,
+      //     program,
+      //     web3: anchor.web3,
+      //     tokenMint,
+      //   })
+      // })
 
-      it("Create Vested Config By Session", async () => {
+      // it("Create Vested Config By Session", async () => {
 
-        await script.createVestedConfigBySession({
-          connection: provider.connection,
-          authority: tokenMint.mintAuthority,
-          program,
-          web3: anchor.web3,
-          tokenMint,
-        })
-      })
+      //   await script.createVestedConfigBySession({
+      //     connection: provider.connection,
+      //     authority: tokenMint.mintAuthority,
+      //     program,
+      //     web3: anchor.web3,
+      //     tokenMint,
+      //   })
+      // })
 
     })
 
-    describe("Interact with Sealed Bid System", () => {
+    // describe("Interact with Sealed Bid System", () => {
 
 
-      it("Submit Sealed Bid", async () => {
+    //   it("Submit Sealed Bid", async () => {
 
-        const fn = async (index) => {
+    //     const fn = async (index) => {
 
-          if (index == users.length) {
-            return
-          }
+    //       if (index == users.length) {
+    //         return
+    //       }
 
-          await script.submitSealedBid({
-            connection: provider.connection,
-            authority: users[index].keypair,
-            program: program,
-            web3: anchor.web3,
-            tokenMint,
-            stakeTokenMint,
-            input: users[index],
-          })
+    //       await script.submitSealedBid({
+    //         connection: provider.connection,
+    //         authority: users[index].keypair,
+    //         program: program,
+    //         web3: anchor.web3,
+    //         tokenMint,
+    //         stakeTokenMint,
+    //         input: users[index],
+    //       })
 
-          index++
-          await fn(index)
-        }
+    //       index++
+    //       await fn(index)
+    //     }
 
-        await fn(0)
+    //     await fn(0)
 
-        // shuffle users. but don't like using it in tests.
-        shuffle(users)
-      })
+    //     // shuffle users. but don't like using it in tests.
+    //     shuffle(users)
+    //   })
 
-      it("Submit Unsealed Bid", async () => {
+    //   it("Submit Unsealed Bid", async () => {
 
-        const fn = async (index) => {
+    //     const fn = async (index) => {
 
-          if (index == users.length) {
-            return
-          }
+    //       if (index == users.length) {
+    //         return
+    //       }
 
-          await script.submitUnsealedBid({
-            connection: provider.connection,
-            authority: users[index].keypair,
-            program: program,
-            tokenMint,
-            stakeTokenMint,
-            input: {
-              ...users[index],
-              amount: new anchor.BN(users[index].amount),
-              secretAsPub: new anchor.web3.PublicKey(users[index].secret)
-            },
-          })
+    //       await script.submitUnsealedBid({
+    //         connection: provider.connection,
+    //         authority: users[index].keypair,
+    //         program: program,
+    //         tokenMint,
+    //         stakeTokenMint,
+    //         input: {
+    //           ...users[index],
+    //           amount: new anchor.BN(users[index].amount),
+    //           secretAsPub: new anchor.web3.PublicKey(users[index].secret)
+    //         },
+    //       })
 
-          index++
-          await fn(index)
-          shuffle(users)
+    //       index++
+    //       await fn(index)
+    //       shuffle(users)
 
-        }
+    //     }
 
-        await fn(0)
+    //     await fn(0)
 
-        // const {
-        //   commitLeaderBoard,
-        // } = script.getAccounts({
-        //   tokenMint,
-        //   program,
-        //   bidTokenMint,
-        //   stakeTokenMint,
-        // })
+    //     // const {
+    //     //   commitLeaderBoard,
+    //     // } = script.getAccounts({
+    //     //   tokenMint,
+    //     //   program,
+    //     //   bidTokenMint,
+    //     //   stakeTokenMint,
+    //     // })
 
-      })
+    //   })
 
-      // need to refind the test. needs to iterate through all the 
-      // submit unsealed bids
-      // once there are 10 bids in queue, then filter
-      // out the lowest bids so it doesn't trigger constraint
-      // main thing is not to trigger constaint because that is not
-      // what we are testing for.
-      // so their can be multiple ways to go about that.
-      it("Submit Commit Bid", async () => {
+    //   // need to refind the test. needs to iterate through all the 
+    //   // submit unsealed bids
+    //   // once there are 10 bids in queue, then filter
+    //   // out the lowest bids so it doesn't trigger constraint
+    //   // main thing is not to trigger constaint because that is not
+    //   // what we are testing for.
+    //   // so their can be multiple ways to go about that.
+    //   it("Submit Commit Bid", async () => {
 
-        // await script.submitCommitBid({
-        //   connection: provider.connection,
-        //   authority: users[2].keypair,
-        //   // authority: users[5].keypair,
+    //     // await script.submitCommitBid({
+    //     //   connection: provider.connection,
+    //     //   authority: users[2].keypair,
+    //     //   // authority: users[5].keypair,
 
-        //   program: program,
-        //   tokenMint,
-        //   stakeTokenMint,
-        //   bidTokenMint,
-        //   input: users[2],
-        //   // input: users[5],
-
-
-        // })
-
-        const fn = async (index) => {
-
-          if (index == users.length - 5) {
-            return
-          }
-
-          await script.submitCommitBid({
-            connection: provider.connection,
-            authority: users[index].keypair,
-
-            program: program,
-            tokenMint,
-            stakeTokenMint,
-            bidTokenMint,
-            input: users[index],
-          })
-
-          index++
-          await fn(index)
-        }
-
-        await fn(0)
-
-        // const {
-        //   commitQueue,
-        // } = script.getAccounts({
-        //   tokenMint,
-        //   program,
-        //   bidTokenMint,
-        //   stakeTokenMint,
-        // })
+    //     //   program: program,
+    //     //   tokenMint,
+    //     //   stakeTokenMint,
+    //     //   bidTokenMint,
+    //     //   input: users[2],
+    //     //   // input: users[5],
 
 
-      })
+    //     // })
 
-      // request unlock staked tokens
-      // request unclaimed commit bid
-    })
+    //     const fn = async (index) => {
 
-    describe("Interact with Tick Bid System", () => {
+    //       if (index == users.length - 5) {
+    //         return
+    //       }
 
-      // before
-      // create 15 more users to test the tick bid system
+    //       await script.submitCommitBid({
+    //         connection: provider.connection,
+    //         authority: users[index].keypair,
 
-      // registerVestedAccount -> pre ix
-      it("Session Registration", async () => {
-        try {
-          await script.sessionRegistration({
-            connection: provider.connection,
-            authority: users[0].keypair,
-            program,
-            tokenMint,
-            bidTokenMint,
-            input: {
-              vestedIndex: 1,
-              vestedOwner: users[0].keypair.publicKey
-            }
-          })
-        } catch (err) {
-          console.log(err)
-        }
+    //         program: program,
+    //         tokenMint,
+    //         stakeTokenMint,
+    //         bidTokenMint,
+    //         input: users[index],
+    //       })
 
-      })
-      // openBid
-      // executeBid
+    //       index++
+    //       await fn(index)
+    //     }
 
-      // registerVestedAccount
-      // process commit for round, opens the round
-      // execute bid
-      // delayed execute bid
-      // need to excute many bids quickly to close the tick bid round and enter another tick bid round
-      // need to execute all the rounds fast to close the session
-    })
+    //     await fn(0)
 
-    describe("Process Errors", () => { })
+    //     // const {
+    //     //   commitQueue,
+    //     // } = script.getAccounts({
+    //     //   tokenMint,
+    //     //   program,
+    //     //   bidTokenMint,
+    //     //   stakeTokenMint,
+    //     // })
+
+
+    //   })
+
+    //   // request unlock staked tokens
+    //   // request unclaimed commit bid
+    // })
+
+    // describe("Interact with Tick Bid System", () => {
+
+    //   // before
+    //   // create 15 more users to test the tick bid system
+
+    //   // registerVestedAccount -> pre ix
+    //   it("Session Registration", async () => {
+    //     try {
+    //       await script.sessionRegistration({
+    //         connection: provider.connection,
+    //         authority: users[0].keypair,
+    //         program,
+    //         tokenMint,
+    //         bidTokenMint,
+    //         input: {
+    //           vestedIndex: 1,
+    //           vestedOwner: users[0].keypair.publicKey
+    //         }
+    //       })
+    //     } catch (err) {
+    //       console.log(err)
+    //     }
+
+    //   })
+    //   // openBid
+    //   // executeBid
+
+    //   // registerVestedAccount
+    //   // process commit for round, opens the round
+    //   // execute bid
+    //   // delayed execute bid
+    //   // need to excute many bids quickly to close the tick bid round and enter another tick bid round
+    //   // need to execute all the rounds fast to close the session
+    // })
+
+    // describe("Process Errors", () => { })
   })
 
 
