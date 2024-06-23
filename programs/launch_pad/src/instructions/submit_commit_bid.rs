@@ -2,7 +2,7 @@ use crate::states::{
     CommitLeaderBoard, CommitQueue, ProgramAuthority, SealedBidByIndex, SealedBidRound, Session,
 };
 use anchor_lang::prelude::*;
-use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
+use anchor_spl::token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked};
 
 #[derive(Accounts)]
 pub struct CommitBidBySession<'info> {
@@ -47,7 +47,7 @@ pub struct CommitBidBySession<'info> {
         mut,
         constraint = bidder_token_account.owner == authority.key()
     )]
-    pub bidder_token_account: Account<'info, TokenAccount>,
+    pub bidder_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         mut,
@@ -55,16 +55,16 @@ pub struct CommitBidBySession<'info> {
         constraint = session_commit_token_account.owner == program_authority.key()
 
     )]
-    pub session_commit_token_account: Account<'info, TokenAccount>,
+    pub session_commit_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         // constraint = program_authority.is_valid_token(token_mint.key())
     )]
-    pub token_mint: Account<'info, Mint>,
+    pub token_mint: InterfaceAccount<'info, Mint>,
 
     pub program_authority: Account<'info, ProgramAuthority>,
     pub session: Account<'info, Session>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
 }
 
 pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
@@ -77,6 +77,7 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
         bidder_token_account,
         session_commit_token_account,
         token_program,
+        token_mint,
         ..
     } = ctx.accounts;
 
@@ -85,16 +86,18 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
 
     sealed_bid_by_index.add_commit();
 
-    transfer(
+    transfer_checked(
         CpiContext::new(
             token_program.to_account_info(),
-            Transfer {
+            TransferChecked {
                 from: bidder_token_account.to_account_info(),
                 to: session_commit_token_account.to_account_info(),
                 authority: authority.to_account_info(),
+                mint: token_mint.to_account_info(),
             },
         ),
         session.staking_amount,
+        token_mint.decimals,
     )?;
 
     commit_queue.remove();

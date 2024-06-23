@@ -5,8 +5,7 @@ use super::super::states::{
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{Mint, Token, TokenAccount},
-    // token_2022::{Mint, Token, TokenAccount},
+    token_interface::{Mint, TokenAccount, TokenInterface}
 };
 
 #[derive(Accounts)]
@@ -26,7 +25,6 @@ pub struct Initialize<'info> {
     )]
     pub new_authority: Box<Account<'info, ProgramAuthority>>,
 
-    // needs update to anchor 0.30.0
     #[account(
         init,
         payer = authority,
@@ -39,9 +37,8 @@ pub struct Initialize<'info> {
         mint::decimals = 9,
         mint::freeze_authority = new_authority,
     )]
-    pub new_token_mint: Box<Account<'info, Mint>>,
+    pub new_token_mint: Box<InterfaceAccount<'info, Mint>>,
 
-    // needs update to anchor 0.30.0
     #[account(
         init,
         payer = authority,
@@ -49,7 +46,7 @@ pub struct Initialize<'info> {
         associated_token::authority = new_authority,
         associated_token::token_program = token_program,
     )]
-    pub new_authority_token_account: Box<Account<'info, TokenAccount>>,
+    pub new_authority_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -100,7 +97,7 @@ pub struct Initialize<'info> {
     pub new_marketplace_matchers: Box<Account<'info, MarketplaceMatchers>>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
 
@@ -135,7 +132,5 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
 }
 
 // TODO!
-// - Needs update to interface with all SPL token standards and extensions.
-// - account inits need to reflect anchor 0.30.0
 // - need to implement event logs.
 // - need to add the program token mint creation process
