@@ -5,7 +5,7 @@ use super::super::states::{
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked}
+    token_interface::{Mint, TokenAccount, TokenInterface}
 };
 
 #[derive(Accounts)]
@@ -97,7 +97,7 @@ pub struct Initialize<'info> {
     pub new_marketplace_matchers: Box<Account<'info, MarketplaceMatchers>>,
 
     pub associated_token_program: Program<'info, AssociatedToken>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
 

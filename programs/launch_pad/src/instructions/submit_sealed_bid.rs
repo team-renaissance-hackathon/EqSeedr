@@ -1,6 +1,6 @@
 use super::super::states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session};
 use anchor_lang::prelude::*;
-use anchor_spl::token::{transfer, Mint, Token, TokenAccount, Transfer};
+use anchor_spl::token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked};
 
 #[derive(Accounts)]
 pub struct SubmitSealedBid<'info> {
@@ -30,14 +30,14 @@ pub struct SubmitSealedBid<'info> {
         mut,
         constraint = bidder_token_account.owner == authority.key()
     )]
-    pub bidder_token_account: Account<'info, TokenAccount>,
+    pub bidder_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         mut,
         // right now this constraint wont work, no staking account is stored.
         // constraint = session.is_valid_staking_account(session_stake_token_account.key())
     )]
-    pub session_stake_token_account: Account<'info, TokenAccount>,
+    pub session_stake_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         // right now this constraint wont work since I have to create a cpi so the program authority can be
@@ -48,7 +48,7 @@ pub struct SubmitSealedBid<'info> {
 
     pub program_authority: Account<'info, ProgramAuthority>,
     pub session: Account<'info, Session>,
-    pub token_program: Program<'info, Token>,
+    pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
 
@@ -61,6 +61,7 @@ pub fn handler(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()>
         bidder_token_account,
         session_stake_token_account,
         token_program,
+        token_mint,
         ..
     } = ctx.accounts;
 
@@ -74,16 +75,18 @@ pub fn handler(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()>
 
     sealed_bid_round.update_total_sealed_bids();
 
-    transfer(
+    transfer_checked(
         CpiContext::new(
             token_program.to_account_info(),
-            Transfer {
+            TransferChecked {
                 from: bidder_token_account.to_account_info(),
                 to: session_stake_token_account.to_account_info(),
                 authority: authority.to_account_info(),
+                mint: token_mint.to_account_info(),
             },
         ),
         session.staking_amount,
+        token_mint.decimals,
     )?;
 
     Ok(())
