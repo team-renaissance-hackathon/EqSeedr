@@ -13,6 +13,7 @@ pub struct SealedBidRound {
 
     pub total_sealed_bids: u32,
     pub total_unsealed_bids: u32,
+    pub commit_leader_board_allocation: u32,
 }
 
 impl SealedBidRound {
@@ -21,6 +22,7 @@ impl SealedBidRound {
         + PUBKEY_BYTES
         + PUBKEY_BYTES
         + SealedBidRoundStatus::LEN
+        + UNSIGNED_32
         + UNSIGNED_32
         + UNSIGNED_32;
 
@@ -105,7 +107,20 @@ impl SealedBidRound {
         return !(self.session == session);
     }
 
+    pub fn is_valid_commit_leader_board_allocation(&self) -> bool {
+        self.commit_leader_board_allocation < MAX_STATE_ALLOCATION as u32 * 3
+    }
+
     // pub fn is_valid() {}
+
+    pub fn commit_leader_board_realloc(&self) -> usize {
+        self.commit_leader_board_allocation as usize + MAX_STATE_ALLOCATION
+    }
+
+    pub fn update_commit_leader_board_allocation(&mut self) {
+        self.commit_leader_board_allocation += MAX_STATE_ALLOCATION as u32;
+        // log event -> ("commit bid leader board allocation increase {}", self.commit_leader_board_allocation)
+    }
 }
 
 #[account]
