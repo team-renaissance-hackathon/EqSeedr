@@ -16,8 +16,8 @@ SESSION INSTANCE
         create vested escrow by session
             token account   -> project token
     refactor
-        change to anchor 0.30.0
-        token interface
+        change to anchor 0.30.0 -- done
+        token interface -- done
 
 SEALED-BID SYSTEM
     state
