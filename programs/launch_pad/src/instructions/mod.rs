@@ -8,6 +8,7 @@
 // pub mod create_session_tick_bid_leader_board;
 // pub mod create_tick_bid_round;
 // pub mod create_vested_config_by_session;
+pub mod add_bid_token_mint;
 pub mod initialize;
 // pub mod open_bid;
 // pub mod session_registration;
@@ -26,6 +27,7 @@ pub mod submit_unsealed_bid;
 // pub use create_session_tick_bid_leader_board::*;
 // pub use create_tick_bid_round::*;
 // pub use create_vested_config_by_session::*;
+pub use add_bid_token_mint::*;
 pub use initialize::*;
 // pub use open_bid::*;
 // pub use session_registration::*;

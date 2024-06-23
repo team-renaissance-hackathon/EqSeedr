@@ -1,5 +1,9 @@
 use super::super::states::{
-    ActiveSessionIndex, EnqueueSessionIndex, IndexerStatus, MarketplaceMatchers, ProgramAuthority,
+    ActiveSessionIndex,
+    EnqueueSessionIndex,
+    IndexerStatus,
+    // MarketplaceMatchers,
+    ProgramAuthority,
     SessionIndexer,
 };
 use anchor_lang::prelude::*;
@@ -87,18 +91,17 @@ pub struct Initialize<'info> {
     )]
     pub new_enqueue_session_indexer: Box<Account<'info, EnqueueSessionIndex>>,
 
-    #[account(
-        init,
-        payer = authority,
-        space = MarketplaceMatchers::LEN,
-        seeds = [
-            b"marketplace-matchers",
-            new_authority.key().clone().as_ref(),
-        ],
-        bump
-    )]
-    pub new_marketplace_matchers: Box<Account<'info, MarketplaceMatchers>>,
-
+    // #[account(
+    //     init,
+    //     payer = authority,
+    //     space = MarketplaceMatchers::LEN,
+    //     seeds = [
+    //         b"marketplace-matchers",
+    //         new_authority.key().clone().as_ref(),
+    //     ],
+    //     bump
+    // )]
+    // pub new_marketplace_matchers: Box<Account<'info, MarketplaceMatchers>>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
@@ -111,7 +114,7 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
         new_indexer_status,
         new_active_session_indexer,
         new_enqueue_session_indexer,
-        new_marketplace_matchers,
+        // new_marketplace_matchers,
         ..
     } = ctx.accounts;
 
@@ -125,7 +128,7 @@ pub fn handler(ctx: Context<Initialize>) -> Result<()> {
     new_enqueue_session_indexer
         .initialize(ctx.bumps.new_enqueue_session_indexer, new_authority.key());
 
-    new_marketplace_matchers.initialize(ctx.bumps.new_marketplace_matchers, new_authority.key());
+    // new_marketplace_matchers.initialize(ctx.bumps.new_marketplace_matchers, new_authority.key());
 
     // emit event ->
     //  -> MSG!program deployed and initialized,

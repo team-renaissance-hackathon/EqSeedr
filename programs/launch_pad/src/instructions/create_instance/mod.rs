@@ -10,6 +10,9 @@ pub use commit_leader_board::*;
 pub mod reallocate_commit_leader_board;
 pub use reallocate_commit_leader_board::*;
 
+pub mod commit_bid_vault;
+pub use commit_bid_vault::*;
+
 pub mod commit_queue;
 pub use commit_queue::*;
 

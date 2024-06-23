@@ -53,6 +53,7 @@ pub struct Session {
     pub has_commit_leader_board: bool,
     pub has_commit_queue: bool,
     pub has_max_rounds: bool,
+    pub has_valid_commit_bid_vault: bool,
 }
 
 impl Session {
@@ -122,6 +123,7 @@ impl Session {
         self.has_commit_leader_board = false;
         self.has_commit_queue = false;
         self.has_max_rounds = false;
+        self.has_valid_commit_bid_vault = false;
 
         self.launch_status = SessionStatus::Enqueue;
 
@@ -177,6 +179,10 @@ impl Session {
 
     pub fn add_vested_config_by_session(&mut self) {
         self.has_vested_config = true;
+    }
+
+    pub fn add_valid_commit_bid_vault(&mut self) {
+        self.has_valid_commit_bid_vault = true;
     }
 
     pub fn allocate_tokens(&self) -> u64 {

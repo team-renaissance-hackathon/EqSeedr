@@ -40,4 +40,10 @@ pub enum ProgramError {
 
     #[msg("Sealed Bid Round Has Invalid Session")]
     InvalidSealedBidRound,
+
+    #[msg("Commit Bid Vault Already Exist")]
+    CommitBidVaultAlreadyExist,
+
+    #[msg("Invalid Bid Token")]
+    InvalidBidToken,
 }

@@ -156,6 +156,10 @@ pub mod launch_pad {
         instructions::initialize::handler(ctx)
     }
 
+    pub fn add_bid_token_mint(ctx: Context<AddBidTokenMint>) -> Result<()> {
+        instructions::add_bid_token_mint::handler(ctx)
+    }
+
     pub fn create_session(ctx: Context<CreateSession>, input: SessionParams) -> Result<()> {
         instructions::create_instance::session::handler(ctx, input)
     }
@@ -178,9 +182,9 @@ pub mod launch_pad {
         instructions::create_instance::commit_queue::handler(ctx)
     }
 
-    // pub fn create_commit_token_account(ctx: Context<CreateCommitTokenAccount>) -> Result<()> {
-    //     instructions::create_commit_token_account::handler(ctx)
-    // }
+    pub fn create_commit_bid_vault(ctx: Context<CreateCommitBidVault>) -> Result<()> {
+        instructions::create_instance::commit_bid_vault::handler(ctx)
+    }
 
     pub fn create_sealed_bid_token_stake_account(
         ctx: Context<CreateSealedBidTokenStakeAccount>,

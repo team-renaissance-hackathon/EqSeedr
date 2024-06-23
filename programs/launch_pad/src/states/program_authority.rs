@@ -45,13 +45,17 @@ impl ProgramAuthority {
 
     pub fn sign(&self) {}
 
+    pub fn add_bid_token_mint(&mut self, token_mint: Pubkey) {
+        self.bid_token_mint_list.push(token_mint);
+    }
+
     pub fn is_valid_token(&self, token_mint: Pubkey) -> bool {
         // could be issue for stack... probably should use while and directly index into list
         for mint in self.bid_token_mint_list.clone() {
             if mint == token_mint {
-                return !true;
+                return true;
             }
         }
-        return !false;
+        return false;
     }
 }
