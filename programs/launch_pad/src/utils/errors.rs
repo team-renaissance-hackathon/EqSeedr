@@ -34,4 +34,10 @@ pub enum ProgramError {
 
     #[msg("Session Marketplace Positions Already Exist")]
     SessionMarketplacePositionsAlreadyExist,
+
+    #[msg("Session Commit Leader Board Max Allocation")]
+    SessionCommitLeaderBoardMaxAllocation,
+
+    #[msg("Sealed Bid Round Has Invalid Session")]
+    InvalidSealedBidRound,
 }

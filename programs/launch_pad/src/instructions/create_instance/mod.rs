@@ -7,6 +7,9 @@ pub use sealed_bid_round::*;
 pub mod commit_leader_board;
 pub use commit_leader_board::*;
 
+pub mod reallocate_commit_leader_board;
+pub use reallocate_commit_leader_board::*;
+
 pub mod commit_queue;
 pub use commit_queue::*;
 
