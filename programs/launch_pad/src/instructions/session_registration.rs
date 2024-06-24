@@ -6,7 +6,7 @@ use crate::states::{
     VestedConfig,
 };
 
-use crate::utils::errors::ProgramError;
+use crate::utils::errors::ErrorCode;
 
 use anchor_lang::prelude::*;
 
@@ -45,7 +45,7 @@ pub struct SessionRegistration<'info> {
     #[account(
         mut,
         constraint = vested_config.session == session.key()
-            @ ProgramError::InvalidVestedConfig,
+            @ ErrorCode::InvalidVestedConfig,
     )]
     pub vested_config: Box<Account<'info, VestedConfig>>,
 

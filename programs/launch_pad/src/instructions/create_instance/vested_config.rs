@@ -1,5 +1,5 @@
 use crate::states::{Session, VestedConfig};
-use crate::utils::errors::ProgramError;
+use crate::utils::errors::ErrorCode;
 
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -45,13 +45,13 @@ pub struct CreateVestedConfig<'info> {
         mut,
         has_one = authority,
         constraint = !session.has_vested_config 
-            @ ProgramError::VestedConfigAlreadyExist,
+            @ ErrorCode::VestedConfigAlreadyExist,
     )]
     pub session: Account<'info, Session>,
 
     #[account(
         constraint = token_mint.key() == session.token_mint 
-            @ ProgramError::InvalidTokenMint,
+            @ ErrorCode::InvalidTokenMint,
     )]
     pub token_mint: InterfaceAccount<'info, Mint>,
 

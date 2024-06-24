@@ -1,5 +1,5 @@
 use crate::states::{SealedBidRound, Session};
-use crate::utils::errors::ProgramError;
+use crate::utils::errors::ErrorCode;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -22,7 +22,7 @@ pub struct CreateSessionSealedBidRound<'info> {
     #[account(
         mut,
         has_one = authority,
-        constraint = !session.has_sealed_bid_round @ ProgramError::SessionSealedBidRoundAlreadyExist
+        constraint = !session.has_sealed_bid_round @ ErrorCode::SessionSealedBidRoundAlreadyExist
     )]
     pub session: Account<'info, Session>,
 

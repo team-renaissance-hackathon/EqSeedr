@@ -1,6 +1,6 @@
 use crate::{
     states::{CommitLeaderBoard, SealedBidRound, Session},
-    utils::errors::ProgramError,
+    utils::errors::ErrorCode,
 };
 use anchor_lang::prelude::*;
 
@@ -12,7 +12,7 @@ pub struct ReallocateCommitLeaderBoard<'info> {
     #[account(
         mut,
         constraint = sealed_bid_round.is_valid_commit_leader_board_allocation()
-        @ ProgramError::SessionCommitLeaderBoardMaxAllocation,
+        @ ErrorCode::SessionCommitLeaderBoardMaxAllocation,
         seeds = [
             session.key().as_ref(),
             b"commit-leader-board",
@@ -27,7 +27,7 @@ pub struct ReallocateCommitLeaderBoard<'info> {
     #[account(
         mut,
         constraint = sealed_bid_round.session == session.key()
-          @ ProgramError::InvalidSealedBidRound,
+          @ ErrorCode::InvalidSealedBidRound,
         has_one = authority,
 
     )]

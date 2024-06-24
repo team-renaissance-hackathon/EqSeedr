@@ -3,7 +3,7 @@ use crate::states::{
     Session,
     // EnqueueSessionIndex
 };
-use crate::utils::errors::ProgramError;
+use crate::utils::errors::ErrorCode;
 use crate::utils::{MAX_ROUNDS, MAX_TEXT_BYTES, PERCENT_10};
 use anchor_lang::prelude::*;
 use anchor_spl::token::Mint;
@@ -22,13 +22,13 @@ pub struct CreateSession<'info> {
 
     #[account(
         constraint = SessionParams::is_valid_token_name(input.token_name)
-        @ ProgramError::InvalidTokenName,
+        @ ErrorCode::InvalidTokenName,
 
         constraint = !SessionParams::is_valid_token_allocation(input.token_allocation)
-        @ ProgramError::InvalidTokenAllocation,
+        @ ErrorCode::InvalidTokenAllocation,
 
         constraint = !SessionParams::is_valid_launch_date(input.launch_date)
-        @ ProgramError::InvalidLaunchDate,
+        @ ErrorCode::InvalidLaunchDate,
 
         init,
         payer = authority,
@@ -45,7 +45,7 @@ pub struct CreateSession<'info> {
     // pub enqueue_indexer: Account<'info, EnqueueSessionIndex>,
     #[account(
         constraint = token_mint.mint_authority.unwrap() == authority.key()
-        @ ProgramError::ExpectMintAuthorityToCreateSession
+        @ ErrorCode::ExpectMintAuthorityToCreateSession
     )]
     pub token_mint: Account<'info, Mint>,
 

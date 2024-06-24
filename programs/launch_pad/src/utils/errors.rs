@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 
 #[error_code]
-pub enum ProgramError {
+pub enum ErrorCode {
     #[msg("Exceeds 32 max character limit")]
     InvalidTokenName,
 

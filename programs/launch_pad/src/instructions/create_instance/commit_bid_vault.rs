@@ -1,5 +1,5 @@
 use crate::states::{ProgramAuthority, Session};
-use crate::utils::errors::ProgramError;
+use crate::utils::errors::ErrorCode;
 
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -42,13 +42,13 @@ pub struct CreateCommitBidVault<'info> {
         mut,
         has_one = authority,
         constraint = !session.has_valid_commit_bid_vault 
-            @ ProgramError::CommitBidVaultAlreadyExist,
+            @ ErrorCode::CommitBidVaultAlreadyExist,
     )]
     pub session: Account<'info, Session>,
 
     #[account(
         constraint = program_authority.is_valid_token(bid_token_mint.key())
-            @ ProgramError::InvalidBidToken,
+            @ ErrorCode::InvalidBidToken,
     )]
     pub bid_token_mint: InterfaceAccount<'info, Mint>,
 

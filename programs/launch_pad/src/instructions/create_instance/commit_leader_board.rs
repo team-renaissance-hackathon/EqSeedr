@@ -1,6 +1,6 @@
 use crate::{
     states::{CommitLeaderBoard, SealedBidRound, Session},
-    utils::errors::ProgramError,
+    utils::errors::ErrorCode,
     utils::*,
 };
 use anchor_lang::prelude::*;
@@ -32,7 +32,7 @@ pub struct CreateCommitLeaderBoard<'info> {
         mut,
         has_one = authority,
         constraint = !session.has_commit_leader_board 
-            @ ProgramError::SessionCommitLeaderBoardAlreadyExist,
+            @ ErrorCode::SessionCommitLeaderBoardAlreadyExist,
     )]
     pub session: Account<'info, Session>,
 
