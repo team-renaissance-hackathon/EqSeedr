@@ -202,16 +202,18 @@ pub mod launch_pad {
         instructions::create_instance::tick_bid_leader_board::handler(ctx)
     }
 
+    pub fn create_vested_token_escrow(ctx: Context<CreateVestedTokenEscrow>) -> Result<()> {
+        instructions::create_instance::vested_token_escrow::handler(ctx)
+    }
+
+    pub fn create_vested_config(ctx: Context<CreateVestedConfig>) -> Result<()> {
+        instructions::create_instance::vested_config::handler(ctx)
+    }
+
     // pub fn create_session_marketplace(
     //     ctx: Context<CreateSessionMarketplacePositions>,
     // ) -> Result<()> {
     //     instructions::create_session_marketplace::handler(ctx)
-    // }
-
-    // pub fn create_vested_config_by_session(
-    //     ctx: Context<CreateVestedConfigBySession>,
-    // ) -> Result<()> {
-    //     instructions::create_vested_config_by_session::handler(ctx)
     // }
 
     // pub fn submit_sealed_bid(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()> {
@@ -231,9 +233,9 @@ pub mod launch_pad {
     //     instructions::submit_commit_bid::handler(ctx)
     // }
 
-    // pub fn session_registration(ctx: Context<SessionRegistration>) -> Result<()> {
-    //     instructions::session_registration::handler(ctx)
-    // }
+    pub fn session_registration(ctx: Context<SessionRegistration>) -> Result<()> {
+        instructions::session_registration::handler(ctx)
+    }
 }
 
 // TICK-BID

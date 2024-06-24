@@ -11,7 +11,7 @@
 pub mod add_bid_token_mint;
 pub mod initialize;
 // pub mod open_bid;
-// pub mod session_registration;
+pub mod session_registration;
 pub mod submit_commit_bid;
 pub mod submit_sealed_bid;
 pub mod submit_unsealed_bid;
@@ -30,7 +30,7 @@ pub mod submit_unsealed_bid;
 pub use add_bid_token_mint::*;
 pub use initialize::*;
 // pub use open_bid::*;
-// pub use session_registration::*;
+pub use session_registration::*;
 pub use submit_commit_bid::*;
 pub use submit_sealed_bid::*;
 pub use submit_unsealed_bid::*;

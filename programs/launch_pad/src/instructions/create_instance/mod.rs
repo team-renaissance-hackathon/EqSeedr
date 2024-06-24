@@ -24,3 +24,9 @@ pub use tick_bid_round::*;
 
 pub mod tick_bid_leader_board;
 pub use tick_bid_leader_board::*;
+
+pub mod vested_token_escrow;
+pub use vested_token_escrow::*;
+
+pub mod vested_config;
+pub use vested_config::*;

@@ -1,17 +1,18 @@
-use anchor_lang::prelude::*;
-
 use crate::states::{
+    // STATE ACCOUNTS
     Session,
-    // TickBidLeaderBoard,
     VestedAccountByIndex,
     VestedAccountByOwner,
-    VestedConfigBySession,
+    VestedConfig,
 };
 
-use anchor_spl::token::Mint;
+use crate::utils::errors::ProgramError;
+
+use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct SessionRegistration<'info> {
+    // investor
     #[account(mut)]
     pub authority: Signer<'info>,
 
@@ -41,24 +42,14 @@ pub struct SessionRegistration<'info> {
     )]
     pub new_vested_account_by_index: Box<Account<'info, VestedAccountByIndex>>,
 
-    // #[account{
-    //     mut,
-    //     constraint = tick_bid_leader_board.session == session.key()
-    // }]
-    // pub tick_bid_leader_board: Account<'info, TickBidLeaderBoard>,
     #[account(
         mut,
         constraint = vested_config.session == session.key()
+            @ ProgramError::InvalidVestedConfig,
     )]
-    pub vested_config: Account<'info, VestedConfigBySession>,
+    pub vested_config: Box<Account<'info, VestedConfig>>,
 
-    #[account(
-        mut,
-        constraint = session.token_mint == token_mint.key()
-    )]
-    pub session: Account<'info, Session>,
-
-    pub token_mint: Account<'info, Mint>,
+    pub session: Box<Account<'info, Session>>,
     pub system_program: Program<'info, System>,
 }
 
@@ -68,12 +59,11 @@ pub fn handler(ctx: Context<SessionRegistration>) -> Result<()> {
         vested_config,
         new_vested_account_by_owner,
         new_vested_account_by_index,
-        // tick_bid_leader_board,
         session,
         ..
     } = ctx.accounts;
 
-    // vested_config.update_index();
+    vested_config.update_index();
 
     new_vested_account_by_index.initialize(
         ctx.bumps.new_vested_account_by_index,
@@ -81,7 +71,6 @@ pub fn handler(ctx: Context<SessionRegistration>) -> Result<()> {
         authority.key(),
         session.key(),
         vested_config.key(),
-        // tick_bid_leader_board,
     );
 
     new_vested_account_by_owner.initialize(
@@ -90,21 +79,19 @@ pub fn handler(ctx: Context<SessionRegistration>) -> Result<()> {
         authority.key(),
         session.key(),
         vested_config.key(),
-        // tick_bid_leader_board,
     );
 
-    // I have thoughts on this...
-    // need to revisit this
-    // buecause I have questions...
-    // right now this is the session tick bid leader board
-    // the more I come across this, it is becoming more
-    // apparent that I also need a leader baord for each round too
-    // also the leader board will heavily tied to the algorithm
-    // so the structure of the leader board may need to be reconsidered
-    // to reflect the algorithm of the bonus bag
-    // tick_bid_leader_board.add();
+    msg!(
+        "Vested Accounts Created: {}: {}, \n{}, \n{}",
+        // accounts
+        "\nInvestor",
+        authority.key(),
+        new_vested_account_by_index.key(),
+        new_vested_account_by_owner.key(),
+    );
 
     Ok(())
 }
 
-// should there be a leader board for every round?
+// NOTES:
+//  - there should be a cost to register, to reduce spam.

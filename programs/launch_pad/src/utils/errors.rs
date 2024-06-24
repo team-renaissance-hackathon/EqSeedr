@@ -46,4 +46,16 @@ pub enum ProgramError {
 
     #[msg("Invalid Bid Token")]
     InvalidBidToken,
+
+    #[msg("Vested Token Escrow Already Exist")]
+    VestedTokenEscrowAlreadyExist,
+
+    #[msg("Invalid Token Token")]
+    InvalidTokenMint,
+
+    #[msg("Vested Config Already Exist")]
+    VestedConfigAlreadyExist,
+
+    #[msg("Invalid Vested Config")]
+    InvalidVestedConfig,
 }
