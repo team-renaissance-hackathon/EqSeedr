@@ -40,4 +40,10 @@ pub enum ProgramError {
 
     #[msg("Sealed Bid Round Has Invalid Session")]
     InvalidSealedBidRound,
+
+    #[msg("The current bid that is being refunded is not committed!")]
+    BidNotCommitted,
+
+    #[msg("This bid has already been refunded!")]
+    BidIsAlreadyRefunded,
 }
