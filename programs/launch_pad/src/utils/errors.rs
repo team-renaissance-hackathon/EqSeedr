@@ -70,4 +70,7 @@ pub enum ErrorCode {
 
     #[msg("Invalid Owner Of Sealed Bid By Index!")]
     InvalidOwnerOfSealedBidByIndex,
+
+    #[msg("This stake has already been unlocked!")]
+    StakeIsAlreadyUnlocked,
 }
