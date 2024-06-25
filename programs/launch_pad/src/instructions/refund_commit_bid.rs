@@ -117,7 +117,7 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
             },
             signer_seeds,
         ),
-        sealed_bid_by_index.staked_amount,
+        sealed_bid_by_index.bid_amount,
         token_mint.decimals,
     )?;
 
