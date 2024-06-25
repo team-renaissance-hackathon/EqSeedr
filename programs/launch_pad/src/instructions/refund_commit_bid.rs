@@ -12,7 +12,7 @@ use anchor_spl::token_interface::{
 pub struct RefundCommitBidBySession<'info> {
     // investor
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub bidder: Signer<'info>,
 
     #[account(mut)]
     pub sealed_bid_by_index: Account<'info, SealedBidByIndex>,
@@ -44,7 +44,7 @@ pub struct RefundCommitBidBySession<'info> {
 
     #[account(
         mut,
-        constraint = bidder_token_account.owner == authority.key()
+        constraint = bidder_token_account.owner == bidder.key()
     )]
     pub bidder_token_account: InterfaceAccount<'info, TokenAccount>,
 
@@ -85,10 +85,7 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
     require!(sealed_bid_by_index.is_commit, ErrorCode::BidNotCommitted);
 
     // Validate that the bid isn't already refunded
-    require!(
-        !sealed_bid_by_index.is_refunded,
-        ErrorCode::BidIsAlreadyRefunded
-    );
+    require!(!sealed_bid_by_index.is_bid_refunded, ErrorCode::BidIsAlreadyRefunded);
 
     // don't need to remove aynthing from commit leaderboard,
     // as refund only happens at the end of the unsealed bid phase(?)
