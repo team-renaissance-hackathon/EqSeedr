@@ -15,6 +15,7 @@ pub mod session_registration;
 pub mod submit_commit_bid;
 pub mod submit_sealed_bid;
 pub mod submit_unsealed_bid;
+pub mod refund_commit_bid;
 
 // how do I resolve this? other than using a different name for handler?
 // pub use create_commit_leader_board::*;
@@ -34,6 +35,7 @@ pub use session_registration::*;
 pub use submit_commit_bid::*;
 pub use submit_sealed_bid::*;
 pub use submit_unsealed_bid::*;
+pub use refund_commit_bid::*;
 
 pub mod create_instance;
 pub use create_instance::*;

@@ -1,11 +1,11 @@
 use crate::states::{
-    CommitLeaderBoard, CommitQueue, ProgramAuthority, SealedBidByIndex, SealedBidRound, Session,
+    program_authority, CommitLeaderBoard, CommitQueue, ProgramAuthority, SealedBidByIndex, SealedBidRound, Session
 };
-use anchor_lang::prelude::*;
+use anchor_lang::{accounts::signer, prelude::*};
 use anchor_spl::token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked};
 
 #[derive(Accounts)]
-pub struct CommitBidBySession<'info> {
+pub struct RefundCommitBidBySession<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
@@ -67,8 +67,8 @@ pub struct CommitBidBySession<'info> {
     pub token_program: Interface<'info, TokenInterface>,
 }
 
-pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
-    let CommitBidBySession {
+pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
+    let RefundCommitBidBySession {
         authority,
         sealed_bid_by_index,
         commit_leader_board,
@@ -78,46 +78,45 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
         session_commit_token_account,
         token_program,
         token_mint,
+        program_authority,
         ..
     } = ctx.accounts;
 
-    let node = commit_leader_board.get_node(sealed_bid_by_index.commit_leader_board_index);
-    commit_queue.insert(node, &sealed_bid_by_index);
+    // Validate that the bid is actually committed
+    require!(sealed_bid_by_index.is_commit, ErrorCode::BidNotCommitted);
 
-    sealed_bid_by_index.add_commit();
+    // Validate that the bid isn't already refunded
+    require!(!sealed_bid_by_index.is_refunded, ErrorCode::BidIsAlreadyRefunded);
+
+    // don't need to remove aynthing from commit leaderboard,
+    // as refund only happens at the end of the unsealed bid phase(?)
+    //let node = commit_leader_board.get_node(sealed_bid_by_index.commit_leader_board_index);
+
+    sealed_bid_by_index.refunded();
+
+    // Construct the program authority signer
+    let seeds = &[b"authority", &[program_authority.bump],];
+    let signer_seeds = &[&seeds[..]];
 
     transfer_checked(
-        CpiContext::new(
+        CpiContext::new_with_signer(
             token_program.to_account_info(),
             TransferChecked {
-                from: bidder_token_account.to_account_info(),
-                to: session_commit_token_account.to_account_info(),
-                authority: authority.to_account_info(),
+                from: session_commit_token_account.to_account_info(),
+                to: bidder_token_account.to_account_info(),
+                authority: program_authority.to_account_info(),
                 mint: token_mint.to_account_info(),
             },
-        ),
+        signer_seeds),
+
         session.staking_amount,
         token_mint.decimals,
     )?;
 
-    commit_queue.remove();
-    // handle refund commit transfer here?
-    // or handle refund commit transfter in a seperate transaction?
-    // in effect becoming a pull transfer
-    // if handling refund commit here, if transactions are happening fast
-    // could be an issue becuase the acount to refund back
-    // has already been refunded and the next transaction could be
-    // wrong account to refund back.
-    // I think this can be handled in a look up table
-    // to dynamically pull accounts that could be needed
-    // but would need to explore how to use it. or even see
-    // if its viable
-    // so for now it will be in a seperate instruction
-
     Ok(())
 }
 
-//  submit commit bid
+//  refund commit bid
 //      - data
 //          - sealed_bid_by_index.commit_leader_board_index
 //          - sealed_bid_by_index.index
@@ -132,26 +131,5 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
 //          - commit_queue.is_valid_insert
 //          - sealed_bid_round.session == session
 //          - token_mint.is_valid_bid_token_mint
-//      - update
-//          - STATES:
-//              - queue is empty
-//                  - add into index 0 -> {owner, amount, owner_index}
-//                  - log new insert and position
-//                  - transfer new insert funds into commit queue fund account
-//              - queue not empty
-//                  - itereate until valid position insert
-//                  - log new insert and position
-//                  - transfer new insert funds into commit queue fund account
-//              - queue is filled
-//                  - itereate unti valid postion insert
-//                  - remove last element
-//                  - log new insert and position, log removed element
-//                  - transfer new insert funds into commit queue fund account
-//                  - transfer removed invester from commit queue fund account to investor account
-//                  - record / update last index investor into commit leader board as the cut off point
-//                      where any account above that point that hasn't commited to bid will lose their staked amount
-
-// TODO!
-// - need to implement event logs
-// - add / update validations with correct and working errors, need to explore why the errors are not working
-// - implement the refund instruction in seperate file
+//          - sealed_bid_by_index.is_commit == true
+//          - sealed_bid_by_index.is_refunded == false

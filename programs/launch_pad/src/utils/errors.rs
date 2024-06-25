@@ -58,4 +58,9 @@ pub enum ErrorCode {
 
     #[msg("Invalid Vested Config")]
     InvalidVestedConfig,
+    #[msg("The current bid that is being refunded is not committed!")]
+    BidNotCommitted,
+
+    #[msg("This bid has already been refunded!")]
+    BidIsAlreadyRefunded,
 }

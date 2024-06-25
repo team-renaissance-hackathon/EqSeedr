@@ -22,6 +22,7 @@ pub struct SealedBidByIndex {
     pub staked_amount: u64,
     pub is_unsealed: bool,
     pub is_commit: bool,
+    pub is_refunded: bool,
 
     // when investor submits their unsealed bid
     // the index should get recorded, and will
@@ -37,6 +38,7 @@ impl SealedBidByIndex {
         + PUBKEY_BYTES
         + PUBKEY_BYTES
         + UNSIGNED_64
+        + BOOL
         + BOOL
         + BOOL
         + UNSIGNED_32;
@@ -72,6 +74,11 @@ impl SealedBidByIndex {
     // commit step
     pub fn add_commit(&mut self) {
         self.is_commit = true;
+    }
+
+    // refund flag
+    pub fn refunded(&mut self) {
+        self.is_refunded = true;
     }
 
     // VALIDATIONS:
