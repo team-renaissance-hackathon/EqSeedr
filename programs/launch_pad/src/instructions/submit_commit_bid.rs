@@ -2,7 +2,9 @@ use crate::states::{
     CommitLeaderBoard, CommitQueue, ProgramAuthority, SealedBidByIndex, SealedBidRound, Session,
 };
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked};
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
+};
 
 #[derive(Accounts)]
 pub struct CommitBidBySession<'info> {
@@ -51,7 +53,7 @@ pub struct CommitBidBySession<'info> {
 
     #[account(
         mut,
-        // constraint = session_commit_token_account.owner == session.key()
+        // constraint = commit_bid_vault.owner == session.key()
         constraint = commit_bid_vault.owner == program_authority.key()
 
     )]
@@ -90,8 +92,8 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
         CpiContext::new(
             token_program.to_account_info(),
             TransferChecked {
-                from: bidder_token_account.to_account_info(),
-                to: commit_bid_vault.to_account_info(),
+                from: commit_bid_vault.to_account_info(),
+                to: bidder_token_account.to_account_info(),
                 authority: authority.to_account_info(),
                 mint: token_mint.to_account_info(),
             },
@@ -101,18 +103,6 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
     )?;
 
     commit_queue.remove();
-    // handle refund commit transfer here?
-    // or handle refund commit transfter in a seperate transaction?
-    // in effect becoming a pull transfer
-    // if handling refund commit here, if transactions are happening fast
-    // could be an issue becuase the acount to refund back
-    // has already been refunded and the next transaction could be
-    // wrong account to refund back.
-    // I think this can be handled in a look up table
-    // to dynamically pull accounts that could be needed
-    // but would need to explore how to use it. or even see
-    // if its viable
-    // so for now it will be in a seperate instruction
 
     Ok(())
 }
@@ -155,3 +145,19 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
 // - need to implement event logs
 // - add / update validations with correct and working errors, need to explore why the errors are not working
 // - implement the refund instruction in seperate file
+
+// refund of commit:
+// handle refund commit transfer here?
+// or handle refund commit transfter in a seperate transaction?
+// in effect becoming a pull transfer
+// if handling refund commit here, if transactions are happening fast
+// could be an issue becuase the acount to refund back
+// has already been refunded and the next transaction could be
+// wrong account to refund back.
+// I think this can be handled in a look up table
+// to dynamically pull accounts that could be needed
+// but would need to explore how to use it. or even see
+// if its viable
+// so for now it will be in a seperate instruction
+// updated: this process will be through the investor that made
+// the bid to refund their commit bid
