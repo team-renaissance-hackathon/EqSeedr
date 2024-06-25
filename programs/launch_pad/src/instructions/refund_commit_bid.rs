@@ -14,13 +14,7 @@ pub struct RefundCommitBidBySession<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    #[account(
-        mut,
-        constraint = !sealed_bid_by_index.is_commit
-            @ ErrorCode::BidAlreadyCommited,
-        constraint = sealed_bid_by_index.owner == authority.key()
-            @ ErrorCode::InvalidOwnerOfSealedBidByIndex,
-    )]
+    #[account(mut)]
     pub sealed_bid_by_index: Account<'info, SealedBidByIndex>,
 
     #[account(
@@ -57,13 +51,13 @@ pub struct RefundCommitBidBySession<'info> {
     #[account(
         mut,
         // constraint = session_commit_token_account.owner == session.key()
-        constraint = session_commit_token_account.owner == program_authority.key()
+        constraint = commit_bid_vault.owner == program_authority.key()
 
     )]
-    pub session_commit_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub commit_bid_vault: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
-        // constraint = program_authority.is_valid_token(token_mint.key())
+        constraint = program_authority.is_valid_token(token_mint.key())
     )]
     pub token_mint: InterfaceAccount<'info, Mint>,
 
@@ -80,7 +74,7 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
         // commit_queue,
         session,
         bidder_token_account,
-        session_commit_token_account,
+        commit_bid_vault,
         token_program,
         token_mint,
         program_authority,
@@ -110,7 +104,7 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
         CpiContext::new_with_signer(
             token_program.to_account_info(),
             TransferChecked {
-                from: session_commit_token_account.to_account_info(),
+                from: commit_bid_vault.to_account_info(),
                 to: bidder_token_account.to_account_info(),
                 authority: program_authority.to_account_info(),
                 mint: token_mint.to_account_info(),
