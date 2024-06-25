@@ -30,7 +30,7 @@ pub struct UnlockStake<'info> {
         // right now this constraint wont work, no staking account is stored.
         // constraint = session.is_valid_staking_account(session_stake_token_account.key())
     )]
-    pub session_stake_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub token_stake_vault: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         // right now this constraint wont work since I have to create a cpi so the program authority can be
@@ -51,12 +51,15 @@ pub fn handler(ctx: Context<UnlockStake>, commit_hash: Pubkey) -> Result<()> {
         sealed_bid_by_index,
         session,
         bidder_token_account,
-        session_stake_token_account,
+        token_stake_vault,
         token_program,
         token_mint,
         program_authority,
         ..
     } = ctx.accounts;
+
+    // Validate that user has unsealed their bid
+    require!(sealed_bid_by_index.is_unsealed, ErrorCode::BidNotUnsealed);
 
     // Validate that the stake isn't already unlocked
     require!(!sealed_bid_by_index.is_stake_unlocked, ErrorCode::StakeIsAlreadyUnlocked);
@@ -69,7 +72,7 @@ pub fn handler(ctx: Context<UnlockStake>, commit_hash: Pubkey) -> Result<()> {
         CpiContext::new_with_signer(
             token_program.to_account_info(),
             TransferChecked {
-                from: session_stake_token_account.to_account_info(),
+                from: token_stake_vault.to_account_info(),
                 to: bidder_token_account.to_account_info(),
                 authority: program_authority.to_account_info(),
                 mint: token_mint.to_account_info(),
