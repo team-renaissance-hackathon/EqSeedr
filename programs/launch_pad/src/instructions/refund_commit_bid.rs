@@ -1,20 +1,25 @@
 use crate::states::{
-    program_authority, CommitLeaderBoard, CommitQueue, ProgramAuthority, SealedBidByIndex, SealedBidRound, Session
+    CommitLeaderBoard, CommitQueue, ProgramAuthority, SealedBidByIndex, SealedBidRound, Session,
 };
-use anchor_lang::{accounts::signer, prelude::*};
-use anchor_spl::token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked};
+
+use crate::utils::errors::ErrorCode;
+use anchor_lang::prelude::*;
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
+};
 
 #[derive(Accounts)]
 pub struct RefundCommitBidBySession<'info> {
+    // investor
     #[account(mut)]
     pub authority: Signer<'info>,
 
     #[account(
         mut,
-        constraint = !sealed_bid_by_index.is_commit,
-        // @ BidAlreadyCommited
-        constraint = sealed_bid_by_index.owner == authority.key(),
-        // @ InvalidOwnerOfSealedBidByIndex
+        constraint = !sealed_bid_by_index.is_commit
+            @ ErrorCode::BidAlreadyCommited,
+        constraint = sealed_bid_by_index.owner == authority.key()
+            @ ErrorCode::InvalidOwnerOfSealedBidByIndex,
     )]
     pub sealed_bid_by_index: Account<'info, SealedBidByIndex>,
 
@@ -69,10 +74,10 @@ pub struct RefundCommitBidBySession<'info> {
 
 pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
     let RefundCommitBidBySession {
-        authority,
+        // authority,
         sealed_bid_by_index,
-        commit_leader_board,
-        commit_queue,
+        // commit_leader_board,
+        // commit_queue,
         session,
         bidder_token_account,
         session_commit_token_account,
@@ -86,7 +91,10 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
     require!(sealed_bid_by_index.is_commit, ErrorCode::BidNotCommitted);
 
     // Validate that the bid isn't already refunded
-    require!(!sealed_bid_by_index.is_refunded, ErrorCode::BidIsAlreadyRefunded);
+    require!(
+        !sealed_bid_by_index.is_refunded,
+        ErrorCode::BidIsAlreadyRefunded
+    );
 
     // don't need to remove aynthing from commit leaderboard,
     // as refund only happens at the end of the unsealed bid phase(?)
@@ -95,7 +103,8 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
     sealed_bid_by_index.refunded();
 
     // Construct the program authority signer
-    let seeds = &[b"authority", &[program_authority.bump],];
+
+    let seeds = &[b"auhtority", &[program_authority.bump][..]];
     let signer_seeds = &[&seeds[..]];
 
     transfer_checked(
@@ -107,8 +116,8 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
                 authority: program_authority.to_account_info(),
                 mint: token_mint.to_account_info(),
             },
-        signer_seeds),
-
+            signer_seeds,
+        ),
         session.staking_amount,
         token_mint.decimals,
     )?;

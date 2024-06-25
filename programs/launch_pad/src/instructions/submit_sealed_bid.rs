@@ -1,6 +1,8 @@
 use super::super::states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session};
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked};
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
+};
 
 #[derive(Accounts)]
 pub struct SubmitSealedBid<'info> {
@@ -44,7 +46,7 @@ pub struct SubmitSealedBid<'info> {
         // the mint authority.
         // constraint = token_mint.mint_authority.unwrap() == program_authority.key(),
     )]
-    pub token_mint: Account<'info, Mint>,
+    pub token_mint: InterfaceAccount<'info, Mint>,
 
     pub program_authority: Account<'info, ProgramAuthority>,
     pub session: Account<'info, Session>,
