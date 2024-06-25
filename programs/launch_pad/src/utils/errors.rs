@@ -59,10 +59,10 @@ pub enum ErrorCode {
     #[msg("Invalid Vested Config")]
     InvalidVestedConfig,
 
-    #[msg("The current bid that is being refunded is not committed!")]
+    #[msg("Bid Not Commited!")]
     BidNotCommitted,
 
-    #[msg("This bid has already been refunded!")]
+    #[msg("Bid Already Refunded!")]
     BidIsAlreadyRefunded,
 
     #[msg("Bid Already Commited!")]
@@ -71,6 +71,9 @@ pub enum ErrorCode {
     #[msg("Invalid Owner Of Sealed Bid By Index!")]
     InvalidOwnerOfSealedBidByIndex,
 
-    #[msg("This stake has already been unlocked!")]
+    #[msg("Stake Is Already Unlocked!")]
     StakeIsAlreadyUnlocked,
+
+    #[msg("Bid Is Not Unsealed!")]
+    BidNotUnsealed,
 }
