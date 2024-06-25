@@ -103,7 +103,6 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
     sealed_bid_by_index.refunded();
 
     // Construct the program authority signer
-
     let seeds = &[b"auhtority", &[program_authority.bump][..]];
     let signer_seeds = &[&seeds[..]];
 
@@ -118,7 +117,7 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
             },
             signer_seeds,
         ),
-        session.staking_amount,
+        sealed_bid_by_index.staked_amount,
         token_mint.decimals,
     )?;
 
