@@ -52,10 +52,10 @@ pub struct CommitBidBySession<'info> {
     #[account(
         mut,
         // constraint = session_commit_token_account.owner == session.key()
-        constraint = session_commit_token_account.owner == program_authority.key()
+        constraint = commit_bid_vault.owner == program_authority.key()
 
     )]
-    pub session_commit_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub commit_bid_vault: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         // constraint = program_authority.is_valid_token(token_mint.key())
@@ -75,7 +75,7 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
         commit_queue,
         session,
         bidder_token_account,
-        session_commit_token_account,
+        commit_bid_vault,
         token_program,
         token_mint,
         ..
@@ -91,12 +91,12 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
             token_program.to_account_info(),
             TransferChecked {
                 from: bidder_token_account.to_account_info(),
-                to: session_commit_token_account.to_account_info(),
+                to: commit_bid_vault.to_account_info(),
                 authority: authority.to_account_info(),
                 mint: token_mint.to_account_info(),
             },
         ),
-        session.staking_amount,
+        sealed_bid_by_index.bid_amount,
         token_mint.decimals,
     )?;
 

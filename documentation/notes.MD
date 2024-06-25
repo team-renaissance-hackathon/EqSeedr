@@ -33,7 +33,7 @@ SEALED-BID SYSTEM
         submit unsealed bid
         submit commit bid
     todo
-        refund commit bid
+        refund commit bid -- done (partially?)
         unlock stake
         update STATE::commit_bid_leader_board -> zero copy 
 

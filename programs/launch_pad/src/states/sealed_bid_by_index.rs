@@ -1,6 +1,6 @@
 use anchor_lang::{
     prelude::*,
-    solana_program::{hash::Hasher, pubkey::PUBKEY_BYTES},
+    solana_program::{big_mod_exp::BigModExpParams, hash::Hasher, pubkey::PUBKEY_BYTES},
 };
 
 use crate::utils::{BOOL, BYTE, DISCRIMINATOR, UNSIGNED_32, UNSIGNED_64};
@@ -19,6 +19,7 @@ pub struct SealedBidByIndex {
 
     // STATE
     pub commit_hash: Pubkey, // technially a hash [u8; 32]
+    pub bid_amount: u64,
     pub staked_amount: u64,
     pub is_unsealed: bool,
     pub is_commit: bool,
@@ -37,6 +38,7 @@ impl SealedBidByIndex {
         + PUBKEY_BYTES
         + PUBKEY_BYTES
         + PUBKEY_BYTES
+        + UNSIGNED_64
         + UNSIGNED_64
         + BOOL
         + BOOL
@@ -66,9 +68,10 @@ impl SealedBidByIndex {
     }
 
     // unsealed bid step
-    pub fn unsealed_bid(&mut self, index: u32) {
+    pub fn unsealed_bid(&mut self, index: u32, amount: u64) {
         self.commit_leader_board_index = index - 1;
         self.is_unsealed = true;
+        self.bid_amount = amount;
     }
 
     // commit step
