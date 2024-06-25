@@ -96,7 +96,7 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
                 mint: token_mint.to_account_info(),
             },
         ),
-        session.staking_amount,
+        sealed_bid_by_index.bid_amount,
         token_mint.decimals,
     )?;
 

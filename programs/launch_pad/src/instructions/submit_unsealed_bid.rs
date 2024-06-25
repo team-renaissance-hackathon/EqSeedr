@@ -41,10 +41,11 @@ pub fn handler(ctx: Context<SubmitUnsealedBid>, amount: u64, index: u32) -> Resu
         ..
     } = ctx.accounts;
 
-    let node = commit_leader_board.create_node(sealed_bid_by_index.bid_index, amount);
+    sealed_bid_by_index.unsealed_bid(commit_leader_board.pool.total, amount);
 
+    let node = commit_leader_board.create_node(sealed_bid_by_index.bid_index, sealed_bid_by_index.bid_amount);
     commit_leader_board.add(&mut node.clone(), index);
-    sealed_bid_by_index.unsealed_bid(commit_leader_board.pool.total);
+   
 
     Ok(())
 }
