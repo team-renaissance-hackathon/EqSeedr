@@ -115,7 +115,6 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
     // Construct the program authority signer
 
     let seeds = &[b"auhtority", &[program_authority.bump][..]];
-    let seeds = &[b"authority", &[program_authority.bump]];
     let signer_seeds = &[&seeds[..]];
 
     transfer_checked(
@@ -127,8 +126,6 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
                 authority: program_authority.to_account_info(),
                 mint: token_mint.to_account_info(),
             },
-            signer_seeds,
-        ),
             signer_seeds,
         ),
         session.staking_amount,
@@ -155,4 +152,3 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
 //          - token_mint.is_valid_bid_token_mint
 //          - sealed_bid_by_index.is_commit == true
 //          - sealed_bid_by_index.is_refunded == false
-
