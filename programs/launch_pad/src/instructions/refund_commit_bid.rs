@@ -1,5 +1,11 @@
 use crate::states::{
-    CommitLeaderBoard, CommitQueue, ProgramAuthority, SealedBidByIndex, SealedBidRound, Session,
+    // STATE ACCOUNTS
+    CommitLeaderBoard,
+    CommitQueue,
+    ProgramAuthority,
+    SealedBidByIndex,
+    SealedBidRound,
+    Session,
 };
 
 use crate::utils::errors::ErrorCode;
