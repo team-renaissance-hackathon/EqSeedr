@@ -11,6 +11,7 @@ declare_id!("7GKWqKvkev22SYs2HEb1jw6h4uHJwLVKpEcxVUqTZKxG");
 
 #[program]
 pub mod launch_pad {
+
     use super::*;
 
     pub fn allocate_zero_copy(ctx: Context<AllocateZeroCopy>, amount: u64) -> Result<()> {
@@ -186,10 +187,8 @@ pub mod launch_pad {
         instructions::create_instance::commit_bid_vault::handler(ctx)
     }
 
-    pub fn create_sealed_bid_token_stake_account(
-        ctx: Context<CreateSealedBidTokenStakeAccount>,
-    ) -> Result<()> {
-        instructions::create_instance::sealed_bid_token_stake_account::handler(ctx)
+    pub fn create_token_stake_vault(ctx: Context<CreateTokenStakeVault>) -> Result<()> {
+        instructions::create_instance::token_stake_vault::handler(ctx)
     }
 
     pub fn create_tick_bid_round(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {

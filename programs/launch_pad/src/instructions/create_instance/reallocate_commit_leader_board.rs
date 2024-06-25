@@ -12,7 +12,7 @@ pub struct ReallocateCommitLeaderBoard<'info> {
     #[account(
         mut,
         constraint = sealed_bid_round.is_valid_commit_leader_board_allocation()
-        @ ErrorCode::SessionCommitLeaderBoardMaxAllocation,
+            @ ErrorCode::SessionCommitLeaderBoardMaxAllocation,
         seeds = [
             session.key().as_ref(),
             b"commit-leader-board",
@@ -27,7 +27,7 @@ pub struct ReallocateCommitLeaderBoard<'info> {
     #[account(
         mut,
         constraint = sealed_bid_round.session == session.key()
-          @ ErrorCode::InvalidSealedBidRound,
+            @ ErrorCode::InvalidSealedBidRound,
         has_one = authority,
 
     )]

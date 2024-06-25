@@ -9,6 +9,7 @@ import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
     TOKEN_PROGRAM_ID,
 } from "@solana/spl-token"
+// import { associated } from "@coral-xyz/anchor/dist/cjs/utils/pubkey";
 
 
 
@@ -159,6 +160,15 @@ const getAccounts = ({
         program.programId
     ) : [undefined]
 
+    const [vaultAuthority] = session != undefined && programAuthority != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            programAuthority.toBuffer(),
+            Buffer.from("vault"),
+        ],
+        program.programId
+    ) : [undefined]
+
 
     const sealedBidTokenStakeAccount = stakeTokenMint != undefined ? getAssociatedTokenAddressSync(
         stakeTokenMint.mint.publicKey,
@@ -166,9 +176,9 @@ const getAccounts = ({
         true
     ) : undefined
 
-    const commitTokenAccount = bidTokenMint != undefined ? getAssociatedTokenAddressSync(
+    const commitBidVault = bidTokenMint != undefined ? getAssociatedTokenAddressSync(
         bidTokenMint.mint.publicKey,
-        programAuthority,
+        vaultAuthority,
         true
     ) : undefined
 
@@ -196,7 +206,8 @@ const getAccounts = ({
         commitLeaderBoard,
         commitQueue,
         sealedBidTokenStakeAccount,
-        commitTokenAccount,
+        vaultAuthority,
+        commitBidVault,
         tickBidRound,
         sessionTickBidLeaderBoard,
         sessionMarketplace,
@@ -266,6 +277,36 @@ const init = async ({
     });
 }
 
+const addBidTokenMint = async ({
+    connection,
+    program,
+    authority,
+    bidTokenMint
+
+}) => {
+
+    const {
+        programAuthority,
+    } = getAccounts({ program })
+
+    const tx = await program.methods
+        .addBidTokenMint()
+        .accounts({
+            authority: authority.publicKey,
+            programAuthority: programAuthority,
+            tokenMint: bidTokenMint.mint.publicKey,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
 const createSession = async ({
     connection,
     authority,
@@ -304,16 +345,6 @@ const createSession = async ({
         signature: tx,
     });
 
-    try {
-        // return the session?
-        const data = await program.account.session.fetch(session);
-        // const data = await web3.connection.getAccountInfo(session)
-        console.log(data)
-    } catch (err) {
-        console.log(err)
-    }
-
-
 }
 
 const createSessionSealedBidRound = async ({
@@ -349,7 +380,7 @@ const createSessionSealedBidRound = async ({
 
 }
 
-const createSessionCommitLeaderBoard = async ({
+const createCommitLeaderBoard = async ({
     connection,
     authority,
     program,
@@ -360,13 +391,49 @@ const createSessionCommitLeaderBoard = async ({
     const {
         session,
         commitLeaderBoard,
+        sealedBidRound,
     } = getAccounts({ tokenMint, program: program })
 
     const tx = await program.methods
-        .createSessionCommitLeaderBoard()
+        .createCommitLeaderBoard()
         .accounts({
             authority: authority.publicKey,
             newCommitLeaderBoard: commitLeaderBoard,
+            session: session,
+            sealedBidRound: sealedBidRound,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
+const reallocateCommitLeaderBoard = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+}) => {
+
+    const {
+        session,
+        commitLeaderBoard,
+        sealedBidRound,
+    } = getAccounts({ tokenMint, program: program })
+
+    const tx = await program.methods
+        .reallocateCommitLeaderBoard()
+        .accounts({
+            authority: authority.publicKey,
+            commitLeaderBoard: commitLeaderBoard,
+            sealedBidRound: sealedBidRound,
             session: session,
             systemProgram: web3.SystemProgram.programId,
         })
@@ -413,7 +480,7 @@ const createSessionCommitQueue = async ({
     });
 }
 
-const createSealedBidTokenStakeAccount = async ({
+const createTokenStakeVault = async ({
     connection,
     authority,
     program,
@@ -424,19 +491,32 @@ const createSealedBidTokenStakeAccount = async ({
 
     const {
         session,
-        programAuthority,
-        sealedBidTokenStakeAccount,
+        sealedBidTokenStakeAccount, // -> newTokenStakeVault
     } = getAccounts({ tokenMint, stakeTokenMint, program })
 
+    const [stakeAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            stakeTokenMint.mint.publicKey.toBuffer(),
+            Buffer.from("stake-authority"),
+        ],
+        program.programId
+    )
+
+    const newTokenStakeVault = getAssociatedTokenAddressSync(
+        stakeTokenMint.mint.publicKey,
+        stakeAuthority,
+        true
+    )
 
     const tx = await program.methods
-        .createSealedBidTokenStakeAccount()
+        .createTokenStakeVault()
         .accounts({
             authority: authority.publicKey,
-            newSealedBidTokenStakeAccount: sealedBidTokenStakeAccount,
+            stakeAuthority: stakeAuthority,
+            newTokenStakeVault: newTokenStakeVault,
 
             session: session,
-            programAuthority: programAuthority,
 
             sessionTokenMint: tokenMint.mint.publicKey,
             stakeTokenMint: stakeTokenMint.mint.publicKey,
@@ -456,12 +536,7 @@ const createSealedBidTokenStakeAccount = async ({
     });
 }
 
-// should come back to this. right now there is only a single top level
-// instances of this account being created...
-// should there be only one instances or multiple instances at the session level?
-// is being created for the bid token... need add validation that this
-// can only be created with a valid bid token which is USDC ATM.
-const createCommitTokenAccount = async ({
+const createCommitBidVault = async ({
     connection,
     authority,
     program,
@@ -473,17 +548,18 @@ const createCommitTokenAccount = async ({
     const {
         session,
         programAuthority,
-        commitTokenAccount,
+        commitBidVault,
+        vaultAuthority,
     } = getAccounts({ tokenMint, bidTokenMint, program })
 
-
     const tx = await program.methods
-        .createCommitTokenAccount()
+        .createCommitBidVault()
         .accounts({
             authority: authority.publicKey,
-            newCommitTokenAccount: commitTokenAccount,
-            session: session,
             programAuthority: programAuthority,
+            vaultAuthority: vaultAuthority,
+            newCommitBidVault: commitBidVault,
+            session: session,
             bidTokenMint: bidTokenMint.mint.publicKey,
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
@@ -614,7 +690,65 @@ const createSessionMarketplace = async ({
     });
 }
 
-const createVestedConfigBySession = async ({
+const createVestedTokenEscrow = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+
+}) => {
+
+    const {
+        session,
+        // vestedTokenEscrow,
+    } = getAccounts({
+        tokenMint,
+        program
+    })
+
+    const [escrowAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            tokenMint.mint.publicKey.toBuffer(),
+            Buffer.from("escrow"),
+        ],
+        program.programId
+    )
+
+    const vestedTokenEscrow = getAssociatedTokenAddressSync(
+        tokenMint.mint.publicKey,
+        escrowAuthority,
+        true
+    )
+
+
+    const tx = await program.methods
+        .createVestedTokenEscrow()
+        .accounts({
+            authority: authority.publicKey,
+
+            escrowAuthority: escrowAuthority,
+            newVestedTokenEscrow: vestedTokenEscrow,
+
+            session: session,
+            tokenMint: tokenMint.mint.publicKey,
+
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
+const createVestedConfig = async ({
     connection,
     authority,
     program,
@@ -631,14 +765,33 @@ const createVestedConfigBySession = async ({
         program
     })
 
+    const [escrowAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            tokenMint.mint.publicKey.toBuffer(),
+            Buffer.from("escrow"),
+        ],
+        program.programId
+    )
+
+    const vestedTokenEscrow = getAssociatedTokenAddressSync(
+        tokenMint.mint.publicKey,
+        escrowAuthority,
+        true
+    )
+
 
     const tx = await program.methods
-        .createVestedConfigBySession()
+        .createVestedConfig()
         .accounts({
             authority: authority.publicKey,
+            escrowAuthority: escrowAuthority,
+            vestedTokenEscrow: vestedTokenEscrow,
             newVestedConfig: vestedConfigBySession,
             session: session,
             tokenMint: tokenMint.mint.publicKey,
+
+            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: web3.SystemProgram.programId,
         })
         .signers([authority])
@@ -891,7 +1044,7 @@ const submitCommitBid = async ({
         sealedBidAccount,
         programAuthority,
         sealedBidRound,
-        commitTokenAccount,
+        commitBidVault,
         commitLeaderBoard,
         commitQueue,
     } = getAccounts({
@@ -914,7 +1067,7 @@ const submitCommitBid = async ({
             sealedBidRound: sealedBidRound,
 
             bidderTokenAccount: input.bidTokenAccount,
-            sessionCommitTokenAccount: commitTokenAccount,
+            sessionCommitTokenAccount: commitBidVault,
 
 
             commitLeaderBoard: commitLeaderBoard,
@@ -941,6 +1094,7 @@ const submitCommitBid = async ({
 
 const sessionRegistration = async ({
     connection,
+    web3,
     authority,
     program,
     tokenMint,
@@ -953,7 +1107,6 @@ const sessionRegistration = async ({
         vestedConfigBySession,
         vestedAccountByIndex,
         vestedAccountByOwner,
-        // commitLeaderBoard,
     } = getAccounts({
         tokenMint,
         program,
@@ -973,14 +1126,10 @@ const sessionRegistration = async ({
             newVestedAccountByIndex: vestedAccountByIndex,
             newVestedAccountByOwner: vestedAccountByOwner,
 
-            // commitLeaderBoard: commitLeaderBoard,
-
             vestedConfig: vestedConfigBySession,
 
             session: session,
-
-            tokenMint: tokenMint.mint.publicKey,
-            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: web3.SystemProgram.programId,
         })
         .signers([authority])
         .rpc({ skipPreflight: false });
@@ -996,23 +1145,28 @@ const sessionRegistration = async ({
 
 export const script = {
     init,
-    createCommitTokenAccount,
+    addBidTokenMint,
+    createCommitBidVault,
 
     // CREATE SESSION
     createSession,
     // SESSION -> CREATE SEALED-BID SYSTEM
 
     createSessionSealedBidRound,
-    createSessionCommitLeaderBoard,
+
+    createCommitLeaderBoard,
+    reallocateCommitLeaderBoard,
+
     createSessionCommitQueue,
-    createSealedBidTokenStakeAccount,
+    createTokenStakeVault,
 
     // SESSION -> CREATE TICK-BID SYSTEM
     createTickBidRound,
     createSessionTickBidLeaderBoard,
     // may need leader baord for each round
     createSessionMarketplace,
-    createVestedConfigBySession,
+    createVestedTokenEscrow,
+    createVestedConfig,
 
     // interact with sealed bid round
     submitSealedBid,
