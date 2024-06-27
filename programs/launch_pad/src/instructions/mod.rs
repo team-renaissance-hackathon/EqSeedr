@@ -10,12 +10,12 @@
 // pub mod create_vested_config_by_session;
 pub mod add_bid_token_mint;
 pub mod initialize;
-// pub mod open_bid;
+pub mod open_bid;
+pub mod refund_commit_bid;
 pub mod session_registration;
 pub mod submit_commit_bid;
 pub mod submit_sealed_bid;
 pub mod submit_unsealed_bid;
-pub mod refund_commit_bid;
 
 // how do I resolve this? other than using a different name for handler?
 // pub use create_commit_leader_board::*;
@@ -30,15 +30,21 @@ pub mod refund_commit_bid;
 // pub use create_vested_config_by_session::*;
 pub use add_bid_token_mint::*;
 pub use initialize::*;
-// pub use open_bid::*;
+pub use open_bid::*;
+pub use refund_commit_bid::*;
 pub use session_registration::*;
 pub use submit_commit_bid::*;
 pub use submit_sealed_bid::*;
 pub use submit_unsealed_bid::*;
-pub use refund_commit_bid::*;
 
 pub mod create_instance;
 pub use create_instance::*;
+
+pub mod mint_tokens;
+pub use mint_tokens::*;
+
+pub mod transfer_tokens;
+pub use transfer_tokens::*;
 // flow:
 // init bid
 // ticket total: 1
