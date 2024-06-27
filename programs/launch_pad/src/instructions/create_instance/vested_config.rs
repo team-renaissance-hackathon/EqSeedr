@@ -20,7 +20,7 @@ pub struct CreateVestedConfig<'info> {
     #[account(
         seeds = [
             session.key().as_ref(),
-            b"venture-token-vault",
+            b"vested-token-escrow",
         ],
         bump,
     )]
