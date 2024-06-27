@@ -54,7 +54,7 @@ pub struct CommitBidBySession<'info> {
     #[account(
         mut,
         // constraint = commit_bid_vault.owner == session.key()
-        // constraint = commit_bid_vault.owner == program_authority.key()
+        constraint = commit_bid_vault.owner == program_authority.key()
 
     )]
     pub commit_bid_vault: InterfaceAccount<'info, TokenAccount>,
