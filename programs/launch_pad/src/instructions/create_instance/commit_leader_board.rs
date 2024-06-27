@@ -11,6 +11,8 @@ pub struct CreateCommitLeaderBoard<'info> {
     pub authority: Signer<'info>,
 
     #[account(
+        constraint = !session.has_commit_leader_board 
+            @ ErrorCode::SessionCommitLeaderBoardAlreadyExist,
         init,
         payer = authority,
         space = MAX_STATE_ALLOCATION,
@@ -24,15 +26,14 @@ pub struct CreateCommitLeaderBoard<'info> {
 
     #[account(
         mut,
-        has_one = authority,
+        constraint = sealed_bid_round.session == session.key().clone()
+            @ ErrorCode::InvalidSealedBidRound,
     )]
     pub sealed_bid_round: Account<'info, SealedBidRound>,
 
     #[account(
         mut,
         has_one = authority,
-        constraint = !session.has_commit_leader_board 
-            @ ErrorCode::SessionCommitLeaderBoardAlreadyExist,
     )]
     pub session: Account<'info, Session>,
 
