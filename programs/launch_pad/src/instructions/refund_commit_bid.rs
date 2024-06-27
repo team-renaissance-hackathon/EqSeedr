@@ -74,11 +74,7 @@ pub struct RefundCommitBidBySession<'info> {
 
 pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
     let RefundCommitBidBySession {
-        // authority,
         sealed_bid_by_index,
-        // commit_leader_board,
-        // commit_queue,
-        session,
         bidder_token_account,
         commit_bid_vault,
         token_program,
@@ -96,11 +92,7 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
         ErrorCode::BidIsAlreadyRefunded
     );
 
-    // don't need to remove aynthing from commit leaderboard,
-    // as refund only happens at the end of the unsealed bid phase(?)
-    //let node = commit_leader_board.get_node(sealed_bid_by_index.commit_leader_board_index);
-
-    sealed_bid_by_index.refunded();
+    sealed_bid_by_index.bid_refunded();
 
     // Construct the program authority signer
     let seeds = &[b"auhtority", &[program_authority.bump][..]];

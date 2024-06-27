@@ -1,7 +1,5 @@
-use crate::states::program_authority;
-
-// staking vault account is ephemeral, instance based on a specific session
-use super::super::states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session};
+use crate::states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session};
+use crate::utils::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
@@ -14,8 +12,8 @@ pub struct UnlockStake<'info> {
 
     #[account(
         mut,
-        constraint = sealed_bid_by_index.owner == bidder.key(),
-        // @ InvalidOwnerOfSealedBidByIndex
+        constraint = sealed_bid_by_index.owner == bidder.key()
+            @ ErrorCode::InvalidOwnerOfSealedBidByIndex,
     )]
     pub sealed_bid_by_index: Account<'info, SealedBidByIndex>,
 
@@ -45,9 +43,8 @@ pub struct UnlockStake<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handler(ctx: Context<UnlockStake>, commit_hash: Pubkey) -> Result<()> {
+pub fn handler(ctx: Context<UnlockStake>) -> Result<()> {
     let UnlockStake {
-        bidder,
         sealed_bid_by_index,
         session,
         bidder_token_account,
@@ -62,7 +59,10 @@ pub fn handler(ctx: Context<UnlockStake>, commit_hash: Pubkey) -> Result<()> {
     require!(sealed_bid_by_index.is_unsealed, ErrorCode::BidNotUnsealed);
 
     // Validate that the stake isn't already unlocked
-    require!(!sealed_bid_by_index.is_stake_unlocked, ErrorCode::StakeIsAlreadyUnlocked);
+    require!(
+        !sealed_bid_by_index.is_stake_unlocked,
+        ErrorCode::StakeIsAlreadyUnlocked
+    );
 
     // Construct the program authority signer
     let seeds = &[b"auhtority", &[program_authority.bump][..]];

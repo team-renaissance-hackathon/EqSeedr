@@ -76,6 +76,7 @@ pub enum ErrorCode {
 
     #[msg("Bid Is Not Unsealed!")]
     BidNotUnsealed,
+
     #[msg("Invalid Owner Of Sealed Bid By Index!")]
     InvalidSession,
 
