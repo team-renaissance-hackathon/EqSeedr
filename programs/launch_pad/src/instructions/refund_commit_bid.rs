@@ -1,5 +1,11 @@
 use crate::states::{
-    CommitLeaderBoard, CommitQueue, ProgramAuthority, SealedBidByIndex, SealedBidRound, Session,
+    // STATE ACCOUNTS
+    CommitLeaderBoard,
+    CommitQueue,
+    ProgramAuthority,
+    SealedBidByIndex,
+    SealedBidRound,
+    Session,
 };
 
 use crate::utils::errors::ErrorCode;
@@ -85,7 +91,10 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
     require!(sealed_bid_by_index.is_commit, ErrorCode::BidNotCommitted);
 
     // Validate that the bid isn't already refunded
-    require!(!sealed_bid_by_index.is_bid_refunded, ErrorCode::BidIsAlreadyRefunded);
+    require!(
+        !sealed_bid_by_index.is_bid_refunded,
+        ErrorCode::BidIsAlreadyRefunded
+    );
 
     // don't need to remove aynthing from commit leaderboard,
     // as refund only happens at the end of the unsealed bid phase(?)

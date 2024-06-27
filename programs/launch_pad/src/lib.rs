@@ -11,6 +11,7 @@ declare_id!("7GKWqKvkev22SYs2HEb1jw6h4uHJwLVKpEcxVUqTZKxG");
 
 #[program]
 pub mod launch_pad {
+
     use super::*;
 
     pub fn allocate_zero_copy(ctx: Context<AllocateZeroCopy>, amount: u64) -> Result<()> {
@@ -156,6 +157,14 @@ pub mod launch_pad {
         instructions::initialize::handler(ctx)
     }
 
+    pub fn mint_tokens(ctx: Context<MintTokens>, amount: u64) -> Result<()> {
+        instructions::mint_tokens::handler(ctx, amount)
+    }
+
+    pub fn transfer_tokens(ctx: Context<TransferTokens>, amount: u64) -> Result<()> {
+        instructions::transfer_tokens::handler(ctx, amount)
+    }
+
     pub fn add_bid_token_mint(ctx: Context<AddBidTokenMint>) -> Result<()> {
         instructions::add_bid_token_mint::handler(ctx)
     }
@@ -186,10 +195,8 @@ pub mod launch_pad {
         instructions::create_instance::commit_bid_vault::handler(ctx)
     }
 
-    pub fn create_sealed_bid_token_stake_account(
-        ctx: Context<CreateSealedBidTokenStakeAccount>,
-    ) -> Result<()> {
-        instructions::create_instance::sealed_bid_token_stake_account::handler(ctx)
+    pub fn create_token_stake_vault(ctx: Context<CreateTokenStakeVault>) -> Result<()> {
+        instructions::create_instance::token_stake_vault::handler(ctx)
     }
 
     pub fn create_tick_bid_round(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {
@@ -216,22 +223,22 @@ pub mod launch_pad {
     //     instructions::create_session_marketplace::handler(ctx)
     // }
 
-    // pub fn submit_sealed_bid(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()> {
-    //     instructions::submit_sealed_bid::handler(ctx, commit_hash)
-    // }
+    pub fn submit_sealed_bid(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()> {
+        instructions::submit_sealed_bid::handler(ctx, commit_hash)
+    }
 
-    // pub fn submit_unsealed_bid(
-    //     ctx: Context<SubmitUnsealedBid>,
-    //     amount: u64,
-    //     index: u32,
-    //     _secret: [u8; 32],
-    // ) -> Result<()> {
-    //     instructions::submit_unsealed_bid::handler(ctx, amount, index)
-    // }
+    pub fn submit_unsealed_bid(
+        ctx: Context<SubmitUnsealedBid>,
+        amount: u64,
+        index: u32,
+        _secret: [u8; 32],
+    ) -> Result<()> {
+        instructions::submit_unsealed_bid::handler(ctx, amount, index)
+    }
 
-    // pub fn submit_commit_bid(ctx: Context<CommitBidBySession>) -> Result<()> {
-    //     instructions::submit_commit_bid::handler(ctx)
-    // }
+    pub fn submit_commit_bid(ctx: Context<CommitBidBySession>) -> Result<()> {
+        instructions::submit_commit_bid::handler(ctx)
+    }
 
     pub fn session_registration(ctx: Context<SessionRegistration>) -> Result<()> {
         instructions::session_registration::handler(ctx)

@@ -1,4 +1,5 @@
 use crate::states::{CommitQueue, Session};
+use crate::utils::errors::ErrorCode;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -7,11 +8,11 @@ pub struct CreateSessionCommitQueue<'info> {
     pub authority: Signer<'info>,
 
     #[account(
+        constraint = !session.has_commit_queue 
+            @ ErrorCode::SessionCommitQueueAlreadyExist,
         init,
         payer = authority,
         space = CommitQueue::LEN,
-        // space = 526,
-
         seeds = [
             session.key().as_ref(),
             b"commit-queue",
@@ -23,7 +24,6 @@ pub struct CreateSessionCommitQueue<'info> {
     #[account(
         mut,
         has_one = authority
-        // constraint = !session.has_commit_queue @ ProgramError::SessionCommitQueueAlreadyExist
     )]
     pub session: Account<'info, Session>,
 

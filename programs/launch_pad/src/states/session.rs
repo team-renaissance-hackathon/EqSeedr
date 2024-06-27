@@ -224,7 +224,7 @@ impl Session {
 // launchInstance
 // launchStatus
 // launchInstanceStatus
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq)]
 pub enum SessionStatus {
     Enqueue,
     SealBid,

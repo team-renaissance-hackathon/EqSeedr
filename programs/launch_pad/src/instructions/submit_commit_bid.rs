@@ -2,7 +2,9 @@ use crate::states::{
     CommitLeaderBoard, CommitQueue, ProgramAuthority, SealedBidByIndex, SealedBidRound, Session,
 };
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked};
+use anchor_spl::token_interface::{
+    transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
+};
 
 #[derive(Accounts)]
 pub struct CommitBidBySession<'info> {
@@ -11,9 +13,9 @@ pub struct CommitBidBySession<'info> {
 
     #[account(
         mut,
-        constraint = !sealed_bid_by_index.is_commit,
+        // constraint = !sealed_bid_by_index.is_commit,
         // @ BidAlreadyCommited
-        constraint = sealed_bid_by_index.owner == authority.key(),
+        // constraint = sealed_bid_by_index.owner == authority.key(),
         // @ InvalidOwnerOfSealedBidByIndex
     )]
     pub sealed_bid_by_index: Account<'info, SealedBidByIndex>,
@@ -28,7 +30,7 @@ pub struct CommitBidBySession<'info> {
 
     #[account(
         mut,
-        constraint = !commit_leader_board.is_valid_session(session.key()),
+        // constraint = !commit_leader_board.is_valid_session(session.key()),
         // this also doesn't work
         // constraint = !commit_leader_board.is_valid_indexed_commit_bid(&sealed_bid_by_index)
     )]
@@ -36,23 +38,23 @@ pub struct CommitBidBySession<'info> {
 
     #[account(
         mut,
-        constraint = !commit_queue.is_valid_session(session.key()),
+        // constraint = !commit_queue.is_valid_session(session.key()),
         // the bug seems to exist in this validation
         // only happens win the bid_index is the last bid_index
-        constraint = !commit_queue.is_valid_insert(&commit_leader_board, &sealed_bid_by_index)
+        // constraint = !commit_queue.is_valid_insert(&commit_leader_board, &sealed_bid_by_index)
     )]
     pub commit_queue: Account<'info, CommitQueue>,
 
     #[account(
         mut,
-        constraint = bidder_token_account.owner == authority.key()
+        // constraint = bidder_token_account.owner == authority.key()
     )]
     pub bidder_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         mut,
-        // constraint = session_commit_token_account.owner == session.key()
-        constraint = commit_bid_vault.owner == program_authority.key()
+        // constraint = commit_bid_vault.owner == session.key()
+        // constraint = commit_bid_vault.owner == program_authority.key()
 
     )]
     pub commit_bid_vault: InterfaceAccount<'info, TokenAccount>,
@@ -73,7 +75,6 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
         sealed_bid_by_index,
         commit_leader_board,
         commit_queue,
-        session,
         bidder_token_account,
         commit_bid_vault,
         token_program,
@@ -101,18 +102,6 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
     )?;
 
     commit_queue.remove();
-    // handle refund commit transfer here?
-    // or handle refund commit transfter in a seperate transaction?
-    // in effect becoming a pull transfer
-    // if handling refund commit here, if transactions are happening fast
-    // could be an issue becuase the acount to refund back
-    // has already been refunded and the next transaction could be
-    // wrong account to refund back.
-    // I think this can be handled in a look up table
-    // to dynamically pull accounts that could be needed
-    // but would need to explore how to use it. or even see
-    // if its viable
-    // so for now it will be in a seperate instruction
 
     Ok(())
 }
@@ -155,3 +144,19 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
 // - need to implement event logs
 // - add / update validations with correct and working errors, need to explore why the errors are not working
 // - implement the refund instruction in seperate file
+
+// refund of commit:
+// handle refund commit transfer here?
+// or handle refund commit transfter in a seperate transaction?
+// in effect becoming a pull transfer
+// if handling refund commit here, if transactions are happening fast
+// could be an issue becuase the acount to refund back
+// has already been refunded and the next transaction could be
+// wrong account to refund back.
+// I think this can be handled in a look up table
+// to dynamically pull accounts that could be needed
+// but would need to explore how to use it. or even see
+// if its viable
+// so for now it will be in a seperate instruction
+// updated: this process will be through the investor that made
+// the bid to refund their commit bid

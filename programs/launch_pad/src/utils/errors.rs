@@ -76,4 +76,33 @@ pub enum ErrorCode {
 
     #[msg("Bid Is Not Unsealed!")]
     BidNotUnsealed,
+    #[msg("Invalid Owner Of Sealed Bid By Index!")]
+    InvalidSession,
+
+    #[msg("Invalid Tick Bid Round!")]
+    InvalidTickBidRound,
+
+    #[msg("Invalid Tick Bid Round Status!")]
+    InvalidTickBidRoundStatus,
+
+    #[msg("Is Empty Queue!")]
+    IsEmptyQueue,
+
+    #[msg("Invalid Vested Owner!")]
+    InvalidVestedOwner,
+
+    #[msg("Session Commit Queue Already Exist!")]
+    SessionCommitQueueAlreadyExist,
+
+    #[msg("Invalid Venture Token Mint!")]
+    InvalidVentureTokenMint,
+
+    #[msg("Invalid Token Owner!")]
+    InvalidTokenOwner,
+
+    #[msg("Invalid Mint Authority!")]
+    InvalidMintAuthority,
+
+    #[msg("Invalid Unsealed Bid!")]
+    InvalidUnsealedBid,
 }

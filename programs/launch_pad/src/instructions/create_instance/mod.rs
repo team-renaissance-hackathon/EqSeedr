@@ -16,8 +16,11 @@ pub use commit_bid_vault::*;
 pub mod commit_queue;
 pub use commit_queue::*;
 
-pub mod sealed_bid_token_stake_account;
-pub use sealed_bid_token_stake_account::*;
+pub mod token_stake_vault;
+pub use token_stake_vault::*;
+
+pub mod venture_token_escrow;
+pub use venture_token_escrow::*;
 
 pub mod tick_bid_round;
 pub use tick_bid_round::*;

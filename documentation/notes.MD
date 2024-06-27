@@ -1,20 +1,38 @@
 TODO!
 
 SECTIONS:
+
+PROGRAM:
+    state / authority
+        program authority
+    implented:
+        initialize
+        add bid token mint
+
 SESSION INSTANCE
+    state:
+        create vested config by session
+    token account:
+        commit bid vault -> must be accepted bid token mint
+        create vested escrow by session
     implemented:
-        commit leader board -> box account on heap, no changes to linked list
+        create::
+            session
+            sealed_bid_round
+            commit bit vault
+            commit leader board
+            reallocate commit leader board
+            commit queue
+            tick bid round
+            vested token escrow
+            vested config
     todo:
-        create commit bid vault -> is rename of create commit token account
-            token account   -> USDC
+        session token escrow
+        token stake vault
         create session leader board     -> zero copy linked list
             state account
         create round leader board 10x   -> zero copy linked list
             state account
-        create vested config by session
-            state
-        create vested escrow by session
-            token account   -> project token
     refactor
         change to anchor 0.30.0 -- done
         token interface -- done
@@ -22,12 +40,12 @@ SESSION INSTANCE
 SEALED-BID SYSTEM
     state
         stake vault state []
-        sealed bid account [] -> note, this make contain the state for stake vault -> {INVESTOR}
+        sealed bid account [] -> note, this may contain the state for stake vault -> {INVESTOR}
         commit bid leader board -> {INSTANCE}
         commit bid queue -> {INSTANCE}
     token account
         stake vault
-        commit bid escrow / vault
+        commit bid vault
     implemented
         submit sealed bid
         submit unsealed bid
@@ -35,7 +53,9 @@ SEALED-BID SYSTEM
     todo
         refund commit bid -- done (partially?)
         unlock stake
+    drop
         update STATE::commit_bid_leader_board -> zero copy 
+            - doesn't need to be zero copy, using the heap is enough to handle this account type
 
 TICK-BID SYSTEM
     state
@@ -49,8 +69,8 @@ TICK-BID SYSTEM
         vesting escrow
         project vault
     implemented
-    todo
         register bid
+    todo
         open bid
         execute bid -> algorithmic complexity.
         update leader board
@@ -76,3 +96,34 @@ VESTING SYSTEM
 
 MARKETPLACE SYSTEM
     Todo: non-mvp
+
+
+THOUGHTS:
+    commit bid vault -> previous name -> create commit token account
+        - 
+        // THOUGHTS:
+        // : if there is going to be more than one token that will be used to make bids, then there
+        // will need to be multiple commit token accounts.
+        // : the argument for using allowing to have multiple stable coins for user options to use for bids,
+        // is availabitlity and liquidity. what if at a given point there is not
+        // 1 million USDC at that moment available for users to place there bids.
+        // I doubt such a situation would happen but there is a possibility.
+        // having multiple stable coins as an option provides more liquidity and reduces that risk.
+        // FINAL DECISION:
+        // the commit token account will be ephemeral, instance based to a specific active session.
+        // and it will be created only with USDC token mint. if in the future, there needs to be
+        // used with optional token mints of other stable coins then that change can be made in the future.
+
+        // this should be moved into session for sealed bid?
+        // right now only one instance of this is being created
+        // multiple instances should  be created for each session.
+        // program authority is the authority of account but should that be true?
+        // now that I think about it. this is for the commit queue.
+        // so then maybe only one instances is okay to exist?
+        // and is using a valid bid token mint -> USDC / SOL / Stable coin
+
+        // should come back to this. right now there is only a single top level
+        // instances of this account being created...
+        // should there be only one instances or multiple instances at the session level?
+        // is being created for the bid token... need add validation that this
+        // can only be created with a valid bid token which is USDC ATM.

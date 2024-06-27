@@ -241,7 +241,7 @@ impl TickBidRound {
     }
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq)]
 pub enum TickBidRoundStatus {
     Enqueue,
     Open,

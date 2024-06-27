@@ -8,6 +8,8 @@ pub struct CreateSessionSealedBidRound<'info> {
     pub authority: Signer<'info>,
 
     #[account(
+        constraint = !session.has_sealed_bid_round 
+            @ ErrorCode::SessionSealedBidRoundAlreadyExist,
         init,
         payer = authority,
         space = SealedBidRound::LEN,
@@ -22,7 +24,6 @@ pub struct CreateSessionSealedBidRound<'info> {
     #[account(
         mut,
         has_one = authority,
-        constraint = !session.has_sealed_bid_round @ ErrorCode::SessionSealedBidRoundAlreadyExist
     )]
     pub session: Account<'info, Session>,
 

@@ -1,6 +1,6 @@
 use anchor_lang::{
     prelude::*,
-    solana_program::{big_mod_exp::BigModExpParams, hash::Hasher, pubkey::PUBKEY_BYTES},
+    solana_program::{hash::Hasher, pubkey::PUBKEY_BYTES},
 };
 
 use crate::utils::{BOOL, BYTE, DISCRIMINATOR, UNSIGNED_32, UNSIGNED_64};
@@ -71,7 +71,13 @@ impl SealedBidByIndex {
 
     // unsealed bid step
     pub fn unsealed_bid(&mut self, index: u32, amount: u64) {
-        self.commit_leader_board_index = index - 1;
+        // question... why was I subtracting - 1 from index?
+        // what was the intetion behind that?
+        // something to do with the leader board.
+        // assuming the number of nodes that exist
+        //  on the commit leader board
+        // self.commit_leader_board_index = index - 1;
+        self.commit_leader_board_index = index;
         self.is_unsealed = true;
         self.bid_amount = amount;
     }

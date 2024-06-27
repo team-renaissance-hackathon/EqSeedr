@@ -241,38 +241,30 @@ describe("launch_pad", () => {
 
   })
 
-  it("Is initialized!", async () => {
+  describe("initialize priority accounts", () => {
 
-    await script.init({
-      connection: provider.connection,
-      authority: keypair,
-      program,
-      web3: anchor.web3,
-    })
+    it("Is initialized!", async () => {
 
-  });
+      await script.init({
+        connection: provider.connection,
+        authority: keypair,
+        program,
+        web3: anchor.web3,
+      })
 
-  // this should be moved into session for sealed bid?
-  // right now only one instance of this is being created
-  // multiple instances should  be created for each session.
-  // program authority is the authority of account but should that be true?
-  // now that I think about it. this is for the commit queue.
-  // so then maybe only one instances is okay to exist?
-  // and is using a valid bid token mint -> USDC / SOL / Stable coin
-  // it("Create Commit Token Account", async () => {
+    });
 
-  //   await script.createCommitTokenAccount({
-  //     connection: provider.connection,
-  //     // is just payer and this is the session token mint
-  //     // is that accurate? or should be the bidTokenMint?
-  //     authority: tokenMint.mintAuthority,
-  //     program,
-  //     web3: anchor.web3,
-  //     tokenMint,
-  //     bidTokenMint,
-  //   })
+    it("Add Bid Token Mint", async () => {
 
-  // })
+      await script.addBidTokenMint({
+        connection: provider.connection,
+        authority: keypair,
+        program,
+        bidTokenMint
+      })
+
+    });
+  })
 
   describe("Session", () => {
 
@@ -407,7 +399,7 @@ describe("launch_pad", () => {
 
       })
 
-      it("Create Session Sealed Bid round", async () => {
+      it("Create Sealed Bid round", async () => {
 
         await script.createSessionSealedBidRound({
           connection: provider.connection,
@@ -419,14 +411,34 @@ describe("launch_pad", () => {
 
       })
 
-      it("Create Session Commit Leader Board", async () => {
-
-        await script.createSessionCommitLeaderBoard({
+      it("Create Commit Leader Board", async () => {
+        await script.createCommitLeaderBoard({
           connection: provider.connection,
           authority: tokenMint.mintAuthority,
           program,
           web3: anchor.web3,
           tokenMint,
+        })
+      })
+
+      it("Reallocate Commit Leader Board", async () => {
+        await script.reallocateCommitLeaderBoard({
+          connection: provider.connection,
+          authority: tokenMint.mintAuthority,
+          program,
+          web3: anchor.web3,
+          tokenMint,
+        })
+      })
+
+      it("Create Commit Bid Vault", async () => {
+        await script.createCommitBidVault({
+          connection: provider.connection,
+          authority: tokenMint.mintAuthority,
+          program,
+          web3: anchor.web3,
+          tokenMint,
+          bidTokenMint,
         })
 
       })
@@ -443,15 +455,13 @@ describe("launch_pad", () => {
 
       })
 
-      it("Create Sealed Bid Token Stake Account", async () => {
-
-        await script.createSealedBidTokenStakeAccount({
+      it("Create Token Stake Vault", async () => {
+        await script.createTokenStakeVault({
           connection: provider.connection,
           authority: tokenMint.mintAuthority,
           program,
           web3: anchor.web3,
           tokenMint,
-          // a valid token mint -> program token -> or USDC / stable token mint
           stakeTokenMint,
         })
 
@@ -573,6 +583,29 @@ describe("launch_pad", () => {
         })
       })
 
+      // should also mint the allocated tokens
+      it("Create Vested Token Escrow", async () => {
+
+        await script.createVestedTokenEscrow({
+          connection: provider.connection,
+          authority: tokenMint.mintAuthority,
+          program,
+          web3: anchor.web3,
+          tokenMint,
+        })
+      })
+
+      it("Create Vested Config By Session", async () => {
+
+        await script.createVestedConfig({
+          connection: provider.connection,
+          authority: tokenMint.mintAuthority,
+          program,
+          web3: anchor.web3,
+          tokenMint,
+        })
+      })
+
       // it("Create Tick Bid Marketplace", async () => {
 
       //   await script.createSessionMarketplace({
@@ -584,16 +617,7 @@ describe("launch_pad", () => {
       //   })
       // })
 
-      // it("Create Vested Config By Session", async () => {
 
-      //   await script.createVestedConfigBySession({
-      //     connection: provider.connection,
-      //     authority: tokenMint.mintAuthority,
-      //     program,
-      //     web3: anchor.web3,
-      //     tokenMint,
-      //   })
-      // })
 
     })
 
@@ -731,40 +755,42 @@ describe("launch_pad", () => {
     //   // request unclaimed commit bid
     // })
 
-    // describe("Interact with Tick Bid System", () => {
+    describe("Interact with Tick Bid System", () => {
 
-    //   // before
-    //   // create 15 more users to test the tick bid system
+      // before
+      // create 15 more users to test the tick bid system
 
-    //   // registerVestedAccount -> pre ix
-    //   it("Session Registration", async () => {
-    //     try {
-    //       await script.sessionRegistration({
-    //         connection: provider.connection,
-    //         authority: users[0].keypair,
-    //         program,
-    //         tokenMint,
-    //         bidTokenMint,
-    //         input: {
-    //           vestedIndex: 1,
-    //           vestedOwner: users[0].keypair.publicKey
-    //         }
-    //       })
-    //     } catch (err) {
-    //       console.log(err)
-    //     }
+      // registerVestedAccount -> pre ix
+      it("Session Registration", async () => {
+        try {
+          await script.sessionRegistration({
+            connection: provider.connection,
+            web3: anchor.web3,
+            authority: users[0].keypair,
+            program,
+            tokenMint,
+            bidTokenMint,
+            input: {
+              vestedIndex: 1,
+              vestedOwner: users[0].keypair.publicKey
+            }
+          })
+        } catch (err) {
+          console.log(err)
+        }
 
-    //   })
-    //   // openBid
-    //   // executeBid
+      })
+      // openBid
+      // executeBid
 
-    //   // registerVestedAccount
-    //   // process commit for round, opens the round
-    //   // execute bid
-    //   // delayed execute bid
-    //   // need to excute many bids quickly to close the tick bid round and enter another tick bid round
-    //   // need to execute all the rounds fast to close the session
-    // })
+      // registerVestedAccount
+      // process commit for round, opens the round
+      // execute bid
+      // delayed execute bid
+      // need to excute many bids quickly to close the tick bid round and enter another tick bid round
+      // need to execute all the rounds fast to close the session
+    })
+
 
     // describe("Process Errors", () => { })
   })
