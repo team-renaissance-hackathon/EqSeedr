@@ -1,10 +1,7 @@
-use crate::states::Session;
+use crate::states::{ProgramAuthority, Session};
 
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface},
-};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 #[derive(Accounts)]
 pub struct CreateVestedTokenEscrow<'info> {
@@ -13,20 +10,22 @@ pub struct CreateVestedTokenEscrow<'info> {
     pub authority: Signer<'info>,
 
     #[account(
-        seeds = [
-            token_mint.key().as_ref(),
-            b"escrow",
-        ],
-        bump,
+        seeds = [b"authority"],
+        bump = program_authority.bump
     )]
-    pub escrow_authority: SystemAccount<'info>,
+    pub program_authority: Account<'info, ProgramAuthority>,
 
     #[account(
         init,
         payer = authority,
-        associated_token::mint = token_mint,
-        associated_token::authority = escrow_authority,
-        associated_token::token_program = token_program,
+        seeds = [
+            session.key().as_ref(),
+            b"vested-token-escrow",
+        ],
+        bump,
+        token::mint = token_mint,
+        token::authority = program_authority,
+        token::token_program = token_program,
     )]
     pub new_vested_token_escrow: InterfaceAccount<'info, TokenAccount>,
 
@@ -37,7 +36,6 @@ pub struct CreateVestedTokenEscrow<'info> {
     pub session: Account<'info, Session>,
 
     pub token_mint: InterfaceAccount<'info, Mint>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }

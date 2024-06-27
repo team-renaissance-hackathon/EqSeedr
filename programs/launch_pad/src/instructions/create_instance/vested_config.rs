@@ -1,11 +1,9 @@
-use crate::states::{Session, VestedConfig};
+use crate::states::{Session, VestedConfig, ProgramAuthority};
 use crate::utils::errors::ErrorCode;
 
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface},
-};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface}
+;
 
 #[derive(Accounts)]
 pub struct CreateVestedConfig<'info> {
@@ -14,22 +12,24 @@ pub struct CreateVestedConfig<'info> {
     pub authority: Signer<'info>,
 
     #[account(
+        seeds = [b"authority"],
+        bump = program_authority.bump
+    )]
+    pub program_authority: Account<'info, ProgramAuthority>,
+
+    #[account(
         seeds = [
-            token_mint.key().as_ref(),
-            b"escrow",
+            session.key().as_ref(),
+            b"venture-token-vault",
         ],
         bump,
     )]
-    pub escrow_authority: SystemAccount<'info>,
-
-    #[account(
-        associated_token::mint = token_mint,
-        associated_token::authority = escrow_authority,
-        associated_token::token_program = token_program,
-    )]
     pub vested_token_escrow: InterfaceAccount<'info, TokenAccount>,
 
+
     #[account(
+        constraint = !session.has_vested_config 
+            @ ErrorCode::VestedConfigAlreadyExist,
         init,
         payer = authority,
         space = VestedConfig::LEN,
@@ -44,8 +44,7 @@ pub struct CreateVestedConfig<'info> {
     #[account(
         mut,
         has_one = authority,
-        constraint = !session.has_vested_config 
-            @ ErrorCode::VestedConfigAlreadyExist,
+
     )]
     pub session: Account<'info, Session>,
 
@@ -55,7 +54,6 @@ pub struct CreateVestedConfig<'info> {
     )]
     pub token_mint: InterfaceAccount<'info, Mint>,
 
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
