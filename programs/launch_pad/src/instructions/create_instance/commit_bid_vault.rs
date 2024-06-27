@@ -2,10 +2,7 @@ use crate::states::{ProgramAuthority, Session};
 use crate::utils::errors::ErrorCode;
 
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface},
-};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 #[derive(Accounts)]
 pub struct CreateCommitBidVault<'info> {
@@ -20,29 +17,24 @@ pub struct CreateCommitBidVault<'info> {
     pub program_authority: Account<'info, ProgramAuthority>,
 
     #[account(
-        seeds = [
-            session.key().as_ref(),
-            program_authority.key().as_ref(),
-            b"vault",
-        ],
-        bump,
-    )]
-    pub vault_authority: SystemAccount<'info>,
-
-    #[account(
+        constraint = !session.has_valid_commit_bid_vault 
+            @ ErrorCode::CommitBidVaultAlreadyExist,
         init,
         payer = authority,
-        associated_token::mint = bid_token_mint,
-        associated_token::authority = vault_authority,
-        associated_token::token_program = token_program,
+        seeds = [
+            session.key().as_ref(),
+            b"commit-bid-vault",
+        ],
+        bump,
+        token::mint = bid_token_mint,
+        token::authority = program_authority,
+        token::token_program = token_program,
     )]
     pub new_commit_bid_vault: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         mut,
         has_one = authority,
-        constraint = !session.has_valid_commit_bid_vault 
-            @ ErrorCode::CommitBidVaultAlreadyExist,
     )]
     pub session: Account<'info, Session>,
 
@@ -52,7 +44,6 @@ pub struct CreateCommitBidVault<'info> {
     )]
     pub bid_token_mint: InterfaceAccount<'info, Mint>,
 
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
