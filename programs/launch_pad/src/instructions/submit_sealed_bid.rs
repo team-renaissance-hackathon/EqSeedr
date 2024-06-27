@@ -1,4 +1,5 @@
-use super::super::states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session};
+use crate::states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session};
+use crate::utils::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
@@ -8,6 +9,14 @@ use anchor_spl::token_interface::{
 pub struct SubmitSealedBid<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
+
+    #[account(
+        seeds = [
+            b"authority"
+        ],
+        bump = program_authority.bump,
+    )]
+    pub program_authority: Account<'info, ProgramAuthority>,
 
     #[account(
         init,
@@ -24,31 +33,37 @@ pub struct SubmitSealedBid<'info> {
 
     #[account(
         mut,
-        constraint = sealed_bid_round.session == session.key(),
+        constraint = sealed_bid_round.session == session.key()
+            @ ErrorCode::InvalidSealedBidRound,
     )]
     pub sealed_bid_round: Account<'info, SealedBidRound>,
 
     #[account(
         mut,
         constraint = bidder_token_account.owner == authority.key()
+            @ ErrorCode::InvalidTokenOwner,
     )]
+    // bidder_token_stake
     pub bidder_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         mut,
-        // right now this constraint wont work, no staking account is stored.
-        // constraint = session.is_valid_staking_account(session_stake_token_account.key())
+        seeds = [
+            session.key().as_ref(),
+            token_stake_mint.key().as_ref(),
+            b"token-stake-vault"
+        ],
+        bump,
     )]
-    pub session_stake_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub token_stake_vault: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
-        // right now this constraint wont work since I have to create a cpi so the program authority can be
-        // the mint authority.
-        // constraint = token_mint.mint_authority.unwrap() == program_authority.key(),
+        constraint = token_stake_mint.mint_authority.unwrap() == program_authority.key()
+            @ ErrorCode::InvalidMintAuthority,
     )]
-    pub token_mint: InterfaceAccount<'info, Mint>,
+    // stake_token_mint
+    pub token_stake_mint: InterfaceAccount<'info, Mint>,
 
-    pub program_authority: Account<'info, ProgramAuthority>,
     pub session: Account<'info, Session>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
@@ -61,9 +76,9 @@ pub fn handler(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()>
         sealed_bid_round,
         session,
         bidder_token_account,
-        session_stake_token_account,
+        token_stake_vault,
         token_program,
-        token_mint,
+        token_stake_mint,
         ..
     } = ctx.accounts;
 
@@ -82,13 +97,13 @@ pub fn handler(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()>
             token_program.to_account_info(),
             TransferChecked {
                 from: bidder_token_account.to_account_info(),
-                to: session_stake_token_account.to_account_info(),
+                to: token_stake_vault.to_account_info(),
                 authority: authority.to_account_info(),
-                mint: token_mint.to_account_info(),
+                mint: token_stake_mint.to_account_info(),
             },
         ),
         session.staking_amount,
-        token_mint.decimals,
+        token_stake_mint.decimals,
     )?;
 
     Ok(())
