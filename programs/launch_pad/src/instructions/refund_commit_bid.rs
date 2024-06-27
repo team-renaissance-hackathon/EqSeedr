@@ -1,6 +1,5 @@
 use crate::states::{
     // STATE ACCOUNTS
-    CommitLeaderBoard,
     CommitQueue,
     ProgramAuthority,
     SealedBidByIndex,
@@ -26,25 +25,14 @@ pub struct RefundCommitBidBySession<'info> {
     #[account(
         mut,
         constraint = !sealed_bid_round.is_valid_session(session.key())
-        // currently can't test right now
-        // constraint = !sealed_bid_round.is_valid_unsealed_bid_phase(),
+            @ ErrorCode::InvalidSession,
     )]
     pub sealed_bid_round: Account<'info, SealedBidRound>,
 
     #[account(
         mut,
-        constraint = !commit_leader_board.is_valid_session(session.key()),
-        // this also doesn't work
-        // constraint = !commit_leader_board.is_valid_indexed_commit_bid(&sealed_bid_by_index)
-    )]
-    pub commit_leader_board: Account<'info, CommitLeaderBoard>,
-
-    #[account(
-        mut,
-        constraint = !commit_queue.is_valid_session(session.key()),
-        // the bug seems to exist in this validation
-        // only happens win the bid_index is the last bid_index
-        constraint = !commit_queue.is_valid_insert(&commit_leader_board, &sealed_bid_by_index)
+        constraint = !commit_queue.is_valid_session(session.key())
+            @ ErrorCode::InvalidSession,
     )]
     pub commit_queue: Account<'info, CommitQueue>,
 
@@ -56,7 +44,11 @@ pub struct RefundCommitBidBySession<'info> {
 
     #[account(
         mut,
-        constraint = commit_bid_vault.owner == program_authority.key()
+        seeds = [
+            session.key().as_ref(),
+            b"commit-bid-vault",
+        ],
+        bump,
     )]
     pub commit_bid_vault: InterfaceAccount<'info, TokenAccount>,
 
@@ -86,17 +78,9 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
 
     // Validate that the bid isn't already refunded
     require!(
-<<<<<<< Updated upstream
         !sealed_bid_by_index.is_bid_refunded,
-=======
-        !sealed_bid_by_index.is_refunded,
->>>>>>> Stashed changes
         ErrorCode::BidIsAlreadyRefunded
     );
-
-    // don't need to remove aynthing from commit leaderboard,
-    // as refund only happens at the end of the unsealed bid phase(?)
-    //let node = commit_leader_board.get_node(sealed_bid_by_index.commit_leader_board_index);
 
     sealed_bid_by_index.bid_refunded();
 
