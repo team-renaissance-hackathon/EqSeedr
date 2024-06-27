@@ -39,6 +39,8 @@ pub fn handler(ctx: Context<MintTokens>, amount: u64) -> Result<()> {
     // // multi_sig to approve mint of tokens
     // // amount needs to be approved and fetched through a smart contract
     // // also maybe need to approve the destination
+    // needs to be an approved amount from a contract
+    // needs to be an approved dest from a contract
 
     let seeds = &[b"authority", &[program_authority.bump][..]];
     let signer_seeds = &[&seeds[..]];

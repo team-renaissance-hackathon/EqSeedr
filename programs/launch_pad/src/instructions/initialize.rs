@@ -7,10 +7,7 @@ use super::super::states::{
     SessionIndexer,
 };
 use anchor_lang::prelude::*;
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface}
-};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
@@ -34,7 +31,7 @@ pub struct Initialize<'info> {
         payer = authority,
         seeds = [
             new_authority.key().clone().as_ref(),
-            b"token-mint",
+            b"eqseedr-token-mint",
         ],
         bump,
         mint::authority = new_authority,
@@ -46,11 +43,17 @@ pub struct Initialize<'info> {
     #[account(
         init,
         payer = authority,
-        associated_token::mint = new_token_mint,
-        associated_token::authority = new_authority,
-        associated_token::token_program = token_program,
+        seeds = [
+            new_authority.key().as_ref(),
+            b"program-token-vault"
+        ],
+        bump,
+        token::mint = new_token_mint,
+        token::authority = new_authority,
+        token::token_program = token_program,
+
     )]
-    pub new_authority_token_account: Box<InterfaceAccount<'info, TokenAccount>>,
+    pub new_program_token_vault: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         init,
@@ -99,7 +102,6 @@ pub struct Initialize<'info> {
     //     bump
     // )]
     // pub new_marketplace_matchers: Box<Account<'info, MarketplaceMatchers>>,
-    pub associated_token_program: Program<'info, AssociatedToken>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
