@@ -13,9 +13,9 @@ pub struct CommitBidBySession<'info> {
 
     #[account(
         mut,
-        constraint = !sealed_bid_by_index.is_commit,
+        // constraint = !sealed_bid_by_index.is_commit,
         // @ BidAlreadyCommited
-        constraint = sealed_bid_by_index.owner == authority.key(),
+        // constraint = sealed_bid_by_index.owner == authority.key(),
         // @ InvalidOwnerOfSealedBidByIndex
     )]
     pub sealed_bid_by_index: Account<'info, SealedBidByIndex>,
@@ -30,7 +30,7 @@ pub struct CommitBidBySession<'info> {
 
     #[account(
         mut,
-        constraint = !commit_leader_board.is_valid_session(session.key()),
+        // constraint = !commit_leader_board.is_valid_session(session.key()),
         // this also doesn't work
         // constraint = !commit_leader_board.is_valid_indexed_commit_bid(&sealed_bid_by_index)
     )]
@@ -38,23 +38,23 @@ pub struct CommitBidBySession<'info> {
 
     #[account(
         mut,
-        constraint = !commit_queue.is_valid_session(session.key()),
+        // constraint = !commit_queue.is_valid_session(session.key()),
         // the bug seems to exist in this validation
         // only happens win the bid_index is the last bid_index
-        constraint = !commit_queue.is_valid_insert(&commit_leader_board, &sealed_bid_by_index)
+        // constraint = !commit_queue.is_valid_insert(&commit_leader_board, &sealed_bid_by_index)
     )]
     pub commit_queue: Account<'info, CommitQueue>,
 
     #[account(
         mut,
-        constraint = bidder_token_account.owner == authority.key()
+        // constraint = bidder_token_account.owner == authority.key()
     )]
     pub bidder_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         mut,
         // constraint = commit_bid_vault.owner == session.key()
-        constraint = commit_bid_vault.owner == program_authority.key()
+        // constraint = commit_bid_vault.owner == program_authority.key()
 
     )]
     pub commit_bid_vault: InterfaceAccount<'info, TokenAccount>,
@@ -75,7 +75,6 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
         sealed_bid_by_index,
         commit_leader_board,
         commit_queue,
-        session,
         bidder_token_account,
         commit_bid_vault,
         token_program,
@@ -92,8 +91,8 @@ pub fn handler(ctx: Context<CommitBidBySession>) -> Result<()> {
         CpiContext::new(
             token_program.to_account_info(),
             TransferChecked {
-                from: commit_bid_vault.to_account_info(),
-                to: bidder_token_account.to_account_info(),
+                from: bidder_token_account.to_account_info(),
+                to: commit_bid_vault.to_account_info(),
                 authority: authority.to_account_info(),
                 mint: token_mint.to_account_info(),
             },

@@ -447,7 +447,7 @@ impl CommitQueue {
     }
 
     pub fn is_valid_open_bid(&self, owner: Pubkey) -> bool {
-        return !(self.queue[self.pointer as usize].clone().owner == owner);
+        return self.queue[self.pointer as usize].clone().owner == owner;
     }
 
     pub fn is_valid_dequeue(&self) -> bool {
@@ -455,7 +455,7 @@ impl CommitQueue {
     }
 
     pub fn is_valid_session(&self, session: Pubkey) -> bool {
-        return !(self.session == session);
+        return self.session == session;
     }
 
     // not sure what this is here for...
@@ -487,7 +487,7 @@ impl CommitBid {
     pub const LEN: usize = PUBKEY_BYTES + UNSIGNED_32 + UNSIGNED_64 + UNSIGNED_32;
 }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+#[derive(AnchorDeserialize, AnchorSerialize, Clone, PartialEq)]
 pub enum SealedBidRoundStatus {
     Enqueue,
     SealedBidPhase,

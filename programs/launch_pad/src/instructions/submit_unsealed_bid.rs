@@ -1,4 +1,5 @@
 use crate::states::{CommitLeaderBoard, SealedBidByIndex, SealedBidRound, Session};
+use crate::utils::errors::ErrorCode;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -10,24 +11,24 @@ pub struct SubmitUnsealedBid<'info> {
     #[account(
         mut,
         constraint = !sealed_bid_by_index.is_valid_unsealed_bid(amount, secret)
-        // @ InvalidUnsealedBid
+            @ ErrorCode::InvalidUnsealedBid,
     )]
     pub sealed_bid_by_index: Account<'info, SealedBidByIndex>,
 
     #[account(
         mut,
-        constraint = !sealed_bid_round.is_valid_session(session.key()),
+        // constraint = !sealed_bid_round.is_valid_session(session.key()),
 
         // can't test this validation yet.
         // constraint = !sealed_bid_round.is_valid_unsealed_bid_phase(),
-        constraint = !sealed_bid_round.is_valid_unsealed_bid(),
+        // constraint = !sealed_bid_round.is_valid_unsealed_bid(),
     )]
     pub sealed_bid_round: Account<'info, SealedBidRound>,
 
     #[account(
         mut,
-        constraint = !commit_leader_board.is_valid_session(session.key()),
-        constraint = !commit_leader_board.is_valid_node(index, amount)
+        // constraint = !commit_leader_board.is_valid_session(session.key()),
+        // constraint = !commit_leader_board.is_valid_node(index, amount)
     )]
     pub commit_leader_board: Account<'info, CommitLeaderBoard>,
 
@@ -43,9 +44,12 @@ pub fn handler(ctx: Context<SubmitUnsealedBid>, amount: u64, index: u32) -> Resu
 
     sealed_bid_by_index.unsealed_bid(commit_leader_board.pool.total, amount);
 
-    let node = commit_leader_board.create_node(sealed_bid_by_index.bid_index, sealed_bid_by_index.bid_amount);
+    let node = commit_leader_board.create_node(
+        sealed_bid_by_index.bid_index,
+        sealed_bid_by_index.bid_amount,
+    );
+
     commit_leader_board.add(&mut node.clone(), index);
-   
 
     Ok(())
 }
