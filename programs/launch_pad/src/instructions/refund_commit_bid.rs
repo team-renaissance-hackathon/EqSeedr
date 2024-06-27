@@ -56,9 +56,7 @@ pub struct RefundCommitBidBySession<'info> {
 
     #[account(
         mut,
-        // constraint = session_commit_token_account.owner == session.key()
         constraint = commit_bid_vault.owner == program_authority.key()
-
     )]
     pub commit_bid_vault: InterfaceAccount<'info, TokenAccount>,
 
@@ -91,6 +89,10 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
         !sealed_bid_by_index.is_bid_refunded,
         ErrorCode::BidIsAlreadyRefunded
     );
+
+    // don't need to remove aynthing from commit leaderboard,
+    // as refund only happens at the end of the unsealed bid phase(?)
+    //let node = commit_leader_board.get_node(sealed_bid_by_index.commit_leader_board_index);
 
     sealed_bid_by_index.bid_refunded();
 

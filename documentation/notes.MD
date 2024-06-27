@@ -26,9 +26,9 @@ SESSION INSTANCE
             tick bid round
             vested token escrow
             vested config
+            project token escrow
+            token stake vault
     todo:
-        session token escrow
-        token stake vault
         create session leader board     -> zero copy linked list
             state account
         create round leader board 10x   -> zero copy linked list

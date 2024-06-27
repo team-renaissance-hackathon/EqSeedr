@@ -34,7 +34,7 @@ const getAccounts = ({
     const [programTokenMint] = anchor.web3.PublicKey.findProgramAddressSync(
         [
             programAuthority.toBuffer(),
-            Buffer.from("token-mint"),
+            Buffer.from("eqseedr-token-mint"),
         ],
         program.programId
     )
@@ -169,10 +169,18 @@ const getAccounts = ({
         program.programId
     ) : [undefined]
 
+    const [stakeAuthority] = (session != undefined && stakeTokenMint != undefined) ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            stakeTokenMint.mint.publicKey.toBuffer(),
+            Buffer.from("stake-authority"),
+        ],
+        program.programId
+    ) : [undefined]
 
-    const sealedBidTokenStakeAccount = stakeTokenMint != undefined ? getAssociatedTokenAddressSync(
+    const tokenStakeVault = stakeAuthority != undefined ? getAssociatedTokenAddressSync(
         stakeTokenMint.mint.publicKey,
-        session,
+        stakeAuthority,
         true
     ) : undefined
 
@@ -182,7 +190,6 @@ const getAccounts = ({
         true
     ) : undefined
 
-
     const [sealedBidAccount] = sealedBidIndex != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from(sealedBidIndex.toString()),
@@ -191,8 +198,6 @@ const getAccounts = ({
         ],
         program.programId
     ) : [undefined]
-
-
 
     return {
         programAuthority,
@@ -205,7 +210,8 @@ const getAccounts = ({
         sealedBidRound,
         commitLeaderBoard,
         commitQueue,
-        sealedBidTokenStakeAccount,
+        stakeAuthority,
+        tokenStakeVault,
         vaultAuthority,
         commitBidVault,
         tickBidRound,
@@ -242,12 +248,19 @@ const init = async ({
         indexerStatus,
         enqueueSessionIndexer,
         activeSessionIndexer,
-        marketplaceMatchers,
+        // marketplaceMatchers,
 
         programTokenMint,
         programTokenAccount,
     } = getAccounts({ tokenMint: undefined, program: program })
 
+    const [programTokenVault] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            programAuthority.toBuffer(),
+            Buffer.from("program-token-vault")
+        ],
+        program.programId
+    )
 
     const tx = await program.methods
         .initialize()
@@ -257,10 +270,11 @@ const init = async ({
             newIndexerStatus: indexerStatus,
             newActiveSessionIndexer: activeSessionIndexer,
             newEnqueueSessionIndexer: enqueueSessionIndexer,
-            newMarketplaceMatchers: marketplaceMatchers,
+            // newMarketplaceMatchers: marketplaceMatchers,
 
             newTokenMint: programTokenMint,
-            newAuthorityTokenAccount: programTokenAccount,
+            // newAuthorityTokenAccount: programTokenAccount,
+            newProgramTokenVault: programTokenVault,
 
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
@@ -275,6 +289,62 @@ const init = async ({
         lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
         signature: tx,
     });
+}
+
+const mintTokens = async ({
+    provider,
+    program,
+    receipent,
+    payer,
+    amount
+}) => {
+
+
+    const [programAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("authority")],
+        program.programId
+    )
+
+    const [programTokenMint] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            programAuthority.toBuffer(),
+            Buffer.from("eqseedr-token-mint"),
+        ],
+        program.programId
+    )
+
+    const programTokenAccount = getAssociatedTokenAddressSync(
+        programTokenMint,
+        programAuthority,
+        true
+    )
+
+    const tx = await program.methods
+        .mintTokens(amount)
+        .accounts({
+            // if there is no explicit signer,
+            // then .signers([]) is empty
+            // but when that happens, who pays the fees?
+            signer: payer.publicKey,
+            programAuthority: programAuthority,
+            // tokenMint: programTokenMint,
+            //   receipent: programTokenAccount,
+            receipent,
+
+
+            tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([payer])
+        .rpc();
+
+    const latestBlockHash = await provider.connection.getLatestBlockhash()
+    await provider.connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+
+
 }
 
 const addBidTokenMint = async ({
@@ -294,7 +364,7 @@ const addBidTokenMint = async ({
         .accounts({
             authority: authority.publicKey,
             programAuthority: programAuthority,
-            tokenMint: bidTokenMint.mint.publicKey,
+            tokenMint: bidTokenMint.mint.keypair.publicKey,
         })
         .signers([authority])
         .rpc();
@@ -491,30 +561,17 @@ const createTokenStakeVault = async ({
 
     const {
         session,
-        sealedBidTokenStakeAccount, // -> newTokenStakeVault
+        stakeAuthority,
+        tokenStakeVault
     } = getAccounts({ tokenMint, stakeTokenMint, program })
 
-    const [stakeAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-            session.toBuffer(),
-            stakeTokenMint.mint.publicKey.toBuffer(),
-            Buffer.from("stake-authority"),
-        ],
-        program.programId
-    )
-
-    const newTokenStakeVault = getAssociatedTokenAddressSync(
-        stakeTokenMint.mint.publicKey,
-        stakeAuthority,
-        true
-    )
 
     const tx = await program.methods
         .createTokenStakeVault()
         .accounts({
             authority: authority.publicKey,
             stakeAuthority: stakeAuthority,
-            newTokenStakeVault: newTokenStakeVault,
+            newTokenStakeVault: tokenStakeVault,
 
             session: session,
 
@@ -820,7 +877,7 @@ const submitSealedBid = async ({
         sealedBidAccount,
         programAuthority,
         sealedBidRound,
-        sealedBidTokenStakeAccount
+        tokenStakeVault,
     } = getAccounts({
         tokenMint,
         program,
@@ -836,9 +893,11 @@ const submitSealedBid = async ({
             newSealedBidByIndex: sealedBidAccount,
             sealedBidRound: sealedBidRound,
 
+            // bidderTokenStake
             bidderTokenAccount: input.bidderStakeTokenAccount,
-            sessionStakeTokenAccount: sealedBidTokenStakeAccount,
-            tokenMint: tokenMint.mint.publicKey,
+            tokenStakeVault: tokenStakeVault,
+            // tokenMint: tokenMint.mint.publicKey,
+            tokenMint: stakeTokenMint.mint.publicKey,
 
             programAuthority: programAuthority,
             session: session,
@@ -878,12 +937,14 @@ const submitUnsealedBid = async ({
     })
 
     const data = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
-    // console.log(data.pool.list)
+    console.log(data.pool.list)
+
+    console.log(sealedBidAccount)
 
     const list = data.pool.total && new LinkedList(data)
     const index = data.pool.total && list.search(new Node({ position: { amount: input.amount, index: input.index } }))
 
-    // console.log({ index })
+    console.log({ index })
     const tx = await program.methods
         .submitUnsealedBid(
             input.amount,
@@ -907,9 +968,9 @@ const submitUnsealedBid = async ({
         signature: tx,
     });
 
-    // const d = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
+    const d = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
 
-    // console.log(d)
+    console.log(d)
     // console.log(d)
 
 }
@@ -1067,7 +1128,7 @@ const submitCommitBid = async ({
             sealedBidRound: sealedBidRound,
 
             bidderTokenAccount: input.bidTokenAccount,
-            sessionCommitTokenAccount: commitBidVault,
+            commitBidVault: commitBidVault,
 
 
             commitLeaderBoard: commitLeaderBoard,

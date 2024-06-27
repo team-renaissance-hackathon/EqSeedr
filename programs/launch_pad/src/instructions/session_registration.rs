@@ -12,9 +12,12 @@ use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct SessionRegistration<'info> {
+    pub signer: Signer<'info>,
     // investor
+    // but should implement a fee to reduce spam
     #[account(mut)]
-    pub authority: Signer<'info>,
+    /// CHECKED: pubkey of investor to register
+    pub authority: UncheckedAccount<'info>,
 
     #[account(
         init,
