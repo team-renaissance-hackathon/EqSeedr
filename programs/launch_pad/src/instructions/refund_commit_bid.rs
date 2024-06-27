@@ -86,7 +86,11 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
 
     // Validate that the bid isn't already refunded
     require!(
+<<<<<<< Updated upstream
         !sealed_bid_by_index.is_bid_refunded,
+=======
+        !sealed_bid_by_index.is_refunded,
+>>>>>>> Stashed changes
         ErrorCode::BidIsAlreadyRefunded
     );
 
