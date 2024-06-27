@@ -1,4 +1,4 @@
-use crate::states::{ProgramAuthority, SealedBidByIndex, SealedBidRound, Session};
+use crate::states::{ProgramAuthority, SealedBidByIndex, Session};
 use crate::utils::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
@@ -25,15 +25,17 @@ pub struct UnlockStake<'info> {
 
     #[account(
         mut,
-        // right now this constraint wont work, no staking account is stored.
-        // constraint = session.is_valid_staking_account(session_stake_token_account.key())
+        constraint = session.is_valid_staking_account(token_stake_vault.key())
+            @ ErrorCode::InvalidTokenStakeVault,
     )]
     pub token_stake_vault: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
-        // right now this constraint wont work since I have to create a cpi so the program authority can be
-        // the mint authority.
-        // constraint = token_mint.mint_authority.unwrap() == program_authority.key(),
+        seeds = [
+            program_authority.key().clone().as_ref(),
+            b"eqseedr-token-mint",
+        ],
+        bump,
     )]
     pub token_mint: InterfaceAccount<'info, Mint>,
 
@@ -88,4 +90,3 @@ pub fn handler(ctx: Context<UnlockStake>) -> Result<()> {
 
 // TODO!
 // - need to implement event logs
-// - add / update validations with correct and working errors
