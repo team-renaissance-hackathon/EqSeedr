@@ -51,9 +51,8 @@ SEALED-BID SYSTEM
         submit unsealed bid
         submit commit bid
     todo
-        refund commit bid -- done (partially?)
-        unlock stake
-    drop
+        refund commit bid -- done 
+        unlock stake -- done
         update STATE::commit_bid_leader_board -> zero copy 
             - doesn't need to be zero copy, using the heap is enough to handle this account type
 

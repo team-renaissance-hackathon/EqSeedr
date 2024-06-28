@@ -66,10 +66,8 @@ pub fn handler(ctx: Context<UnlockStake>) -> Result<()> {
         ErrorCode::StakeIsAlreadyUnlocked
     );
 
-    // need to update sealed_bid_by_index.is_stake_unlocked
-
     // Construct the program authority signer
-    let seeds = &[b"auhtority", &[program_authority.bump][..]];
+    let seeds = &[b"authority", &[program_authority.bump][..]];
     let signer_seeds = &[&seeds[..]];
 
     transfer_checked(
@@ -86,6 +84,9 @@ pub fn handler(ctx: Context<UnlockStake>) -> Result<()> {
         session.staking_amount,
         token_mint.decimals,
     )?;
+
+    // Update sealed_bid_by_index.is_stake_unlocked
+    sealed_bid_by_index.stake_unlocked();
 
     Ok(())
 }
