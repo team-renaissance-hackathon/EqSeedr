@@ -38,16 +38,12 @@ const shuffle = (array: string[]) => {
   return array;
 };
 
-class Mint {
-  keypair?: anchor.web3.Keypair;
-  pubkey?: anchor.web3.PublicKey;
-}
 
 
 class Token {
   // mint: anchor.web3.Keypair | anchor.web3.PublicKey;
   // mint: anchor.web3.Keypair;
-  mint: Mint;
+  mint: anchor.web3.Keypair;
   mintAuthority: anchor.web3.Keypair;
   freezeAuthority: anchor.web3.Keypair;
   supply: number;
@@ -60,18 +56,9 @@ class Token {
     payer: anchor.web3.Keypair,
     mintAuthority,
     tab,
-    mint?: anchor.web3.PublicKey,
   ) => {
 
-    const data = new Mint()
-
-    if (mint !== undefined) {
-      data.pubkey = mint
-    } else {
-      data.keypair = anchor.web3.Keypair.generate()
-    }
-
-    this.mint = data
+    this.mint = anchor.web3.Keypair.generate()
     this.mintAuthority = mintAuthority || anchor.web3.Keypair.generate()
     this.freezeAuthority = mintAuthority || anchor.web3.Keypair.generate()
     this.supply = 0
@@ -85,14 +72,14 @@ class Token {
 
       SystemProgram.createAccount({
         fromPubkey: payer.publicKey,
-        newAccountPubkey: this.mint.keypair.publicKey,
+        newAccountPubkey: this.mint.publicKey,
         space: MINT_SIZE,
         lamports,
         programId: TOKEN_PROGRAM_ID,
       }),
 
       createInitializeMintInstruction(
-        this.mint.keypair.publicKey,
+        this.mint.publicKey,
         this.decimals,
         this.mintAuthority.publicKey,
         this.freezeAuthority.publicKey
@@ -100,24 +87,24 @@ class Token {
     )
 
 
-    const tx = await sendAndConfirmTransaction(connection, transaction, [payer, this.mint.keypair])
+    const tx = await sendAndConfirmTransaction(connection, transaction, [payer, this.mint])
 
     await connection.confirmTransaction({
       ...blockhash,
       signature: tx
     }, "confirmed")
 
-    console.log("\t".repeat(tab), "TOKEN MINT CREATED")
+    // console.log("\t".repeat(tab), "TOKEN MINT CREATED")
 
     await this.mintToken({ connection, payer, tab })
   }
 
   createTokenAccount = async ({ connection, payer, tab }) => {
 
-    console.log("\t".repeat(tab), "CREATE TOKEN ACCOUNT")
+    // console.log("\t".repeat(tab), "CREATE TOKEN ACCOUNT")
 
     const tokenAccount = await getAssociatedTokenAddress(
-      this.mint.pubkey || this.mint.keypair.publicKey,
+      this.mint.publicKey,
       // this.mint.keypair.publicKey,
 
       payer.publicKey,
@@ -131,7 +118,7 @@ class Token {
         payer.publicKey,
         tokenAccount,
         payer.publicKey,
-        this.mint.pubkey || this.mint.keypair.publicKey,
+        this.mint.publicKey,
         // this.mint.keypair.publicKey,
 
         TOKEN_PROGRAM_ID,
@@ -146,7 +133,7 @@ class Token {
       signature: tx
     }, "confirmed")
 
-    console.log("\t".repeat(tab), "TOKEN ACCOUNT CREATED")
+    // console.log("\t".repeat(tab), "TOKEN ACCOUNT CREATED")
   }
 
   mintToken = async ({
@@ -160,7 +147,7 @@ class Token {
     await this.createTokenAccount({ connection, payer, tab })
 
     const tokenAccount = await getAssociatedTokenAddress(
-      this.mint.keypair.publicKey,
+      this.mint.publicKey,
       payer.publicKey,
       true,
       TOKEN_PROGRAM_ID,
@@ -168,7 +155,7 @@ class Token {
     )
 
     const ix = createMintToInstruction(
-      this.mint.keypair.publicKey,
+      this.mint.publicKey,
       tokenAccount,
       this.mintAuthority.publicKey,
       10000 * LAMPORTS_PER_SOL,
@@ -207,7 +194,8 @@ describe("launch_pad", () => {
     ventureTokenMint: [{ creator: anchor.web3.Keypair.generate(), token: new Token() }],
 
     // stakeTokenMint
-    programTokenMint: new Token(),
+    // programTokenMint: new Token(),
+    programTokenMint: [],
   }
   // const bidTokenMint = new Token() // USDC / SOL Token / STABLE token
   // const tokenMint = new Token() // eqseedr token mint
@@ -243,30 +231,55 @@ describe("launch_pad", () => {
         program.programId
       )
 
-      const mint = new Mint()
-      mint.pubkey = programTokenMint
-      tokens.programTokenMint.mint = mint
-
-      // await tokenMint.createMint(
-      //   provider.connection,
-      //   keypair,
-      //   undefined,
-      //   // { publicKey: programAuthority },
-      //   1
-      // )
-
-      const tx = await provider.connection.requestAirdrop(
-        // tokenMint.mintAuthority.publicKey,
-        programTokenMint,
-        10000 * anchor.web3.LAMPORTS_PER_SOL
+      const [programTokenVault] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+          programAuthority.toBuffer(),
+          Buffer.from("program-token-vault")
+        ],
+        program.programId
       )
 
-      const latestBlockHash = await provider.connection.getLatestBlockhash()
-      await provider.connection.confirmTransaction({
-        blockhash: latestBlockHash.blockhash,
-        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-        signature: tx,
-      });
+      const token = {
+        mint: programTokenMint,
+        mintAuthority: programAuthority,
+        programTokenVault: programTokenVault,
+
+        mintTokens: async ({
+          signer,
+          receipent,
+          amount
+        }) => {
+
+          // console.log(programAuthority, programTokenMint, programTokenVault)
+          // console.log(signer, receipent, amount)
+          const tx = await program.methods
+            .mintTokens(amount)
+            .accounts({
+              signer: signer.publicKey,
+              programAuthority: programAuthority,
+              receipent: receipent,
+              tokenProgram: TOKEN_PROGRAM_ID,
+            })
+            .signers([signer])
+            .rpc();
+
+          const latestBlockHash = await provider.connection.getLatestBlockhash()
+          await provider.connection.confirmTransaction({
+            blockhash: latestBlockHash.blockhash,
+            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+            signature: tx,
+          });
+
+          // console.log("pass")
+        },
+
+        transfer: () => {
+
+        }
+      }
+
+      tokens.programTokenMint.push(token)
+
     }
 
     {
@@ -289,6 +302,13 @@ describe("launch_pad", () => {
         lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
         signature: tx,
       });
+    }
+
+    {
+      await tokens.ventureTokenMint[0].token.createMint(
+        provider.connection,
+        keypair, undefined, undefined
+      )
     }
 
   })
@@ -423,27 +443,15 @@ describe("launch_pad", () => {
 
   describe("Session", () => {
 
-    // don't need this before
-    // const stakeTokenMint = new Token()
-    const stakeTokenMint = tokens.programTokenMint
-    const bidTokenMint = tokens.bidTokenMint.find(token => token.name === "USDC").token
+    let stakeTokenMint = tokens.programTokenMint[0]
+    let bidTokenMint = tokens.bidTokenMint.find(token => token.name === "USDC").token
+    const ventureTokenMint = tokens.ventureTokenMint[0].token
 
     before(async () => {
-      // sealed bid commit stake account
-      //  - program token mint
-      //  - valid stable coin mint
-      //  - sol token mint != native sol
+
       {
-
-        // using a valid stable coin token mint in this test case
-        // await stakeTokenMint.createMint(
-        //   provider.connection,
-        //   keypair, undefined, 2
-        // )
-
         const tx = await provider.connection.requestAirdrop(
-          // stakeTokenMint.mintAuthority.publicKey,
-          stakeTokenMint.mint.pubkey,
+          ventureTokenMint.mintAuthority.publicKey,
           1000 * anchor.web3.LAMPORTS_PER_SOL
         )
 
@@ -456,15 +464,14 @@ describe("launch_pad", () => {
 
       }
 
-      console.log(stakeTokenMint.mint.pubkey)
-
-
     })
 
     const target = 15
     const users = []
 
     before(async () => {
+
+      stakeTokenMint = tokens.programTokenMint[0]
 
       const list = []
 
@@ -475,7 +482,11 @@ describe("launch_pad", () => {
       for (let i = 0; i < target; i++) {
 
         // investor
-        const keypair = anchor.web3.Keypair.generate()
+        const keypair = anchor.web3.Keypair.generate();
+        // const ata = getAssociatedTokenAddressSync(
+        //   stakeTokenMint.mint,
+        //   keypair.publicKey,
+        // )
 
         // investor: AIRDROP TOKENS / SOL 
         const tx = await provider.connection.requestAirdrop(
@@ -500,11 +511,19 @@ describe("launch_pad", () => {
           // investor: AIRDROP USDC -> BIDTOKENMINT
           return bidTokenMint
             .mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
-        }).then(() => {
+        }).then(async () => {
+
+          return await getOrCreateAssociatedTokenAccount(
+            provider.connection,
+            keypair,
+            stakeTokenMint.mint,
+            keypair.publicKey
+          )
+        }).then((ata) => {
 
           // investor: AIRDROP eqseedr token -> STAKETOKENMINT
           return stakeTokenMint
-            .mintToken({ connection: provider.connection, payer: keypair, tab: 3 })
+            .mintTokens({ signer: keypair, receipent: ata.address, amount: new anchor.BN(1000 * LAMPORTS_PER_SOL) })
         })
 
         // push promise
@@ -533,14 +552,14 @@ describe("launch_pad", () => {
           commitHash: new anchor.web3.PublicKey(commitHash),
           index: i + 1,
           bidTokenAccount: await getAssociatedTokenAddress(
-            bidTokenMint.mint.keypair.publicKey,
+            bidTokenMint.mint.publicKey,
             keypair.publicKey,
             true,
             TOKEN_PROGRAM_ID,
             ASSOCIATED_TOKEN_PROGRAM_ID
           ),
           bidderStakeTokenAccount: await getAssociatedTokenAddress(
-            stakeTokenMint.mint.keypair.publicKey,
+            stakeTokenMint.mint,
             keypair.publicKey,
             true,
             TOKEN_PROGRAM_ID,
@@ -554,13 +573,15 @@ describe("launch_pad", () => {
 
     describe("Initialize Session State Contracts", () => {
 
+
       it("Create New Session", async () => {
+
         await script.createSession({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           input: {
             tokenName: "EqSeedr",
             launchDate: new anchor.BN(1723613050),
@@ -575,10 +596,10 @@ describe("launch_pad", () => {
 
         await script.createSessionSealedBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
         })
 
       })
@@ -586,30 +607,30 @@ describe("launch_pad", () => {
       it("Create Commit Leader Board", async () => {
         await script.createCommitLeaderBoard({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
         })
       })
 
       it("Reallocate Commit Leader Board", async () => {
         await script.reallocateCommitLeaderBoard({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
         })
       })
 
       it("Create Token Stake Vault", async () => {
         await script.createTokenStakeVault({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           stakeTokenMint,
         })
       })
@@ -617,10 +638,10 @@ describe("launch_pad", () => {
       it("Create Commit Bid Vault", async () => {
         await script.createCommitBidVault({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
         })
 
@@ -630,10 +651,10 @@ describe("launch_pad", () => {
       it("Create Vested Token Escrow", async () => {
         await script.createVestedTokenEscrow({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
         })
       })
 
@@ -641,10 +662,10 @@ describe("launch_pad", () => {
 
         await script.createSessionCommitQueue({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
         })
 
       })
@@ -653,100 +674,100 @@ describe("launch_pad", () => {
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 1,
         })
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 2,
         })
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 3,
         })
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 4,
         })
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 5,
         })
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 6,
         })
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 7,
         })
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 8,
         })
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 9,
         })
 
         await script.createTickBidRound({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
           bidTokenMint,
           roundIndex: 10,
         })
@@ -757,10 +778,10 @@ describe("launch_pad", () => {
 
         await script.createVestedConfig({
           connection: provider.connection,
-          authority: tokenMint.mintAuthority,
+          authority: ventureTokenMint.mintAuthority,
           program,
           web3: anchor.web3,
-          tokenMint,
+          tokenMint: ventureTokenMint,
         })
       })
 
@@ -812,7 +833,7 @@ describe("launch_pad", () => {
             authority: users[index].keypair,
             program: program,
             web3: anchor.web3,
-            tokenMint,
+            tokenMint: ventureTokenMint,
             stakeTokenMint,
             input: users[index],
           })
@@ -852,7 +873,7 @@ describe("launch_pad", () => {
             connection: provider.connection,
             authority: users[index].keypair,
             program: program,
-            tokenMint,
+            tokenMint: ventureTokenMint,
             stakeTokenMint,
             input: {
               ...users[index],
@@ -915,7 +936,7 @@ describe("launch_pad", () => {
             authority: users[index].keypair,
 
             program: program,
-            tokenMint,
+            tokenMint: ventureTokenMint,
             stakeTokenMint,
             bidTokenMint,
             input: users[index],

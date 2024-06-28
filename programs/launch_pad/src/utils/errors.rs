@@ -106,4 +106,7 @@ pub enum ErrorCode {
 
     #[msg("Invalid Unsealed Bid!")]
     InvalidUnsealedBid,
+
+    #[msg("Invalid Token Stake Vault!")]
+    InvalidTokenStakeVault,
 }

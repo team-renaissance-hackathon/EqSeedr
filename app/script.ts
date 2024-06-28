@@ -160,35 +160,30 @@ const getAccounts = ({
         program.programId
     ) : [undefined]
 
-    const [vaultAuthority] = session != undefined && programAuthority != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+    const [tokenStakeVault] = session != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
         [
             session.toBuffer(),
-            programAuthority.toBuffer(),
-            Buffer.from("vault"),
+            programTokenMint.toBuffer(),
+            Buffer.from("token-stake-vault"),
         ],
         program.programId
     ) : [undefined]
 
-    const [stakeAuthority] = (session != undefined && stakeTokenMint != undefined) ? anchor.web3.PublicKey.findProgramAddressSync(
+    const [commitBidVault] = session != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
         [
             session.toBuffer(),
-            stakeTokenMint.mint.publicKey.toBuffer(),
-            Buffer.from("stake-authority"),
+            Buffer.from("commit-bid-vault"),
         ],
         program.programId
     ) : [undefined]
 
-    const tokenStakeVault = stakeAuthority != undefined ? getAssociatedTokenAddressSync(
-        stakeTokenMint.mint.publicKey,
-        stakeAuthority,
-        true
-    ) : undefined
-
-    const commitBidVault = bidTokenMint != undefined ? getAssociatedTokenAddressSync(
-        bidTokenMint.mint.publicKey,
-        vaultAuthority,
-        true
-    ) : undefined
+    const [vestedTokenEscrow] = session != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            Buffer.from("vested-token-escrow"),
+        ],
+        program.programId
+    ) : [undefined]
 
     const [sealedBidAccount] = sealedBidIndex != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
         [
@@ -210,9 +205,8 @@ const getAccounts = ({
         sealedBidRound,
         commitLeaderBoard,
         commitQueue,
-        stakeAuthority,
         tokenStakeVault,
-        vaultAuthority,
+        vestedTokenEscrow,
         commitBidVault,
         tickBidRound,
         sessionTickBidLeaderBoard,
@@ -313,10 +307,12 @@ const mintTokens = async ({
         program.programId
     )
 
-    const programTokenAccount = getAssociatedTokenAddressSync(
-        programTokenMint,
-        programAuthority,
-        true
+    const [programTokenVault] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            programAuthority.toBuffer(),
+            Buffer.from("program-token-vault")
+        ],
+        program.programId
     )
 
     const tx = await program.methods
@@ -364,7 +360,7 @@ const addBidTokenMint = async ({
         .accounts({
             authority: authority.publicKey,
             programAuthority: programAuthority,
-            tokenMint: bidTokenMint.mint.keypair.publicKey,
+            tokenMint: bidTokenMint.mint.publicKey,
         })
         .signers([authority])
         .rpc();
@@ -391,13 +387,13 @@ const createSession = async ({
         session,
     } = getAccounts({ tokenMint, program: program })
 
+
     const tx = await program.methods
         // .createSession({
         //     tokenName: "",
         //     ...input
         // })
         .createSession(input)
-        // .createSession()
         .accounts({
             authority: authority.publicKey,
             indexer: indexerStatus,
@@ -561,22 +557,19 @@ const createTokenStakeVault = async ({
 
     const {
         session,
-        stakeAuthority,
-        tokenStakeVault
+        tokenStakeVault,
     } = getAccounts({ tokenMint, stakeTokenMint, program })
-
 
     const tx = await program.methods
         .createTokenStakeVault()
         .accounts({
             authority: authority.publicKey,
-            stakeAuthority: stakeAuthority,
             newTokenStakeVault: tokenStakeVault,
 
             session: session,
 
-            sessionTokenMint: tokenMint.mint.publicKey,
-            stakeTokenMint: stakeTokenMint.mint.publicKey,
+            ventureTokenMint: tokenMint.mint.publicKey,
+            tokenStakeMint: stakeTokenMint.mint,
 
             associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
             tokenProgram: TOKEN_PROGRAM_ID,
@@ -606,7 +599,6 @@ const createCommitBidVault = async ({
         session,
         programAuthority,
         commitBidVault,
-        vaultAuthority,
     } = getAccounts({ tokenMint, bidTokenMint, program })
 
     const tx = await program.methods
@@ -614,7 +606,6 @@ const createCommitBidVault = async ({
         .accounts({
             authority: authority.publicKey,
             programAuthority: programAuthority,
-            vaultAuthority: vaultAuthority,
             newCommitBidVault: commitBidVault,
             session: session,
             bidTokenMint: bidTokenMint.mint.publicKey,
@@ -758,25 +749,13 @@ const createVestedTokenEscrow = async ({
 
     const {
         session,
-        // vestedTokenEscrow,
+        vestedTokenEscrow,
     } = getAccounts({
         tokenMint,
         program
     })
 
-    const [escrowAuthority] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-            tokenMint.mint.publicKey.toBuffer(),
-            Buffer.from("escrow"),
-        ],
-        program.programId
-    )
 
-    const vestedTokenEscrow = getAssociatedTokenAddressSync(
-        tokenMint.mint.publicKey,
-        escrowAuthority,
-        true
-    )
 
 
     const tx = await program.methods
@@ -784,7 +763,6 @@ const createVestedTokenEscrow = async ({
         .accounts({
             authority: authority.publicKey,
 
-            escrowAuthority: escrowAuthority,
             newVestedTokenEscrow: vestedTokenEscrow,
 
             session: session,
@@ -817,6 +795,7 @@ const createVestedConfig = async ({
     const {
         session,
         vestedConfigBySession,
+        vestedTokenEscrow,
     } = getAccounts({
         tokenMint,
         program
@@ -830,11 +809,7 @@ const createVestedConfig = async ({
         program.programId
     )
 
-    const vestedTokenEscrow = getAssociatedTokenAddressSync(
-        tokenMint.mint.publicKey,
-        escrowAuthority,
-        true
-    )
+
 
 
     const tx = await program.methods
@@ -896,8 +871,7 @@ const submitSealedBid = async ({
             // bidderTokenStake
             bidderTokenAccount: input.bidderStakeTokenAccount,
             tokenStakeVault: tokenStakeVault,
-            // tokenMint: tokenMint.mint.publicKey,
-            tokenMint: stakeTokenMint.mint.publicKey,
+            tokenStakeMint: stakeTokenMint.mint,
 
             programAuthority: programAuthority,
             session: session,
@@ -937,9 +911,9 @@ const submitUnsealedBid = async ({
     })
 
     const data = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
-    console.log(data.pool.list)
+    // console.log(data.pool.list)
 
-    console.log(sealedBidAccount)
+    // console.log(sealedBidAccount)
 
     const list = data.pool.total && new LinkedList(data)
     const index = data.pool.total && list.search(new Node({ position: { amount: input.amount, index: input.index } }))
@@ -970,7 +944,7 @@ const submitUnsealedBid = async ({
 
     const d = await program.account.commitLeaderBoard.fetch(commitLeaderBoard)
 
-    console.log(d)
+    // console.log(d)
     // console.log(d)
 
 }
@@ -1134,7 +1108,7 @@ const submitCommitBid = async ({
             commitLeaderBoard: commitLeaderBoard,
             commitQueue: commitQueue,
 
-            tokenMint: tokenMint.mint.publicKey,
+            tokenMint: bidTokenMint.mint.publicKey,
 
             programAuthority: programAuthority,
             session: session,
