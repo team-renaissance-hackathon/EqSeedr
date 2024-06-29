@@ -47,6 +47,7 @@ pub use mint_tokens::*;
 
 pub mod transfer_tokens;
 pub use transfer_tokens::*;
+
 // flow:
 // init bid
 // ticket total: 1

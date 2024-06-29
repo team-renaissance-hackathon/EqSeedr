@@ -14,6 +14,7 @@ pub mod launch_pad {
 
     use super::*;
 
+    // experimenting with zero copy to see how they work
     pub fn allocate_zero_copy(ctx: Context<AllocateZeroCopy>, amount: u64) -> Result<()> {
         let AllocateZeroCopy {
             payer,
@@ -59,6 +60,7 @@ pub mod launch_pad {
         Ok(())
     }
 
+    // experimenting with zero copy to see how they work
     pub fn transfer_rent_zero_copy(ctx: Context<TransferRentZeroCopy>, amount: u64) -> Result<()> {
         let TransferRentZeroCopy {
             payer,
@@ -95,6 +97,7 @@ pub mod launch_pad {
         Ok(())
     }
 
+    // experimenting with zero copy to see how they work
     pub fn reallocate_zero_copy(ctx: Context<ReallocateZeroCopy>, amount: u64) -> Result<()> {
         let ReallocateZeroCopy { new_account } = ctx.accounts;
 
@@ -105,6 +108,7 @@ pub mod launch_pad {
         Ok(())
     }
 
+    // experimenting with zero copy to see how they work
     pub fn assign_zero_copy(ctx: Context<AssignZeroCopy>) -> Result<()> {
         let AssignZeroCopy {
             payer,
@@ -137,6 +141,7 @@ pub mod launch_pad {
         Ok(())
     }
 
+    // experimenting with zero copy to see how they work
     pub fn initialize_zero_copy(ctx: Context<InitializeZeroCopy>, input: u64) -> Result<()> {
         let new_account = &mut ctx.accounts.new_account.load_init()?;
         // new_account.data[0] = input;
@@ -145,6 +150,7 @@ pub mod launch_pad {
         Ok(())
     }
 
+    // experimenting with zero copy to see how they work
     pub fn update_zero_copy(ctx: Context<UpdateZeroCopy>, input: u64) -> Result<()> {
         let existing_account = &mut ctx.accounts.existing_account.load_mut()?;
         // existing_account.data[1] = input;
@@ -170,51 +176,55 @@ pub mod launch_pad {
     }
 
     pub fn create_session(ctx: Context<CreateSession>, input: SessionParams) -> Result<()> {
-        instructions::create_instance::session::handler(ctx, input)
+        instructions::session::handler(ctx, input)
     }
 
     pub fn create_session_sealed_bid_round(
         ctx: Context<CreateSessionSealedBidRound>,
     ) -> Result<()> {
-        instructions::create_instance::sealed_bid_round::handler(ctx)
+        instructions::sealed_bid_round::handler(ctx)
     }
 
     pub fn create_commit_leader_board(ctx: Context<CreateCommitLeaderBoard>) -> Result<()> {
-        instructions::create_instance::commit_leader_board::handler(ctx)
+        instructions::commit_leader_board::handler(ctx)
     }
 
     pub fn reallocate_commit_leader_board(ctx: Context<ReallocateCommitLeaderBoard>) -> Result<()> {
-        instructions::create_instance::reallocate_commit_leader_board::handler(ctx)
+        instructions::reallocate_commit_leader_board::handler(ctx)
     }
 
     pub fn create_session_commit_queue(ctx: Context<CreateSessionCommitQueue>) -> Result<()> {
-        instructions::create_instance::commit_queue::handler(ctx)
+        instructions::commit_queue::handler(ctx)
     }
 
     pub fn create_commit_bid_vault(ctx: Context<CreateCommitBidVault>) -> Result<()> {
-        instructions::create_instance::commit_bid_vault::handler(ctx)
+        instructions::commit_bid_vault::handler(ctx)
     }
 
     pub fn create_token_stake_vault(ctx: Context<CreateTokenStakeVault>) -> Result<()> {
-        instructions::create_instance::token_stake_vault::handler(ctx)
+        instructions::token_stake_vault::handler(ctx)
     }
 
     pub fn create_tick_bid_round(ctx: Context<CreateSessionTickBidRound>) -> Result<()> {
-        instructions::create_instance::tick_bid_round::handler(ctx)
+        instructions::tick_bid_round::handler(ctx)
     }
 
     pub fn create_session_tick_bid_leader_board(
         ctx: Context<CreateSessionTickBidLeaderBoard>,
     ) -> Result<()> {
-        instructions::create_instance::tick_bid_leader_board::handler(ctx)
+        instructions::tick_bid_leader_board::handler(ctx)
+    }
+
+    pub fn create_venture_token_escrow(ctx: Context<CreateVentureTokenEscrow>) -> Result<()> {
+        instructions::venture_token_escrow::handler(ctx)
     }
 
     pub fn create_vested_token_escrow(ctx: Context<CreateVestedTokenEscrow>) -> Result<()> {
-        instructions::create_instance::vested_token_escrow::handler(ctx)
+        instructions::vested_token_escrow::handler(ctx)
     }
 
     pub fn create_vested_config(ctx: Context<CreateVestedConfig>) -> Result<()> {
-        instructions::create_instance::vested_config::handler(ctx)
+        instructions::vested_config::handler(ctx)
     }
 
     // pub fn create_session_marketplace(
@@ -242,6 +252,10 @@ pub mod launch_pad {
 
     pub fn session_registration(ctx: Context<SessionRegistration>) -> Result<()> {
         instructions::session_registration::handler(ctx)
+    }
+
+    pub fn open_bid(ctx: Context<OpenBid>) -> Result<()> {
+        instructions::open_bid::handler(ctx)
     }
 }
 
