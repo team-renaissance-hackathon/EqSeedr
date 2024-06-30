@@ -20,6 +20,7 @@ import {
 import { script } from "../app/script";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { token } from "@coral-xyz/anchor/dist/cjs/utils";
+import { program } from "@coral-xyz/anchor/dist/cjs/native/system";
 
 
 const {
@@ -443,6 +444,7 @@ describe("launch_pad", () => {
 
   describe("Session", () => {
 
+    // I think I got the mints mixed up...
     let stakeTokenMint = tokens.programTokenMint[0]
     let bidTokenMint = tokens.bidTokenMint.find(token => token.name === "USDC").token
     const ventureTokenMint = tokens.ventureTokenMint[0].token
@@ -467,6 +469,9 @@ describe("launch_pad", () => {
     })
 
     const target = 15
+    // const target = 1
+
+
     const users = []
 
     before(async () => {
@@ -537,7 +542,7 @@ describe("launch_pad", () => {
           .update(passPhrase)
           .digest()
 
-        const amount = new anchor.BN(100 + (random(i, i + target) * 100))
+        const amount = new anchor.BN(100 + (random(i, i + target) * 100 + list.length))
         const commitHash = createHash('sha256')
           .update(Buffer.from(amount.toString()))
           .update(keypair.publicKey.toBuffer())
@@ -643,6 +648,18 @@ describe("launch_pad", () => {
           web3: anchor.web3,
           tokenMint: ventureTokenMint,
           bidTokenMint,
+        })
+
+      })
+
+      it("Create Venture Token Escrow", async () => {
+        await script.createVentureTokenEscrow({
+          connection: provider.connection,
+          authority: ventureTokenMint.mintAuthority,
+          program,
+          web3: anchor.web3,
+          tokenMint: ventureTokenMint,
+          bidTokenMint: bidTokenMint,
         })
 
       })
@@ -812,16 +829,6 @@ describe("launch_pad", () => {
 
       it("Submit Sealed Bid", async () => {
 
-        // await script.submitSealedBid({
-        //   connection: provider.connection,
-        //   authority: users[0].keypair,
-        //   program: program,
-        //   web3: anchor.web3,
-        //   tokenMint,
-        //   stakeTokenMint,
-        //   input: users[0],
-        // })
-
         const fn = async (index) => {
 
           if (index == users.length) {
@@ -845,23 +852,10 @@ describe("launch_pad", () => {
         await fn(0)
 
         // shuffle users. but don't like using it in tests.
-        shuffle(users)
+        // shuffle(users)
       })
 
       it("Submit Unsealed Bid", async () => {
-
-        // await script.submitUnsealedBid({
-        //   connection: provider.connection,
-        //   authority: users[0].keypair,
-        //   program: program,
-        //   tokenMint,
-        //   stakeTokenMint,
-        //   input: {
-        //     ...users[0],
-        //     amount: new anchor.BN(users[0].amount),
-        //     secretAsPub: new anchor.web3.PublicKey(users[0].secret)
-        //   },
-        // })
 
         const fn = async (index) => {
 
@@ -927,7 +921,11 @@ describe("launch_pad", () => {
 
         const fn = async (index) => {
 
-          if (index == users.length - 5) {
+          // if (index == users.length - 5) {
+          //   return
+          // }
+
+          if (index == users.length) {
             return
           }
 
@@ -964,41 +962,122 @@ describe("launch_pad", () => {
       // request unclaimed commit bid
     })
 
-    // describe("Interact with Tick Bid System", () => {
+    describe("Interact with Tick Bid System", () => {
 
-    //   // before
-    //   // create 15 more users to test the tick bid system
+      const commitQueue = []
 
-    //   // registerVestedAccount -> pre ix
-    //   it("Session Registration", async () => {
-    //     try {
-    //       await script.sessionRegistration({
-    //         connection: provider.connection,
-    //         web3: anchor.web3,
-    //         authority: users[0].keypair,
-    //         program,
-    //         tokenMint,
-    //         bidTokenMint,
-    //         input: {
-    //           vestedIndex: 1,
-    //           vestedOwner: users[0].keypair.publicKey
-    //         }
-    //       })
-    //     } catch (err) {
-    //       console.log(err)
-    //     }
+      before("", async () => {
+        users.forEach(user => {
+          commitQueue.push(user)
+        })
 
-    //   })
-    //   // openBid
-    //   // executeBid
+        commitQueue.sort((a, b) => b.amount - a.amount)
 
-    //   // registerVestedAccount
-    //   // process commit for round, opens the round
-    //   // execute bid
-    //   // delayed execute bid
-    //   // need to excute many bids quickly to close the tick bid round and enter another tick bid round
-    //   // need to execute all the rounds fast to close the session
-    // })
+        users.sort((a, b) => a.index - b.index)
+
+
+        // console.log("commit queue", commitQueue)
+        // console.log("users", users)
+
+      })
+
+      // before
+      // create 15 more users to test the tick bid system
+
+      // registerVestedAccount -> pre ix
+      it("Session Registration", async () => {
+
+        const fn = async (index) => {
+
+          if (index == users.length) {
+            return
+          }
+
+          const user = users[index]
+
+          await script.sessionRegistration({
+            connection: provider.connection,
+            web3: anchor.web3,
+            authority: user.keypair,
+            program,
+            tokenMint: ventureTokenMint,
+            bidTokenMint,
+            input: {
+              vestedIndex: user.index,
+              vestedOwner: user.keypair.publicKey
+            }
+          })
+
+          index++
+          await fn(index)
+        }
+
+        await fn(0)
+
+      })
+
+      it("Open Bid", async () => {
+        console.log("OPEN BID:: ", commitQueue[0])
+        console.log("OPEN BID:: ", commitQueue[0].keypair.publicKey)
+
+
+
+        const fn = async (index) => {
+
+          // if (index == 1) {
+          //   return
+          // }
+
+          if (index == 10) {
+            return
+          }
+
+          const user = commitQueue[index]
+
+          await await script.openBid({
+            connection: provider.connection,
+            web3: anchor.web3,
+            authority: user.keypair,
+            program,
+            tokenMint: ventureTokenMint,
+            bidTokenMint,
+            input: {
+              vestedIndex: user.index,
+              vestedOwner: user.keypair.publicKey
+            }
+          })
+
+          index++
+          await fn(index)
+        }
+
+        await fn(0)
+
+        // await script.openBid({
+        //   connection: provider.connection,
+        //   web3: anchor.web3,
+        //   authority: commitQueue[0].keypair,
+        //   program,
+        //   tokenMint: ventureTokenMint,
+        //   bidTokenMint,
+        //   input: {
+        //     vestedIndex: commitQueue[0].index,
+        //     vestedOwner: commitQueue[0].keypair.publicKey
+        //   }
+        // })
+
+
+
+      })
+      // executeBid
+
+      // registerVestedAccount
+      // process commit for round, opens the round
+      // execute bid
+      // delayed execute bid
+      // need to excute many bids quickly to close the tick bid round and enter another tick bid round
+      // need to execute all the rounds fast to close the session
+    })
 
 
     // describe("Process Errors", () => { })

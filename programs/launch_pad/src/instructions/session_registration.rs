@@ -85,12 +85,13 @@ pub fn handler(ctx: Context<SessionRegistration>) -> Result<()> {
     );
 
     msg!(
-        "Vested Accounts Created: {}: {}, \n{}, \n{}",
+        "Vested Accounts Created: {}: {}, \n{}, \n{}, \n{}",
         // accounts
         "\nInvestor",
         authority.key(),
         new_vested_account_by_index.key(),
         new_vested_account_by_owner.key(),
+        vested_config.vested_index,
     );
 
     Ok(())

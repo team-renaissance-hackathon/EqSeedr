@@ -25,6 +25,7 @@ pub struct Session {
     // session
     pub token_allocation: u64,
     pub total_rounds: u8, // incremental to 10, starts at 1
+    pub current_round: u8,
     pub launch_status: SessionStatus,
 
     // dates
@@ -112,6 +113,10 @@ impl Session {
         self.token_allocation = input.token_allocation;
 
         self.total_rounds = 0;
+        // self.current_round = 0;
+        // for testing. will have a way to set it to 1 later
+        self.current_round = 1;
+
         self.total_vested = 0;
         self.number_of_bids = 0;
         self.bid_sum = 0;
@@ -143,6 +148,9 @@ impl Session {
         Ok(())
     }
 
+    pub fn update_current_round(&mut self) {
+        self.current_round += 1;
+    }
     pub fn execute_bid(&mut self, bid: u64, amount: u64) {
         self.number_of_bids += 1;
 
