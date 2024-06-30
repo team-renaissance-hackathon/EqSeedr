@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use crate::states::{
     // STATE ACCOUNTS
     CommitQueue,
@@ -102,7 +104,6 @@ pub struct OpenBid<'info> {
     pub bid_token_mint: InterfaceAccount<'info, Mint>,
 
     pub token_program: Interface<'info, TokenInterface>,
-    pub system_program: Program<'info, System>,
 }
 
 pub fn handler(ctx: Context<OpenBid>) -> Result<()> {
@@ -136,7 +137,7 @@ pub fn handler(ctx: Context<OpenBid>) -> Result<()> {
     let commit_bid = commit_queue.get();
     let token_amount = 1;
 
-    tick_bid_round.open_bid(clock, commit_bid.amount);
+    tick_bid_round.open_bid(clock.borrow(), commit_bid.amount);
 
     if !vested_account_by_owner.session_status.is_vested {
         session.add_vested_member();
@@ -176,7 +177,6 @@ pub fn handler(ctx: Context<OpenBid>) -> Result<()> {
 
     commit_queue.dequeue();
     session.update_current_round();
-    tick_bid_round.open_round_status();
 
     Ok(())
 }

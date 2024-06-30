@@ -8,6 +8,8 @@ pub struct VestedAccountByIndex {
     pub session: Pubkey,
     pub vested_config: Pubkey,
     pub owner: Pubkey,
+
+    // I'm not sure what this is supposed to be...
     pub bid_index: u32,
 }
 

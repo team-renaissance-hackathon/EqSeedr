@@ -1254,9 +1254,6 @@ const openBid = async ({
 
     const roundIndex = await program.account.session.fetch(session)
 
-    console.log("ROUND INDEX:: ")
-    console.log("ROUND INDEX:: ", roundIndex.currentRound)
-
     const {
 
         vestedAccountByIndex,
@@ -1275,14 +1272,6 @@ const openBid = async ({
         vestedOwner: input.vestedOwner,
         roundIndex: roundIndex.currentRound,
     })
-
-    // console.log(vestedAccountByOwner, authority.publicKey)
-    console.log("OWNER::", authority.publicKey)
-
-    const data = await program.account.commitQueue.fetch(commitQueue)
-
-    console.log("COMMIT QUEUE:: ")
-    console.log("COMMIT QUEUE:: ", data)
 
     const tx = await program.methods
         .openBid()
@@ -1305,7 +1294,8 @@ const openBid = async ({
             bidTokenMint: bidTokenMint.mint.publicKey,
 
             tokenProgram: TOKEN_PROGRAM_ID,
-            systemProgram: web3.SystemProgram.programId,
+
+
         })
         .signers([authority])
         .rpc();
@@ -1316,6 +1306,88 @@ const openBid = async ({
         lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
         signature: tx,
     });
+}
+
+const executeBid = async ({
+    connection,
+    web3,
+    authority,
+    program,
+    tokenMint,
+    bidTokenMint,
+    input,
+}) => {
+
+    const {
+        session,
+    } = getAccounts({
+        tokenMint,
+        program,
+        bidTokenMint,
+        vestedIndex: input.vestedIndex,
+        vestedOwner: input.vestedOwner,
+    })
+
+    const roundIndex = await program.account.session.fetch(session)
+
+    const {
+
+        vestedAccountByIndex,
+        vestedAccountByOwner,
+        vestedConfigBySession,
+        tickBidRound,
+
+        ventureTokenEscrow,
+    } = getAccounts({
+        tokenMint,
+        program,
+        bidTokenMint,
+        vestedIndex: input.vestedIndex,
+        vestedOwner: input.vestedOwner,
+        // roundIndex: roundIndex.currentRound,
+        roundIndex: 1,
+
+    })
+
+    const before = await program.account.tickBidRound.fetch(tickBidRound)
+
+    const tx = await program.methods
+        .executeBid()
+        .accounts({
+            bidAuthority: authority.publicKey,
+
+            vestedAccountByIndex: vestedAccountByIndex,
+            vestedAccountByOwner: vestedAccountByOwner,
+
+            session,
+            tickBidRound,
+            vestedConfig: vestedConfigBySession,
+
+            bidAta: input.tokenAccount,
+            ventureTokenEscrow: ventureTokenEscrow,
+
+
+            bidTokenMint: bidTokenMint.mint.publicKey,
+
+            tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+
+    const after = await program.account.tickBidRound.fetch(tickBidRound)
+
+    console.log(" ")
+    console.log("DATA::: ")
+    console.log(before.lastMarketBid.toNumber())
+    console.log(after.lastMarketBid.toNumber())
+
 }
 
 
@@ -1353,7 +1425,7 @@ export const script = {
     // register
     sessionRegistration,
     openBid,
-    // executeBid,
+    executeBid,
 
     getCommitLeaderBoard,
 
