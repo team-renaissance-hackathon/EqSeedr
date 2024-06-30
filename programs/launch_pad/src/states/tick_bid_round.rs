@@ -218,6 +218,10 @@ impl TickBidRound {
         // log data
     }
 
+    pub fn open_round_status(&mut self) {
+        self.status = TickBidRoundStatus::Open;
+    }
+
     // ExecuteBid - 6 | OpenBid
     pub fn transfer() {
         // transfer USDC into session funding account
@@ -225,18 +229,18 @@ impl TickBidRound {
 
     pub fn is_valid_session(&self, session: Pubkey) -> bool {
         // need to add session
-        return !(self.session == session);
+        return self.session == session;
     }
 
     pub fn is_valid_tick_bid_round(&self, round: u8) -> bool {
         // index -> round index... needs better name reference.
-        return !(self.index == round);
+        return self.index == round;
     }
 
     pub fn is_valid_enqueue_status(&self) -> bool {
         match self.status {
-            TickBidRoundStatus::Enqueue => !true,
-            _ => !false,
+            TickBidRoundStatus::Enqueue => true,
+            _ => false,
         }
     }
 }
