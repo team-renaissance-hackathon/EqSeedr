@@ -64,7 +64,7 @@ impl TickBidRound {
         + SIGNED_64
         + UNSIGNED_64;
 
-    const MIN: i64 = 60;
+    const MIN: i64 = 60; // MINUTE
     const UNIT: u64 = 0b1;
     const OFFSET: u64 = 0b1;
     const PERCENT_100: u64 = 100;
@@ -97,16 +97,16 @@ impl TickBidRound {
         msg!("round: {}", self.index)
     }
 
-    pub fn open_bid(&mut self, clock: Clock, bid: u64) {
+    pub fn open_bid(&mut self, clock: &Clock, market_bid: u64) {
         self.status = TickBidRoundStatus::Open;
         self.number_of_bids += 1;
 
-        self.init_market_bid = bid;
-        self.last_market_bid = bid;
+        self.init_market_bid = market_bid;
+        self.last_market_bid = market_bid;
 
         self.last_tick_bid_depth = 0;
 
-        self.bid_sum += bid;
+        self.bid_sum += market_bid;
         self.total_tokens += 1;
 
         // tick algo will be based on these.
@@ -114,11 +114,16 @@ impl TickBidRound {
         self.last_bid_slot = clock.slot;
 
         // log event
+        msg!(
+            "{}", // EVENTS:
+            "EVENTS",
+        )
     }
 
     pub fn get_index(&self) -> u8 {
         return self.index - 1;
     }
+
     // CloseRoundStatus
     pub fn close_round(&mut self) -> Result<()> {
         self.status = TickBidRoundStatus::Closed;
@@ -141,23 +146,20 @@ impl TickBidRound {
     // vested_account_by_owner.update() -> OpenBid | ExecuteBid
     // transfer()
 
-    // ExecuteBid - 0
-    pub fn can_bid_delta(&self, current: Clock) -> bool {
-        let delta = current.slot - self.last_bid_slot;
-        // log message can't bid because of delta variance
-        return !(delta < 10);
-    }
-
     // ExecuteBid - 1
     pub fn get_current_bid(&self) -> Result<(u64, u64)> {
         let clock = Clock::get()?;
-        let targert_delta = self.last_bid_timestamp - clock.unix_timestamp;
+        let target_delta = clock.unix_timestamp - self.last_bid_timestamp;
         let mut delta = TickBidRound::MIN * 2 as i64;
         let mut tick_depth: u64 = 0;
 
-        while targert_delta > delta {
-            delta += delta + TickBidRound::MIN;
+        msg!("A::DEBUG: TARGET DELTA: {}", target_delta);
+        msg!("A::DEBUG: MIN DELTA: {}", delta);
+
+        // let mut scale = 1;
+        while target_delta > delta {
             tick_depth += TickBidRound::UNIT;
+            delta += TickBidRound::MIN * 2 + TickBidRound::MIN * tick_depth as i64;
         }
 
         let bid = if tick_depth > TickBidRound::BYTES_8
@@ -173,6 +175,9 @@ impl TickBidRound {
             price + (price * tick_depth / TickBidRound::PERCENT_100)
         };
 
+        msg!("B::DEBUG: TARGET DELTA: {}", target_delta);
+        msg!("B::DEBUG: MIN DELTA: {}", delta);
+
         Ok((bid, tick_depth))
     }
 
@@ -185,19 +190,30 @@ impl TickBidRound {
     // }
 
     // ExecuteBid - 3 | OpenBid?
-    pub fn update_bid_status(&mut self, bid: u64, tick: u64, clock: Clock) {
-        self.last_market_bid = bid;
-        self.last_tick_bid_depth = tick;
+    pub fn update_bid_status(&mut self, market_bid: u64, tick_depth: u64, clock: &Clock) {
+        self.last_market_bid = market_bid;
+        self.last_tick_bid_depth = tick_depth;
         self.last_bid_timestamp = clock.unix_timestamp;
         self.last_bid_slot = clock.slot;
 
-        // log bid, tick, timestamp, and slot
+        msg!(
+            "{}{}, {}{}, {}{}, {}{},",
+            // log bid, tick depth, timestamp, and slot
+            "Last Market Bid: ",
+            self.last_market_bid,
+            "Last Tick Depth: ",
+            self.last_tick_bid_depth,
+            "TimeStamp: ",
+            self.last_bid_timestamp,
+            "Slot: ",
+            self.last_bid_slot,
+        )
     }
 
     // where the bulk of the algorthm will be
     // ExecuteBid - 4 | Openbid?
     // &mut self, bid: u64, tick_depth: u64
-    pub fn update_ticket_status(&mut self, tick_depth: u64) {
+    pub fn update_pool_status(&mut self, tick_depth: u64) {
         let mut sum: u64 = 0;
         let mut tick = 0;
 
@@ -218,15 +234,7 @@ impl TickBidRound {
         // log data
     }
 
-    pub fn open_round_status(&mut self) {
-        self.status = TickBidRoundStatus::Open;
-    }
-
-    // ExecuteBid - 6 | OpenBid
-    pub fn transfer() {
-        // transfer USDC into session funding account
-    }
-
+    // :: VALIDATIONS ::
     pub fn is_valid_session(&self, session: Pubkey) -> bool {
         // need to add session
         return self.session == session;
@@ -242,6 +250,20 @@ impl TickBidRound {
             TickBidRoundStatus::Enqueue => true,
             _ => false,
         }
+    }
+
+    pub fn is_valid_open_status(&self) -> bool {
+        match self.status {
+            TickBidRoundStatus::Open => true,
+            _ => false,
+        }
+    }
+
+    // ExecuteBid - 0 -> :: VALIDATION ::
+    pub fn is_valid_delta(&self) -> bool {
+        let clock = Clock::get().unwrap();
+        let delta = clock.slot - self.last_bid_slot;
+        return delta > 10;
     }
 }
 

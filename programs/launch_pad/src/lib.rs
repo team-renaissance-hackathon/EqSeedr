@@ -257,6 +257,10 @@ pub mod launch_pad {
     pub fn open_bid(ctx: Context<OpenBid>) -> Result<()> {
         instructions::open_bid::handler(ctx)
     }
+
+    pub fn execute_bid(ctx: Context<ExecuteBid>) -> Result<()> {
+        instructions::execute_bid::handler(ctx)
+    }
 }
 
 // TICK-BID

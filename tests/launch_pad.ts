@@ -468,8 +468,8 @@ describe("launch_pad", () => {
 
     })
 
-    const target = 15
-    // const target = 1
+    // const target = 15
+    const target = 10
 
 
     const users = []
@@ -1004,7 +1004,7 @@ describe("launch_pad", () => {
             bidTokenMint,
             input: {
               vestedIndex: user.index,
-              vestedOwner: user.keypair.publicKey
+              vestedOwner: user.keypair.publicKey,
             }
           })
 
@@ -1024,9 +1024,7 @@ describe("launch_pad", () => {
 
         const fn = async (index) => {
 
-          // if (index == 1) {
-          //   return
-          // }
+
 
           if (index == 10) {
             return
@@ -1069,7 +1067,49 @@ describe("launch_pad", () => {
 
 
       })
-      // executeBid
+
+      it("Execute Bid", async () => {
+
+        function wait(milliseconds) {
+          return new Promise(resolve => {
+            setTimeout(resolve, milliseconds);
+          });
+        }
+        const user = users[0]
+
+        await wait(1000 * 10 + 10)
+
+        await script.executeBid({
+          connection: provider.connection,
+          web3: anchor.web3,
+          authority: user.keypair,
+          program,
+          tokenMint: ventureTokenMint,
+          bidTokenMint,
+          input: {
+            vestedIndex: user.index,
+            vestedOwner: user.keypair.publicKey,
+            tokenAccount: user.bidTokenAccount,
+          }
+        })
+
+        await wait(1000 * 60 * (2 + 3 + 4 + 5) + 1000)
+
+        await script.executeBid({
+          connection: provider.connection,
+          web3: anchor.web3,
+          authority: user.keypair,
+          program,
+          tokenMint: ventureTokenMint,
+          bidTokenMint,
+          input: {
+            vestedIndex: user.index,
+            vestedOwner: user.keypair.publicKey,
+            tokenAccount: user.bidTokenAccount,
+          }
+        })
+
+      })
 
       // registerVestedAccount
       // process commit for round, opens the round
