@@ -36,6 +36,7 @@ pub struct UnlockStake<'info> {
             b"eqseedr-token-mint",
         ],
         bump,
+        // this should be changed to USDC mint instead
     )]
     pub token_mint: InterfaceAccount<'info, Mint>,
 
