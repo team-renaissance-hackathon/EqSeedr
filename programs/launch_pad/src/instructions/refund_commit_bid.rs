@@ -85,7 +85,7 @@ pub fn handler(ctx: Context<RefundCommitBidBySession>) -> Result<()> {
     sealed_bid_by_index.bid_refunded();
 
     // Construct the program authority signer
-    let seeds = &[b"auhtority", &[program_authority.bump][..]];
+    let seeds = &[b"authority", &[program_authority.bump][..]];
     let signer_seeds = &[&seeds[..]];
 
     transfer_checked(
