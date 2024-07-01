@@ -11,13 +11,14 @@ pub mod submit_sealed_bid;
 pub mod submit_unsealed_bid;
 pub mod transfer_tokens;
 pub mod unlock_stake;
-pub mod claim_vested;
 pub mod claim_venture;
+pub mod claim_vested;
 
 pub use add_bid_token_mint::*;
 pub use create_instance::*;
 pub use execute_bid::*;
 pub use initialize::*;
+pub use mint_tokens::*;
 pub use open_bid::*;
 pub use refund_commit_bid::*;
 pub use session_registration::*;
@@ -26,8 +27,8 @@ pub use submit_sealed_bid::*;
 pub use submit_unsealed_bid::*;
 pub use transfer_tokens::*;
 pub use unlock_stake::*;
-pub use claim_vested::*;
 pub use claim_venture::*;
+pub use claim_vested::*;
 
 // flow:
 // init bid
