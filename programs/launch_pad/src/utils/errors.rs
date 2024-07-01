@@ -109,4 +109,13 @@ pub enum ErrorCode {
 
     #[msg("Invalid Token Stake Vault!")]
     InvalidTokenStakeVault,
+
+    #[msg("Invalid Vested Account Owner!")]
+    InvalidVesterOwner,
+
+    #[msg("Not Enough Tokens On Vested Token Escrow")]
+    NotEnoughTokensOnVestedEscrow,
+
+    #[msg("Vested Tokens Already Claimed!")]
+    VestedTokensAlreadyClaimed,
 }
