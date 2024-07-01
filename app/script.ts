@@ -8,6 +8,7 @@ import {
     getAssociatedTokenAddressSync,
     ASSOCIATED_TOKEN_PROGRAM_ID,
     TOKEN_PROGRAM_ID,
+    getAccount
 } from "@solana/spl-token"
 // import { associated } from "@coral-xyz/anchor/dist/cjs/utils/pubkey";
 
@@ -185,6 +186,14 @@ const getAccounts = ({
         program.programId
     ) : [undefined]
 
+    const [ventureTokenEscrow] = session != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
+        [
+            session.toBuffer(),
+            Buffer.from("venture-token-escrow"),
+        ],
+        program.programId
+    ) : [undefined]
+
     const [sealedBidAccount] = sealedBidIndex != undefined ? anchor.web3.PublicKey.findProgramAddressSync(
         [
             Buffer.from(sealedBidIndex.toString()),
@@ -207,6 +216,7 @@ const getAccounts = ({
         commitQueue,
         tokenStakeVault,
         vestedTokenEscrow,
+        ventureTokenEscrow,
         commitBidVault,
         tickBidRound,
         sessionTickBidLeaderBoard,
@@ -609,7 +619,92 @@ const createCommitBidVault = async ({
             newCommitBidVault: commitBidVault,
             session: session,
             bidTokenMint: bidTokenMint.mint.publicKey,
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
+const createVestedTokenEscrow = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+
+}) => {
+
+    const {
+        session,
+        vestedTokenEscrow,
+    } = getAccounts({
+        tokenMint,
+        program
+    })
+
+
+
+
+    const tx = await program.methods
+        .createVestedTokenEscrow()
+        .accounts({
+            authority: authority.publicKey,
+
+            newVestedTokenEscrow: vestedTokenEscrow,
+
+            session: session,
+            tokenMint: tokenMint.mint.publicKey,
+
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: web3.SystemProgram.programId,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
+const createVentureTokenEscrow = async ({
+    connection,
+    authority,
+    program,
+    web3,
+    tokenMint,
+    bidTokenMint,
+
+}) => {
+
+    const {
+        session,
+        ventureTokenEscrow,
+    } = getAccounts({
+        tokenMint,
+        program
+    })
+
+    const tx = await program.methods
+        .createVentureTokenEscrow()
+        .accounts({
+            authority: authority.publicKey,
+
+            newVentureTokenEscrow: ventureTokenEscrow,
+
+            session: session,
+            bidTokenMint: bidTokenMint.mint.publicKey,
+
             tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: web3.SystemProgram.programId,
         })
@@ -725,51 +820,6 @@ const createSessionMarketplace = async ({
             authority: authority.publicKey,
             newMarketplacePositions: sessionMarketplace,
             session: session,
-            systemProgram: web3.SystemProgram.programId,
-        })
-        .signers([authority])
-        .rpc();
-
-    const latestBlockHash = await connection.getLatestBlockhash()
-    await connection.confirmTransaction({
-        blockhash: latestBlockHash.blockhash,
-        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-        signature: tx,
-    });
-}
-
-const createVestedTokenEscrow = async ({
-    connection,
-    authority,
-    program,
-    web3,
-    tokenMint,
-
-}) => {
-
-    const {
-        session,
-        vestedTokenEscrow,
-    } = getAccounts({
-        tokenMint,
-        program
-    })
-
-
-
-
-    const tx = await program.methods
-        .createVestedTokenEscrow()
-        .accounts({
-            authority: authority.publicKey,
-
-            newVestedTokenEscrow: vestedTokenEscrow,
-
-            session: session,
-            tokenMint: tokenMint.mint.publicKey,
-
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-            tokenProgram: TOKEN_PROGRAM_ID,
             systemProgram: web3.SystemProgram.programId,
         })
         .signers([authority])
@@ -1126,7 +1176,6 @@ const submitCommitBid = async ({
     });
 }
 
-
 const sessionRegistration = async ({
     connection,
     web3,
@@ -1150,12 +1199,12 @@ const sessionRegistration = async ({
         vestedOwner: input.vestedOwner,
     })
 
-    console.log(vestedAccountByIndex, vestedAccountByOwner, vestedConfigBySession)
+    console.log("VESTED ACCOUNT BY OWNER::", vestedAccountByOwner)
 
     const tx = await program.methods
         .sessionRegistration()
         .accounts({
-
+            signer: authority.publicKey,
             authority: authority.publicKey,
 
             newVestedAccountByIndex: vestedAccountByIndex,
@@ -1167,7 +1216,7 @@ const sessionRegistration = async ({
             systemProgram: web3.SystemProgram.programId,
         })
         .signers([authority])
-        .rpc({ skipPreflight: false });
+        .rpc();
 
     const latestBlockHash = await connection.getLatestBlockhash()
     await connection.confirmTransaction({
@@ -1175,6 +1224,170 @@ const sessionRegistration = async ({
         lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
         signature: tx,
     });
+
+    // const data = await program.account.vestedAccountByOwner.fetch(vestedAccountByOwner)
+
+    // console.log("VESTED ACCOUNT BY OWNER:: ")
+    // console.log("VESTED ACCOUNT BY OWNER:: ", data)
+}
+
+const openBid = async ({
+    connection,
+    web3,
+    authority,
+    program,
+    tokenMint,
+    bidTokenMint,
+    input,
+}) => {
+
+
+    const {
+        session,
+    } = getAccounts({
+        tokenMint,
+        program,
+        bidTokenMint,
+        vestedIndex: input.vestedIndex,
+        vestedOwner: input.vestedOwner,
+    })
+
+    const roundIndex = await program.account.session.fetch(session)
+
+    const {
+
+        vestedAccountByIndex,
+        vestedAccountByOwner,
+        vestedConfigBySession,
+        tickBidRound,
+
+        ventureTokenEscrow,
+        commitQueue,
+        commitBidVault,
+    } = getAccounts({
+        tokenMint,
+        program,
+        bidTokenMint,
+        vestedIndex: input.vestedIndex,
+        vestedOwner: input.vestedOwner,
+        roundIndex: roundIndex.currentRound,
+    })
+
+    const tx = await program.methods
+        .openBid()
+        .accounts({
+            signer: authority.publicKey,
+            authority: authority.publicKey,
+
+            session,
+            tickBidRound,
+            commitQueue,
+
+            vestedAccountByIndex: vestedAccountByIndex,
+            vestedAccountByOwner: vestedAccountByOwner,
+
+            commitBidVault,
+            ventureTokenEscrow: ventureTokenEscrow,
+
+            vestedConfig: vestedConfigBySession,
+
+            bidTokenMint: bidTokenMint.mint.publicKey,
+
+            tokenProgram: TOKEN_PROGRAM_ID,
+
+
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+}
+
+const executeBid = async ({
+    connection,
+    web3,
+    authority,
+    program,
+    tokenMint,
+    bidTokenMint,
+    input,
+}) => {
+
+    const {
+        session,
+    } = getAccounts({
+        tokenMint,
+        program,
+        bidTokenMint,
+        vestedIndex: input.vestedIndex,
+        vestedOwner: input.vestedOwner,
+    })
+
+    const roundIndex = await program.account.session.fetch(session)
+
+    const {
+
+        vestedAccountByIndex,
+        vestedAccountByOwner,
+        vestedConfigBySession,
+        tickBidRound,
+
+        ventureTokenEscrow,
+    } = getAccounts({
+        tokenMint,
+        program,
+        bidTokenMint,
+        vestedIndex: input.vestedIndex,
+        vestedOwner: input.vestedOwner,
+        // roundIndex: roundIndex.currentRound,
+        roundIndex: 1,
+
+    })
+
+    const before = await program.account.tickBidRound.fetch(tickBidRound)
+
+    const tx = await program.methods
+        .executeBid()
+        .accounts({
+            bidAuthority: authority.publicKey,
+
+            vestedAccountByIndex: vestedAccountByIndex,
+            vestedAccountByOwner: vestedAccountByOwner,
+
+            session,
+            tickBidRound,
+            vestedConfig: vestedConfigBySession,
+
+            bidAta: input.tokenAccount,
+            ventureTokenEscrow: ventureTokenEscrow,
+
+
+            bidTokenMint: bidTokenMint.mint.publicKey,
+
+            tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .signers([authority])
+        .rpc();
+
+    const latestBlockHash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({
+        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        signature: tx,
+    });
+
+    const after = await program.account.tickBidRound.fetch(tickBidRound)
+
+    console.log(" ")
+    console.log("DATA::: ")
+    console.log(before.lastMarketBid.toNumber())
+    console.log(after.lastMarketBid.toNumber())
+
 }
 
 
@@ -1211,12 +1424,14 @@ export const script = {
     // interact with tick bid round
     // register
     sessionRegistration,
-    // openBid,
-    // executeBid,
+    openBid,
+    executeBid,
 
     getCommitLeaderBoard,
 
     getAccounts,
+
+    createVentureTokenEscrow
 }
 
 

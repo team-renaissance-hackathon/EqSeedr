@@ -388,7 +388,7 @@ impl CommitQueue {
 
         if index == self.queue.len() && index != Self::MAX_CAPACITY {
             self.queue.push(CommitBid {
-                owner: sealed_bid_by_index.key(),
+                owner: sealed_bid_by_index.owner,
                 bid_index: sealed_bid_by_index.bid_index,
                 amount: commit.amount,
                 commit_leader_board_index: sealed_bid_by_index.commit_leader_board_index,
@@ -399,7 +399,7 @@ impl CommitQueue {
             self.queue.insert(
                 index,
                 CommitBid {
-                    owner: sealed_bid_by_index.key(),
+                    owner: sealed_bid_by_index.owner,
                     bid_index: sealed_bid_by_index.bid_index,
                     amount: commit.amount,
                     commit_leader_board_index: sealed_bid_by_index.commit_leader_board_index,

@@ -1,4 +1,53 @@
 TODO!
+    validations / implementations:
+        open bid
+        execute bid -> main algo
+        update tick bid leader board
+        claim vested tokens
+        claim venture tokens
+        close accounts -> accounts no longer relevent
+    constraints:
+        adding timed constraints, currently not implemented to make testing easier
+    state:
+        tick bid leader board -> zero copy
+            round
+            session
+            ranking type
+                overall market bid
+                avg. bid
+                last bid
+                number of bids
+                tick depth
+                tick depth total
+                value sum of bids
+    NOTES:
+        test setup for testing time difference
+
+verify:
+    commit leader board -> there may be a bug on how the commit leader board is being updated
+
+
+recently completed:
+    fixed tests to work with vault and escrow accounts.
+    redid token accounts
+        - venture token escrow
+        - vested token escrow
+        - commit bid vault
+        - token stake vault
+    updated errors constraints
+    updated vested state accounts
+    updated commit leader board 
+        reallocate account
+    removed market place for now... not part of mvp
+    implemented refund and unlock
+    .. other things that I can't remember
+
+question about handler -> how to remove annoying warning.
+can we close token accounts?
+
+
+
+
 
 SECTIONS:
 
