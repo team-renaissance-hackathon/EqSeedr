@@ -74,6 +74,17 @@ impl VestedAccountByOwner {
     pub fn update_vested_by_round(&mut self, index: u8) {
         self.round_status[index as usize].is_vested = true;
     }
+
+    pub fn claimed_updated(&mut self, index: u8){
+        // Subtract the Round Vested Tokens to the SessionVested Tokens
+        self.session_status.total_tokens -= self.round_status[index as usize].total_tokens;
+
+        // Set Round Vested Tokens to 0
+        self.round_status[index as usize].total_tokens = 0;
+        
+        // Set the is_claimed flag to true
+        self.round_status[index as usize].is_claimed = true;
+    }
 }
 
 #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
