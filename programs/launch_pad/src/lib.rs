@@ -14,151 +14,6 @@ pub mod launch_pad {
 
     use super::*;
 
-    // experimenting with zero copy to see how they work
-    pub fn allocate_zero_copy(ctx: Context<AllocateZeroCopy>, amount: u64) -> Result<()> {
-        let AllocateZeroCopy {
-            payer,
-            new_account,
-            system_program,
-        } = ctx.accounts;
-
-        let space = amount;
-
-        let (_, new_account_bump_seed) =
-            Pubkey::find_program_address(&[b"leader-board", payer.key.as_ref()], &ctx.program_id);
-
-        let seeds = &[
-            b"leader-board",
-            payer.to_account_info().key.as_ref(),
-            &[new_account_bump_seed],
-        ];
-
-        let signer_seeds = &[&seeds[..]];
-
-        allocate(
-            CpiContext::new_with_signer(
-                system_program.to_account_info(),
-                Allocate {
-                    account_to_allocate: new_account.to_account_info(),
-                },
-                signer_seeds,
-            ),
-            space,
-        )?;
-
-        assign(
-            CpiContext::new_with_signer(
-                system_program.to_account_info(),
-                Assign {
-                    account_to_assign: new_account.to_account_info(),
-                },
-                signer_seeds,
-            ),
-            &ctx.program_id,
-        )?;
-
-        Ok(())
-    }
-
-    // experimenting with zero copy to see how they work
-    pub fn transfer_rent_zero_copy(ctx: Context<TransferRentZeroCopy>, amount: u64) -> Result<()> {
-        let TransferRentZeroCopy {
-            payer,
-            new_account,
-            system_program,
-        } = ctx.accounts;
-
-        let space = amount;
-
-        let rent = Rent::get()?.minimum_balance(space.try_into().expect("overflow"));
-
-        let (_, new_account_bump_seed) =
-            Pubkey::find_program_address(&[b"leader-board", payer.key.as_ref()], &ctx.program_id);
-
-        let seeds = &[
-            b"leader-board",
-            payer.to_account_info().key.as_ref(),
-            &[new_account_bump_seed],
-        ];
-
-        let signer_seeds = &[&seeds[..]];
-
-        transfer(
-            CpiContext::new_with_signer(
-                system_program.to_account_info(),
-                Transfer {
-                    from: payer.to_account_info(),
-                    to: new_account.to_account_info(),
-                },
-                signer_seeds,
-            ),
-            rent,
-        )?;
-        Ok(())
-    }
-
-    // experimenting with zero copy to see how they work
-    pub fn reallocate_zero_copy(ctx: Context<ReallocateZeroCopy>, amount: u64) -> Result<()> {
-        let ReallocateZeroCopy { new_account } = ctx.accounts;
-
-        let space = amount;
-
-        new_account.realloc(space as usize, false)?;
-
-        Ok(())
-    }
-
-    // experimenting with zero copy to see how they work
-    pub fn assign_zero_copy(ctx: Context<AssignZeroCopy>) -> Result<()> {
-        let AssignZeroCopy {
-            payer,
-            new_account,
-            system_program,
-        } = ctx.accounts;
-
-        let (_, new_account_bump_seed) =
-            Pubkey::find_program_address(&[b"leader-board", payer.key.as_ref()], &ctx.program_id);
-
-        let seeds = &[
-            b"leader-board",
-            payer.to_account_info().key.as_ref(),
-            &[new_account_bump_seed],
-        ];
-
-        let signer_seeds = &[&seeds[..]];
-
-        assign(
-            CpiContext::new_with_signer(
-                system_program.to_account_info(),
-                Assign {
-                    account_to_assign: new_account.to_account_info(),
-                },
-                signer_seeds,
-            ),
-            &ctx.program_id,
-        )?;
-
-        Ok(())
-    }
-
-    // experimenting with zero copy to see how they work
-    pub fn initialize_zero_copy(ctx: Context<InitializeZeroCopy>, input: u64) -> Result<()> {
-        let new_account = &mut ctx.accounts.new_account.load_init()?;
-        // new_account.data[0] = input;
-
-        msg!("Initialize data to: {}", input);
-        Ok(())
-    }
-
-    // experimenting with zero copy to see how they work
-    pub fn update_zero_copy(ctx: Context<UpdateZeroCopy>, input: u64) -> Result<()> {
-        let existing_account = &mut ctx.accounts.existing_account.load_mut()?;
-        // existing_account.data[1] = input;
-
-        msg!("Updated data to: {}", input);
-        Ok(())
-    }
-
     pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
         instructions::initialize::handler(ctx)
     }
@@ -209,11 +64,11 @@ pub mod launch_pad {
         instructions::tick_bid_round::handler(ctx)
     }
 
-    pub fn create_session_tick_bid_leader_board(
-        ctx: Context<CreateSessionTickBidLeaderBoard>,
-    ) -> Result<()> {
-        instructions::tick_bid_leader_board::handler(ctx)
-    }
+    // pub fn create_session_tick_bid_leader_board(
+    //     ctx: Context<CreateSessionTickBidLeaderBoard>,
+    // ) -> Result<()> {
+    //     instructions::tick_bid_leader_board::handler(ctx)
+    // }
 
     pub fn create_venture_token_escrow(ctx: Context<CreateVentureTokenEscrow>) -> Result<()> {
         instructions::venture_token_escrow::handler(ctx)

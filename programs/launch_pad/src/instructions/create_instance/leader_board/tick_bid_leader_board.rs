@@ -44,3 +44,7 @@ pub fn handler(ctx: Context<CreateSessionTickBidLeaderBoard>) -> Result<()> {
 
     Ok(())
 }
+
+// transfer
+// allocate
+// reallocate to desired size
