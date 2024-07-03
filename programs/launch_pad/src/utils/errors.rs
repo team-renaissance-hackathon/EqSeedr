@@ -119,4 +119,16 @@ pub enum ErrorCode {
 
     #[msg("Vested Tokens Already Claimed!")]
     VestedTokensAlreadyClaimed,
+
+    #[msg("Invalid Venture Token Account Owner!")]
+    InvalidVentureOwner,
+
+    #[msg("Not Enough Tokens On Venture Token Escrow")]
+    NotEnoughTokensOnVentureEscrow,
+
+    #[msg("Session Not Closed")]
+    SessionNotClosed,
+
+    #[msg("Venture Tokens Already Claimed")]
+    VentureTokensAlreadyClaimed
 }
