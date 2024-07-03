@@ -34,21 +34,14 @@ pub struct ClaimVested<'info> {
         bump = program_authority.bump,
     )]
     pub program_authority: Account<'info, ProgramAuthority>,
-
-    #[account(
-        // idk if this additional constraint is fine
-        // constraint = session.has_vested_config == true
-    )]
-    pub session: Account<'info, Session>,
    
     pub token_mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
-    pub system_program: Program<'info, System>,
+
 }
 
 pub fn handler(ctx: Context<ClaimVested>, index: u8) -> Result<()> {
     let ClaimVested {
-        session,
         bidder_vested_account,
         bidder_project_token_account,
         vested_token_escrow,
