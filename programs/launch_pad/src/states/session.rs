@@ -28,6 +28,9 @@ pub struct Session {
     pub current_round: u8,
     pub launch_status: SessionStatus,
 
+    // tracking state
+    pub is_claimed: bool,
+
     // dates
     pub intialized_timestamp: i64,
     pub initialized_slot: u64,
@@ -70,6 +73,8 @@ impl Session {
         + UNSIGNED_64
         + UNSIGNED_8
         + Status::LEN
+
+        + BOOL
 
         + SIGNED_64
         + SIGNED_64
@@ -131,6 +136,8 @@ impl Session {
         self.has_valid_commit_bid_vault = false;
 
         self.launch_status = SessionStatus::Enqueue;
+
+        self.is_claimed = false;
 
         // need implement
         // self.staking_account = staking_account
@@ -225,6 +232,10 @@ impl Session {
 
     pub fn is_valid_token_mint(&self, token_mint: Pubkey) -> bool {
         return !(self.token_mint == token_mint);
+    }
+
+    pub fn claimed_update(&self) {
+        self.is_claimed = true;
     }
 }
 
