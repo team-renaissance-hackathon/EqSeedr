@@ -1,6 +1,7 @@
 pub mod indexer_status;
 // pub mod marketplace_matchers;
 // pub mod marketplace_positions;
+pub mod leader_board;
 pub mod program_authority;
 pub mod sealed_bid_by_index;
 pub mod sealed_bid_round;
@@ -12,6 +13,7 @@ pub mod vested_accounts;
 pub use indexer_status::*;
 // pub use marketplace_matchers::*;
 // pub use marketplace_positions::*;
+pub use leader_board::*;
 pub use program_authority::*;
 pub use sealed_bid_by_index::*;
 pub use sealed_bid_round::*;
