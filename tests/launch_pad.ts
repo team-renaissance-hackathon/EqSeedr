@@ -794,6 +794,7 @@ describe("launch_pad", () => {
       })
 
       describe("Create Tick Bid Leader Board", () => {
+
         it("Trasnfer Rent Zero Copy", async () => {
 
           const [session] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -916,6 +917,46 @@ describe("launch_pad", () => {
             lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
             signature: tx,
           });
+        })
+
+        it("TEMPORARY TEST:: update lodeard board", async () => {
+
+          const [session] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+              ventureTokenMint.mint.publicKey.toBuffer(),
+              Buffer.from("session"),
+            ],
+            program.programId
+          )
+
+          const [leaderBoard] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+              session.toBuffer(),
+              Buffer.from("tick-bid-leader-board"),
+            ],
+            program.programId
+          )
+
+          const tx = await program.methods
+            .updateLeaderBoard()
+            .accounts({
+              signer: keypair.publicKey,
+              session,
+            })
+            .signers([keypair])
+            .rpc()
+
+          console.log("TX:", tx)
+
+          const latestBlockHash = await provider.connection.getLatestBlockhash()
+          await provider.connection.confirmTransaction({
+            blockhash: latestBlockHash.blockhash,
+            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+            signature: tx,
+          });
+
+          const data = await program.account.leaderBoard.fetch(leaderBoard)
+          console.log("LEADER BOARD DATA:: ", data)
         })
       })
 

@@ -1,9 +1,7 @@
-pub mod experiment;
 pub mod instructions;
 pub mod states;
 pub mod utils;
 use anchor_lang::prelude::*;
-pub use experiment::*;
 pub use instructions::*;
 
 declare_id!("7GKWqKvkev22SYs2HEb1jw6h4uHJwLVKpEcxVUqTZKxG");
@@ -63,12 +61,6 @@ pub mod launch_pad {
         instructions::tick_bid_round::handler(ctx)
     }
 
-    // pub fn create_session_tick_bid_leader_board(
-    //     ctx: Context<CreateSessionTickBidLeaderBoard>,
-    // ) -> Result<()> {
-    //     instructions::tick_bid_leader_board::handler(ctx)
-    // }
-
     pub fn create_venture_token_escrow(ctx: Context<CreateVentureTokenEscrow>) -> Result<()> {
         instructions::venture_token_escrow::handler(ctx)
     }
@@ -80,12 +72,6 @@ pub mod launch_pad {
     pub fn create_vested_config(ctx: Context<CreateVestedConfig>) -> Result<()> {
         instructions::vested_config::handler(ctx)
     }
-
-    // pub fn create_session_marketplace(
-    //     ctx: Context<CreateSessionMarketplacePositions>,
-    // ) -> Result<()> {
-    //     instructions::create_session_marketplace::handler(ctx)
-    // }
 
     pub fn submit_sealed_bid(ctx: Context<SubmitSealedBid>, commit_hash: Pubkey) -> Result<()> {
         instructions::submit_sealed_bid::handler(ctx, commit_hash)
@@ -130,6 +116,10 @@ pub mod launch_pad {
 
     pub fn initialize_zero_copy(ctx: Context<InitializeZeroCopy>) -> Result<()> {
         instructions::initialize_zero_copy::handler(ctx)
+    }
+
+    pub fn update_leader_board(ctx: Context<UpdateLeaderBaord>) -> Result<()> {
+        instructions::update_leader_board::handler(ctx)
     }
 }
 

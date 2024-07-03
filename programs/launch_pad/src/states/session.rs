@@ -237,7 +237,7 @@ impl Session {
         return !(self.token_mint == token_mint);
     }
 
-    pub fn claimed_update(&self) {
+    pub fn claimed_update(&mut self) {
         self.is_claimed = true;
     }
 }

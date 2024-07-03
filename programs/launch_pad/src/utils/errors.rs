@@ -130,5 +130,8 @@ pub enum ErrorCode {
     SessionNotClosed,
 
     #[msg("Venture Tokens Already Claimed")]
-    VentureTokensAlreadyClaimed
+    VentureTokensAlreadyClaimed,
+
+    #[msg("Vested Already Claimed")]
+    VestedAlreadyClaimed,
 }

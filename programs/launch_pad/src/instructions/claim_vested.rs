@@ -1,6 +1,4 @@
-use crate::states::{
-    vested_accounts::*, 
-    ProgramAuthority, Session};
+use crate::states::{vested_accounts::*, ProgramAuthority};
 use crate::utils::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
@@ -20,7 +18,7 @@ pub struct ClaimVested<'info> {
     pub bidder_vested_account: Account<'info, VestedAccountByOwner>,
 
     #[account(
-        mut, //I just put mut initially, but should be init_if_needed if not initialized somewhere
+        mut, 
         constraint = bidder_project_token_account.owner == bidder.key()
             @ ErrorCode::InvalidTokenOwner,
     )]
@@ -34,10 +32,9 @@ pub struct ClaimVested<'info> {
         bump = program_authority.bump,
     )]
     pub program_authority: Account<'info, ProgramAuthority>,
-   
+
     pub token_mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
-
 }
 
 pub fn handler(ctx: Context<ClaimVested>, index: u8) -> Result<()> {
@@ -53,7 +50,8 @@ pub fn handler(ctx: Context<ClaimVested>, index: u8) -> Result<()> {
 
     // Validate if vested token escrow has enough tokens for transfer
     require!(
-        vested_token_escrow.amount >= bidder_vested_account.round_status[index as usize].total_tokens,
+        vested_token_escrow.amount
+            >= bidder_vested_account.round_status[index as usize].total_tokens,
         ErrorCode::NotEnoughTokensOnVestedEscrow
     );
 
@@ -87,7 +85,6 @@ pub fn handler(ctx: Context<ClaimVested>, index: u8) -> Result<()> {
 
     Ok(())
 }
-
 
 // TODO!
 // Additional constraints(?)

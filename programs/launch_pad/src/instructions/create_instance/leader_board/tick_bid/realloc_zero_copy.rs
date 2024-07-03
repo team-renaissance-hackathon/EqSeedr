@@ -14,7 +14,7 @@ pub struct ReallocZeroCopy<'info> {
         ],
         bump,
     )]
-    /// CHECKED: reacllocating leader baord account
+    /// CHECKED: reacllocate leader baord account
     pub new_leader_board: AccountInfo<'info>,
 
     #[account(
