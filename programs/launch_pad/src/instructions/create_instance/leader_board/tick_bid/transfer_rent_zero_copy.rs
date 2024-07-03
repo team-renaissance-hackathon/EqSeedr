@@ -1,4 +1,4 @@
-use crate::states::LeaderBoard;
+use crate::states::{LeaderBoard, Session};
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 
@@ -9,11 +9,18 @@ pub struct TransferRentZeroCopy<'info> {
 
     #[account(
         mut,
-        seeds = [b"leader-board"],
+        seeds = [
+            session.key().as_ref(),
+            b"tick-bid-leader-board",
+        ],
         bump,
     )]
     pub new_leader_board: SystemAccount<'info>,
 
+    #[account(
+        constraint = !session.has_tick_bid_leader_board,
+    )]
+    pub session: Account<'info, Session>,
     pub system_program: Program<'info, System>,
 }
 
@@ -22,9 +29,9 @@ pub fn handler(ctx: Context<TransferRentZeroCopy>) -> Result<()> {
         payer,
         new_leader_board,
         system_program,
+        ..
     } = ctx.accounts;
 
-    // let space = TickBidLeaderBoard::Len;
     let space = LeaderBoard::LEN;
 
     let rent = Rent::get()?.minimum_balance(space.try_into().expect("overflow"));

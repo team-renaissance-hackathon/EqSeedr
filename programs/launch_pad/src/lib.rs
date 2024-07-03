@@ -119,6 +119,18 @@ pub mod launch_pad {
     pub fn transfer_rent_zero_copy(ctx: Context<TransferRentZeroCopy>) -> Result<()> {
         instructions::transfer_rent_zero_copy::handler(ctx)
     }
+
+    pub fn assign_zero_copy(ctx: Context<AssignZeroCopy>) -> Result<()> {
+        instructions::assign_zero_copy::handler(ctx)
+    }
+
+    pub fn realloc_zero_copy(ctx: Context<ReallocZeroCopy>) -> Result<()> {
+        instructions::realloc_zero_copy::handler(ctx)
+    }
+
+    pub fn initialize_zero_copy(ctx: Context<InitializeZeroCopy>) -> Result<()> {
+        instructions::initialize_zero_copy::handler(ctx)
+    }
 }
 
 // TICK-BID
