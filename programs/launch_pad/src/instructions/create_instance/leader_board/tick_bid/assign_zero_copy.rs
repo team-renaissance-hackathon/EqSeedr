@@ -1,32 +1,47 @@
+use crate::states::Session;
+use anchor_lang::prelude::*;
+use anchor_lang::system_program::{allocate, assign, Allocate, Assign};
+
 #[derive(Accounts)]
 pub struct AssignZeroCopy<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(mut)]
-    pub new_account: SystemAccount<'info>,
+    #[account(
+        mut,
+        seeds = [
+            session.key().as_ref(),
+            b"tick-bid-leader-board",
+        ],
+        bump,
+    )]
+    pub new_leader_board: SystemAccount<'info>,
+
+    #[account(
+        mut,
+        constraint = !session.has_tick_bid_leader_board,
+    )]
+    pub session: Account<'info, Session>,
 
     pub system_program: Program<'info, System>,
 }
 
 pub fn handler(ctx: Context<AssignZeroCopy>) -> Result<()> {
     let AssignZeroCopy {
-        payer,
-        new_account,
+        new_leader_board,
         system_program,
+        session,
+        ..
     } = ctx.accounts;
 
-    let space = amount;
+    let space = 10240;
+    session.tick_bid_leader_board_current_allocation = space;
 
-    let (_, new_account_bump_seed) = Pubkey::find_program_address(
-        &[session.key().as_ref(), b"tick-bid-leader-board"],
-        &ctx.program_id,
-    );
-
+    let session_key = session.key();
     let seeds = &[
-        session.key().as_ref(),
-        b"authority",
-        &[new_account_bump_seed][..],
+        session_key.as_ref(),
+        b"tick-bid-leader-board",
+        &[ctx.bumps.new_leader_board][..],
     ];
     let signer_seeds = &[&seeds[..]];
 
@@ -34,7 +49,7 @@ pub fn handler(ctx: Context<AssignZeroCopy>) -> Result<()> {
         CpiContext::new_with_signer(
             system_program.to_account_info(),
             Allocate {
-                account_to_allocate: new_account.to_account_info(),
+                account_to_allocate: new_leader_board.to_account_info(),
             },
             signer_seeds,
         ),
@@ -45,7 +60,7 @@ pub fn handler(ctx: Context<AssignZeroCopy>) -> Result<()> {
         CpiContext::new_with_signer(
             system_program.to_account_info(),
             Assign {
-                account_to_assign: new_account.to_account_info(),
+                account_to_assign: new_leader_board.to_account_info(),
             },
             signer_seeds,
         ),

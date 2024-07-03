@@ -55,6 +55,8 @@ pub struct Session {
     pub has_commit_queue: bool,
     pub has_max_rounds: bool,
     pub has_valid_commit_bid_vault: bool,
+
+    pub tick_bid_leader_board_current_allocation: u64,
 }
 
 impl Session {
@@ -80,6 +82,7 @@ impl Session {
 
         + UNSIGNED_32
         + UNSIGNED_32
+        + UNSIGNED_64
         + UNSIGNED_64
         + (BOOL * 7);
 

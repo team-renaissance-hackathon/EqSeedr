@@ -1,13 +1,33 @@
+use crate::states::{LeaderBoard, Session};
+use anchor_lang::prelude::*;
+
 #[derive(Accounts)]
 pub struct InitializeZeroCopy<'info> {
-    #[account(zero)]
-    pub new_account: AccountLoader<'info, DataAccount>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    #[account(
+        zero,
+        seeds = [
+            session.key().as_ref(),
+            b"tick-bid-leader-board",
+        ],
+        bump,
+    )]
+    pub new_leader_board: AccountLoader<'info, LeaderBoard>,
+
+    #[account(
+        mut,
+        constraint = !session.has_tick_bid_leader_board,
+    )]
+    pub session: Account<'info, Session>,
 }
 
-pub fn handler(ctx: Context<InitializeZeroCopy>, input: u64) -> Result<()> {
-    let new_account = &mut ctx.accounts.new_account.load_init()?;
-    // new_account.data[0] = input;
+pub fn handler(ctx: Context<InitializeZeroCopy>) -> Result<()> {
+    let new_leader_board = &mut ctx.accounts.new_leader_board.load_init()?;
+    new_leader_board.bump = ctx.bumps.new_leader_board;
 
-    msg!("Initialize data to: {}", input);
+    ctx.accounts.session.has_tick_bid_leader_board = true;
+
     Ok(())
 }

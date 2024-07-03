@@ -314,36 +314,7 @@ describe("launch_pad", () => {
 
   })
 
-  it("leader board test", async () => {
 
-    const [leaderBoard] = anchor.web3.PublicKey.findProgramAddressSync(
-      [
-        // Buffer.from(sealedBidIndex.toString()),
-        // session.toBuffer(),
-        Buffer.from("leader-board"),
-      ],
-      program.programId
-    )
-
-    const tx = await program.methods
-      .transferRentZeroCopy()
-      .accounts({
-        payer: keypair.publicKey,
-        // newLeaderBoard: leaderBoard,
-        // systemProgram: SYSTEM_PROGRAM_ID,
-      })
-      .signers([keypair])
-      .rpc()
-
-    console.log("TX:", tx)
-
-    const latestBlockHash = await provider.connection.getLatestBlockhash()
-    await provider.connection.confirmTransaction({
-      blockhash: latestBlockHash.blockhash,
-      lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-      signature: tx,
-    });
-  })
 
   describe("initialize priority accounts", () => {
 
@@ -820,6 +791,132 @@ describe("launch_pad", () => {
           roundIndex: 10,
         })
 
+      })
+
+      describe("Create Tick Bid Leader Board", () => {
+        it("Trasnfer Rent Zero Copy", async () => {
+
+          const [session] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+              ventureTokenMint.mint.publicKey.toBuffer(),
+              Buffer.from("session"),
+            ],
+            program.programId
+          )
+
+          const [leaderBoard] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+              session.toBuffer(),
+              Buffer.from("tick-bid-leader-board"),
+            ],
+            program.programId
+          )
+
+          console.log(leaderBoard)
+
+          const tx = await program.methods
+            .transferRentZeroCopy()
+            .accounts({
+              payer: keypair.publicKey,
+              session,
+            })
+            .signers([keypair])
+            .rpc()
+
+          console.log("TX:", tx)
+
+          const latestBlockHash = await provider.connection.getLatestBlockhash()
+          await provider.connection.confirmTransaction({
+            blockhash: latestBlockHash.blockhash,
+            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+            signature: tx,
+          });
+        })
+
+        it("Assign Zero Copy", async () => {
+
+          const [session] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+              ventureTokenMint.mint.publicKey.toBuffer(),
+              Buffer.from("session"),
+            ],
+            program.programId
+          )
+
+          const tx = await program.methods
+            .assignZeroCopy()
+            .accounts({
+              payer: keypair.publicKey,
+              session,
+            })
+            .signers([keypair])
+            .rpc()
+
+          console.log("TX:", tx)
+
+          const latestBlockHash = await provider.connection.getLatestBlockhash()
+          await provider.connection.confirmTransaction({
+            blockhash: latestBlockHash.blockhash,
+            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+            signature: tx,
+          });
+        })
+
+        it("Reallocate Zero Copy", async () => {
+
+          const [session] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+              ventureTokenMint.mint.publicKey.toBuffer(),
+              Buffer.from("session"),
+            ],
+            program.programId
+          )
+
+          const tx = await program.methods
+            .reallocZeroCopy()
+            .accounts({
+              payer: keypair.publicKey,
+              session,
+            })
+            .signers([keypair])
+            .rpc()
+
+          const latestBlockHash = await provider.connection.getLatestBlockhash()
+          await provider.connection.confirmTransaction({
+            blockhash: latestBlockHash.blockhash,
+            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+            signature: tx,
+          });
+        })
+
+        it("Initialize Zero Copy", async () => {
+
+          const [session] = anchor.web3.PublicKey.findProgramAddressSync(
+            [
+              ventureTokenMint.mint.publicKey.toBuffer(),
+              Buffer.from("session"),
+            ],
+            program.programId
+          )
+
+          const tx = await program.methods
+            .initializeZeroCopy()
+            .accounts({
+              payer: keypair.publicKey,
+              session,
+            })
+            .signers([keypair])
+            .rpc()
+
+          console.log("TX:", tx)
+
+          const latestBlockHash = await provider.connection.getLatestBlockhash()
+          await provider.connection.confirmTransaction({
+            blockhash: latestBlockHash.blockhash,
+            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+            signature: tx,
+          });
+        })
       })
 
       it("Create Vested Config By Session", async () => {
