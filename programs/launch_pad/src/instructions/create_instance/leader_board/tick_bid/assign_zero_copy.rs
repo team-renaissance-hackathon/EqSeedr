@@ -18,15 +18,16 @@ pub fn handler(ctx: Context<AssignZeroCopy>) -> Result<()> {
 
     let space = amount;
 
-    let (_, new_account_bump_seed) =
-        Pubkey::find_program_address(&[b"leader-board", payer.key.as_ref()], &ctx.program_id);
+    let (_, new_account_bump_seed) = Pubkey::find_program_address(
+        &[session.key().as_ref(), b"tick-bid-leader-board"],
+        &ctx.program_id,
+    );
 
     let seeds = &[
-        b"leader-board",
-        payer.to_account_info().key.as_ref(),
-        &[new_account_bump_seed],
+        session.key().as_ref(),
+        b"authority",
+        &[new_account_bump_seed][..],
     ];
-
     let signer_seeds = &[&seeds[..]];
 
     allocate(

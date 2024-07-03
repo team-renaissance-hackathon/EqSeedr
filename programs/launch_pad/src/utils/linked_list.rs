@@ -1,11 +1,13 @@
+use crate::utils::*;
+use anchor_lang::prelude::*;
 // LINKED LIST TYPE
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct LinkedList<T> {
     pub total: u32,
-    head: u32,
-    tail: u32,
-    list: Vec<Option<Node<T>>>,
-    stack: Vec<[u8; 3]>,
+    pub head: u32,
+    pub tail: u32,
+    pub list: Vec<Option<Node<T>>>,
+    pub stack: Vec<[u8; 3]>,
 }
 
 const STACK: usize = 3;
@@ -21,6 +23,16 @@ impl<T: Len + Copy> LinkedList<T> {
     // remove
     // swap
     // search -> client side
+
+    pub fn new() -> Self {
+        Self {
+            total: 0,
+            head: 0,
+            tail: 0,
+            list: Vec::<Option<Node<T>>>::new(),
+            stack: Vec::<[u8; 3]>::new(),
+        }
+    }
 
     pub fn next(&self, node: Node<T>) -> Option<Node<T>> {
         match node.next {
@@ -115,10 +127,10 @@ impl<T: Len + Copy> LinkedList<T> {
 
 #[derive(AnchorDeserialize, AnchorSerialize)]
 pub struct Node<T> {
-    index: u32,
-    prev: Option<u32>,
-    next: Option<u32>,
-    position: T,
+    pub index: u32,
+    pub prev: Option<u32>,
+    pub next: Option<u32>,
+    pub position: T,
 }
 
 impl<T: Copy> Clone for Node<T> {

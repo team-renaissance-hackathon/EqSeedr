@@ -6,3 +6,6 @@ pub use reallocate_commit_leader_board::*;
 
 pub mod commit_leader_board;
 pub use commit_leader_board::*;
+
+pub mod tick_bid;
+pub use tick_bid::*;

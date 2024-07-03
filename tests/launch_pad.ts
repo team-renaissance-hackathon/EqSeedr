@@ -20,7 +20,7 @@ import {
 import { script } from "../app/script";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { token } from "@coral-xyz/anchor/dist/cjs/utils";
-import { program } from "@coral-xyz/anchor/dist/cjs/native/system";
+import { SYSTEM_PROGRAM_ID, program } from "@coral-xyz/anchor/dist/cjs/native/system";
 
 
 const {
@@ -312,6 +312,37 @@ describe("launch_pad", () => {
       )
     }
 
+  })
+
+  it("leader board test", async () => {
+
+    const [leaderBoard] = anchor.web3.PublicKey.findProgramAddressSync(
+      [
+        // Buffer.from(sealedBidIndex.toString()),
+        // session.toBuffer(),
+        Buffer.from("leader-board"),
+      ],
+      program.programId
+    )
+
+    const tx = await program.methods
+      .transferRentZeroCopy()
+      .accounts({
+        payer: keypair.publicKey,
+        // newLeaderBoard: leaderBoard,
+        // systemProgram: SYSTEM_PROGRAM_ID,
+      })
+      .signers([keypair])
+      .rpc()
+
+    console.log("TX:", tx)
+
+    const latestBlockHash = await provider.connection.getLatestBlockhash()
+    await provider.connection.confirmTransaction({
+      blockhash: latestBlockHash.blockhash,
+      lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+      signature: tx,
+    });
   })
 
   describe("initialize priority accounts", () => {

@@ -3,7 +3,6 @@ pub mod instructions;
 pub mod states;
 pub mod utils;
 use anchor_lang::prelude::*;
-use anchor_lang::system_program::{allocate, assign, transfer, Allocate, Assign, Transfer};
 pub use experiment::*;
 pub use instructions::*;
 
@@ -115,6 +114,10 @@ pub mod launch_pad {
 
     pub fn execute_bid(ctx: Context<ExecuteBid>) -> Result<()> {
         instructions::execute_bid::handler(ctx)
+    }
+
+    pub fn transfer_rent_zero_copy(ctx: Context<TransferRentZeroCopy>) -> Result<()> {
+        instructions::transfer_rent_zero_copy::handler(ctx)
     }
 }
 

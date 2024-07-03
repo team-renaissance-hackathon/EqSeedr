@@ -279,84 +279,84 @@ impl TickBidRoundStatus {
 }
 
 // LEADER BOARD ACCOUNT:
-#[account]
-pub struct TickBidLeaderBoard {
-    pub bump: u8,
-    pub session: Pubkey,
-    pub pool: TickBidLeaderBoardLinkedList,
-}
+// #[account]
+// pub struct TickBidLeaderBoard {
+//     pub bump: u8,
+//     pub session: Pubkey,
+//     pub pool: TickBidLeaderBoardLinkedList,
+// }
 
-impl TickBidLeaderBoard {
-    pub const LEN: usize = BYTE + PUBKEY_BYTES + TickBidLeaderBoardLinkedList::LEN;
+// impl TickBidLeaderBoard {
+//     pub const LEN: usize = BYTE + PUBKEY_BYTES + TickBidLeaderBoardLinkedList::LEN;
 
-    pub fn initialize(&mut self, bump: u8, session: Pubkey) {
-        self.bump = bump;
-        self.session = session;
+//     pub fn initialize(&mut self, bump: u8, session: Pubkey) {
+//         self.bump = bump;
+//         self.session = session;
 
-        self.pool = TickBidLeaderBoardLinkedList::new();
-    }
+//         self.pool = TickBidLeaderBoardLinkedList::new();
+//     }
 
-    pub fn add(&mut self) {}
-}
+//     pub fn add(&mut self) {}
+// }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
-pub struct TickBidLeaderBoardLinkedList {
-    pub total: u32,
-    head: u32,
-    tail: u32,
-    list: Vec<TickBidNode>,
-    stack: Vec<[u8; 3]>,
-}
+// #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+// pub struct TickBidLeaderBoardLinkedList {
+//     pub total: u32,
+//     head: u32,
+//     tail: u32,
+//     list: Vec<TickBidNode>,
+//     stack: Vec<[u8; 3]>,
+// }
 
-impl TickBidLeaderBoardLinkedList {
-    pub const LEN: usize = UNSIGNED_32
-        + UNSIGNED_32
-        + UNSIGNED_32
-        + (UNSIGNED_128 + TickBidNode::LEN)
-        + (UNSIGNED_128 + (UNSIGNED_8 * 3));
+// impl TickBidLeaderBoardLinkedList {
+//     pub const LEN: usize = UNSIGNED_32
+//         + UNSIGNED_32
+//         + UNSIGNED_32
+//         + (UNSIGNED_128 + TickBidNode::LEN)
+//         + (UNSIGNED_128 + (UNSIGNED_8 * 3));
 
-    pub fn new() -> Self {
-        TickBidLeaderBoardLinkedList {
-            total: 0,
-            head: 0,
-            tail: 0,
-            list: Vec::<TickBidNode>::new(),
-            stack: Vec::<[u8; 3]>::new(),
-        }
-    }
-}
+//     pub fn new() -> Self {
+//         TickBidLeaderBoardLinkedList {
+//             total: 0,
+//             head: 0,
+//             tail: 0,
+//             list: Vec::<TickBidNode>::new(),
+//             stack: Vec::<[u8; 3]>::new(),
+//         }
+//     }
+// }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
-pub struct TickBidNode {
-    index: u32,
-    prev: Option<u32>,
-    next: Option<u32>,
-    position: TickBidPosition,
-}
+// #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+// pub struct TickBidNode {
+//     index: u32,
+//     prev: Option<u32>,
+//     next: Option<u32>,
+//     position: TickBidPosition,
+// }
 
-impl TickBidNode {
-    pub const LEN: usize =
-        UNSIGNED_32 + (BYTE + UNSIGNED_32) + (BYTE + UNSIGNED_32) + TickBidPosition::LEN;
+// impl TickBidNode {
+//     pub const LEN: usize =
+//         UNSIGNED_32 + (BYTE + UNSIGNED_32) + (BYTE + UNSIGNED_32) + TickBidPosition::LEN;
 
-    pub fn new() -> Self {
-        TickBidNode {
-            index: 0,
-            prev: None,
-            next: None,
-            position: TickBidPosition {
-                vested_index: 0,
-                vested_amount: 0,
-            },
-        }
-    }
-}
+//     pub fn new() -> Self {
+//         TickBidNode {
+//             index: 0,
+//             prev: None,
+//             next: None,
+//             position: TickBidPosition {
+//                 vested_index: 0,
+//                 vested_amount: 0,
+//             },
+//         }
+//     }
+// }
 
-#[derive(AnchorDeserialize, AnchorSerialize, Clone)]
-pub struct TickBidPosition {
-    pub vested_index: u32,
-    pub vested_amount: u64,
-}
+// #[derive(AnchorDeserialize, AnchorSerialize, Clone)]
+// pub struct TickBidPosition {
+//     pub vested_index: u32,
+//     pub vested_amount: u64,
+// }
 
-impl TickBidPosition {
-    pub const LEN: usize = UNSIGNED_32 + UNSIGNED_64;
-}
+// impl TickBidPosition {
+//     pub const LEN: usize = UNSIGNED_32 + UNSIGNED_64;
+// }

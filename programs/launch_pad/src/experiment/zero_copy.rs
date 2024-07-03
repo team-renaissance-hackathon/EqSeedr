@@ -1,5 +1,5 @@
+use crate::states::TickBidLeaderBoard;
 use anchor_lang::prelude::*;
-
 #[derive(Accounts)]
 pub struct UpdateZeroCopy<'info> {
     #[account(mut)]
@@ -20,4 +20,18 @@ pub fn update_zero_copy(ctx: Context<UpdateZeroCopy>, input: u64) -> Result<()> 
 
     msg!("Updated data to: {}", input);
     Ok(())
+}
+
+#[derive(Accounts)]
+pub struct NewTickBidLeaderBoard<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(
+        init,
+        payer = signer,
+        space = 1000, 
+    )]
+    pub leader_board: Account<'info, TickBidLeaderBoard>,
+
+    pub system_program: Program<'info, System>,
 }
