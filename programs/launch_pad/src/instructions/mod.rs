@@ -1,4 +1,6 @@
 pub mod add_bid_token_mint;
+pub mod claim_venture;
+pub mod claim_vested;
 pub mod create_instance;
 pub mod execute_bid;
 pub mod initialize;
@@ -11,10 +13,11 @@ pub mod submit_sealed_bid;
 pub mod submit_unsealed_bid;
 pub mod transfer_tokens;
 pub mod unlock_stake;
-pub mod claim_venture;
-pub mod claim_vested;
+pub mod update_leader_board;
 
 pub use add_bid_token_mint::*;
+pub use claim_venture::*;
+pub use claim_vested::*;
 pub use create_instance::*;
 pub use execute_bid::*;
 pub use initialize::*;
@@ -27,8 +30,7 @@ pub use submit_sealed_bid::*;
 pub use submit_unsealed_bid::*;
 pub use transfer_tokens::*;
 pub use unlock_stake::*;
-pub use claim_venture::*;
-pub use claim_vested::*;
+pub use update_leader_board::*;
 
 // flow:
 // init bid
