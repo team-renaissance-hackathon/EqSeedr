@@ -118,8 +118,8 @@ pub mod launch_pad {
         instructions::initialize_zero_copy::handler(ctx)
     }
 
-    pub fn update_leader_board(ctx: Context<UpdateLeaderBaord>) -> Result<()> {
-        instructions::update_leader_board::handler(ctx)
+    pub fn update_leader_board(ctx: Context<UpdateLeaderBaord>, src: u32, dest: u32) -> Result<()> {
+        instructions::update_leader_board::handler(ctx, src, dest)
     }
 }
 

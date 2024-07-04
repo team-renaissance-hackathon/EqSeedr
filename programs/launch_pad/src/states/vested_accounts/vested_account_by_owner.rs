@@ -75,15 +75,19 @@ impl VestedAccountByOwner {
         self.round_status[index as usize].is_vested = true;
     }
 
-    pub fn claimed_updated(&mut self, index: u8){
+    pub fn claimed_updated(&mut self, index: u8) {
         // Subtract the Round Vested Tokens to the SessionVested Tokens
         self.session_status.total_tokens -= self.round_status[index as usize].total_tokens;
 
         // Set Round Vested Tokens to 0
         self.round_status[index as usize].total_tokens = 0;
-        
+
         // Set the is_claimed flag to true
         self.round_status[index as usize].is_claimed = true;
+    }
+
+    pub fn get_avg_bid_by_round(&self, index: usize) -> (u32, u64) {
+        return (self.bid_index, self.round_status[index].cost_basis());
     }
 }
 
@@ -105,6 +109,7 @@ pub struct VestedRound {
     pub round: u8,
     pub is_vested: bool,
     pub is_claimed: bool,
+    pub is_on_leader_board: bool,
     pub total_tokens: u64,
     pub bid_sum: u64,
     // computeable state
@@ -135,12 +140,13 @@ pub struct VestedRound {
 }
 
 impl VestedRound {
-    const LEN: usize = BYTE + BYTE + BYTE + UNSIGNED_64 + UNSIGNED_64;
+    const LEN: usize = BYTE + BYTE + BYTE + BYTE + UNSIGNED_64 + UNSIGNED_64;
     pub fn new(round_index: u8) -> Self {
         Self {
             round: round_index,
             is_claimed: false,
             is_vested: false,
+            is_on_leader_board: false,
             total_tokens: 0,
             bid_sum: 0,
         }

@@ -240,6 +240,10 @@ impl Session {
     pub fn claimed_update(&mut self) {
         self.is_claimed = true;
     }
+
+    pub fn is_valid_tick_bid_status(&self) -> bool {
+        return self.launch_status == SessionStatus::TickBid;
+    }
 }
 
 // session should be called instance?
