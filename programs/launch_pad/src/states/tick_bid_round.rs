@@ -1,6 +1,8 @@
-use crate::states::Session;
+use crate::states::{LeaderBoard, Session, VestedAccountByOwner};
 use crate::utils::*;
 use anchor_lang::prelude::*;
+
+use std::cell::RefMut;
 
 // whats the right name?
 // round status, round header, round details
@@ -44,6 +46,13 @@ pub struct TickBidRound {
     pub last_tick_bid_depth: u64,
     pub last_bid_timestamp: i64,
     pub last_bid_slot: u64,
+
+    // RANKING
+    pub highest_overall_bid: u64,
+    pub highest_overall_bid_by_vested_index: u32,
+
+    pub nearest_avg_bid: u64,
+    pub nearest_avg_bid_by_leadear_board_index: u32,
 }
 
 impl TickBidRound {
@@ -208,6 +217,78 @@ impl TickBidRound {
             "Slot: ",
             self.last_bid_slot,
         )
+    }
+
+    pub fn avg_bid(&self) -> u64 {
+        return self.bid_sum / self.total_tokens;
+    }
+
+    pub fn update_highest_bid_rank(&mut self, market_bid: u64, index: u32) {
+        if market_bid > self.highest_overall_bid {
+            self.highest_overall_bid_by_vested_index = index;
+            self.highest_overall_bid = market_bid;
+        }
+    }
+
+    pub fn update_avg_bid_rank(
+        &mut self,
+        leader_board: &RefMut<LeaderBoard>,
+        // leader_board: &AccountLoader<LeaderBoard>,
+        rank: u32,
+    ) -> Result<()> {
+        let rank_node = leader_board.read(rank as usize);
+        // let avg_bid = self.avg_bid();
+
+        // let mut rank_delta = 0;
+        // let mut next_delta = 0;
+        // let mut prev_delta = 0;
+
+        // if rank_node.position.avg_bid > avg_bid {
+        //     rank_delta = rank_node.position.avg_bid - avg_bid;
+        // } else {
+        //     rank_delta = avg_bid - rank_node.position.avg_bid;
+        // }
+
+        // if !rank_node.prev.is_none() {
+        //     let prev_node = leader_board.read(rank_node.prev.unwrap() as usize);
+        //     if prev_node.position.avg_bid > avg_bid {
+        //         prev_delta = prev_node.position.avg_bid - avg_bid;
+        //     } else {
+        //         prev_delta = avg_bid - prev_node.position.avg_bid;
+        //     }
+        // }
+
+        // if !rank_node.next.is_none() {
+        //     let next_node = leader_board.read(rank_node.next.unwrap() as usize);
+        //     if next_node.position.avg_bid > avg_bid {
+        //         next_delta = next_node.position.avg_bid - avg_bid;
+        //     } else {
+        //         next_delta = avg_bid - next_node.position.avg_bid;
+        //     }
+        // }
+
+        // if rank_node.prev.is_none() && rank_node.next.is_none() {
+        //     self.nearest_avg_bid_by_leadear_board_index = rank_node.index;
+        //     self.nearest_avg_bid = rank_node.position.avg_bid;
+
+        //     return Ok(());
+        // }
+
+        // if (rank_node.prev.is_none() && rank_delta <= next_delta)
+        //     || (rank_node.next.is_none() && rank_delta <= prev_delta)
+        //     || (rank_delta <= prev_delta && rank_delta <= next_delta)
+        // {
+        //     // Error
+        // }
+
+        self.nearest_avg_bid_by_leadear_board_index = rank_node.index;
+        self.nearest_avg_bid = rank_node.position.avg_bid;
+
+        // NOTE:
+        //  currently no validations, skipping that for now, will just trust client
+        //  for implementing MVP and to test proof of concept. will implement validations
+        //  in thefuture.
+        Ok(())
     }
 
     // where the bulk of the algorthm will be

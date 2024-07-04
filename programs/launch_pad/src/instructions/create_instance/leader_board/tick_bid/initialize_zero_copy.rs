@@ -24,8 +24,7 @@ pub struct InitializeZeroCopy<'info> {
 }
 
 pub fn handler(ctx: Context<InitializeZeroCopy>) -> Result<()> {
-    let new_leader_board = &mut ctx.accounts.new_leader_board.load_init()?;
-    new_leader_board.bump = ctx.bumps.new_leader_board;
+    ctx.accounts.new_leader_board.load_init()?;
 
     ctx.accounts.session.has_tick_bid_leader_board = true;
 

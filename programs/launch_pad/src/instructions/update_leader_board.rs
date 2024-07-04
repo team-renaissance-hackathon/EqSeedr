@@ -1,4 +1,4 @@
-use crate::states::{round_leader_board::Position, LeaderBoard, Session, VestedAccountByOwner};
+use crate::states::{round_leader_board::Position, LeaderBoard, Session, TickBidRound, VestedAccountByOwner};
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -36,10 +36,18 @@ pub struct UpdateLeaderBaord<'info> {
         // constraint == session.launch_status.is_valid_tick_bid_status(),
     )]
     pub session: Account<'info, Session>,
+
+    pub tick_bid_round: Box<Account<'info, TickBidRound>>,
 }
 
-pub fn handler(ctx: Context<UpdateLeaderBaord>, src: u32, dest: u32) -> Result<()> {
-    let leader_board = &mut ctx.accounts.leader_board.load_mut()?;
+pub fn handler(ctx: Context<UpdateLeaderBaord>, src: u32, dest: u32, rank: u32) -> Result<()> {
+    let UpdateLeaderBaord {
+        leader_board,
+        tick_bid_round,
+        ..
+    } = ctx.accounts;
+
+    let leader_board = &mut leader_board.load_mut()?;
     let round_index = leader_board.round as usize;
 
     let (vested_index, avg_bid) = ctx
@@ -61,6 +69,8 @@ pub fn handler(ctx: Context<UpdateLeaderBaord>, src: u32, dest: u32) -> Result<(
         node.position = position;
         leader_board.update(&node)?;
     }
+
+    tick_bid_round.update_avg_bid_rank(leader_board, rank);
 
     Ok(())
 }

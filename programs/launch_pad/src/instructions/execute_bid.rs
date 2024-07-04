@@ -112,6 +112,8 @@ pub fn handler(ctx: Context<ExecuteBid>) -> Result<()> {
 
     vested_account_by_owner.update(market_bid, token_amount, round_index);
     tick_bid_round.update_bid_status(market_bid, tick_depth, clock.borrow());
+    tick_bid_round.update_highest_bid_rank(market_bid, vested_account_by_owner.bid_index);
+    // session.update_bid_status(market);
 
     transfer_checked(
         CpiContext::new(
@@ -129,3 +131,10 @@ pub fn handler(ctx: Context<ExecuteBid>) -> Result<()> {
 
     Ok(())
 }
+
+// update highest overall bid
+// update avg bid leader board
+// need to keep track of tick depth and sum of tick depth
+// need to keep track of the investor avg bid closest to round avg bid
+// close round after last bid
+// update rankings for bonus pool

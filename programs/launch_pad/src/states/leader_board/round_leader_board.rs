@@ -10,8 +10,6 @@ use crate::{
 
 #[account(zero_copy)]
 pub struct LeaderBoard {
-    pub session: Pubkey,
-    pub bump: u8,
     pub round: u8,
     pub total: [u8; 4],
     pub head: [u8; 4],
@@ -20,7 +18,7 @@ pub struct LeaderBoard {
 }
 
 impl LeaderBoard {
-    pub const LEN: usize = 10240 * 2 - (1 + 32 + 1 + 1 + 8 + 8 + 8);
+    pub const LEN: usize = 10240 * 2 - (1 + 1 + 8 + 8 + 8);
 }
 
 impl LeaderBoard {
@@ -187,6 +185,10 @@ impl LeaderBoard {
         let prev_node = leader_board.read(next_node.prev.unwrap() as usize);
 
         return Ok(prev_node.position.avg_bid >= avg_bid && avg_bid > next_node.position.avg_bid);
+    }
+
+    pub fn is_valid_rank() -> bool {
+        true
     }
 }
 

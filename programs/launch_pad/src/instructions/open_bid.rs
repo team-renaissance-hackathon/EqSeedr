@@ -3,9 +3,9 @@ use std::borrow::Borrow;
 use crate::states::{
     // STATE ACCOUNTS
     CommitQueue,
+    LeaderBoard,
     ProgramAuthority,
     Session,
-    // SessionStatus,
     TickBidRound,
     VestedAccountByIndex,
     VestedAccountByOwner,
@@ -69,6 +69,19 @@ pub struct OpenBid<'info> {
     )]
     pub commit_queue: Box<Account<'info, CommitQueue>>,
 
+    #[account(
+        mut,
+        seeds = [
+            session.key().as_ref(),
+            b"tick-bid-leader-board",
+        ],
+        bump,
+        realloc = session.tick_bid_leader_board_current_allocation as usize,
+        realloc::payer = signer,
+        realloc::zero = true,
+    )]
+    pub leader_board: AccountLoader<'info, LeaderBoard>,
+
     #[account(mut)]
     pub vested_config: Box<Account<'info, VestedConfig>>,
 
@@ -104,6 +117,8 @@ pub struct OpenBid<'info> {
     pub bid_token_mint: InterfaceAccount<'info, Mint>,
 
     pub token_program: Interface<'info, TokenInterface>,
+
+    pub system_program: Program<'info, System>,
 }
 
 pub fn handler(ctx: Context<OpenBid>) -> Result<()> {
@@ -117,6 +132,7 @@ pub fn handler(ctx: Context<OpenBid>) -> Result<()> {
         // update state
         session,
         tick_bid_round,
+        leader_board,
         vested_config,
         vested_account_by_owner,
 
@@ -138,6 +154,9 @@ pub fn handler(ctx: Context<OpenBid>) -> Result<()> {
     let token_amount = 1;
 
     tick_bid_round.open_bid(clock.borrow(), commit_bid.amount);
+
+    let leader_board = &mut leader_board.load_mut()?;
+    leader_board.round = round_index;
 
     if !vested_account_by_owner.session_status.is_vested {
         session.add_vested_member();
