@@ -44,16 +44,14 @@ pub fn handler(ctx: Context<UpdateLeaderBaord>, src: u32, dest: u32, rank: u32) 
     let UpdateLeaderBaord {
         leader_board,
         tick_bid_round,
+        vested_account_by_owner,
         ..
     } = ctx.accounts;
 
     let leader_board = &mut leader_board.load_mut()?;
     let round_index = leader_board.round as usize;
 
-    let (vested_index, avg_bid) = ctx
-        .accounts
-        .vested_account_by_owner
-        .get_avg_bid_by_round(round_index);
+    let (vested_index, avg_bid) = vested_account_by_owner.get_avg_bid_by_round(round_index);
 
     let position = Position {
         vested_index,
@@ -70,7 +68,8 @@ pub fn handler(ctx: Context<UpdateLeaderBaord>, src: u32, dest: u32, rank: u32) 
         leader_board.update(&node)?;
     }
 
-    tick_bid_round.update_avg_bid_rank(leader_board, rank);
+    vested_account_by_owner.round_status[round_index].is_on_leader_board = true;
+    tick_bid_round.update_avg_bid_rank(leader_board, rank)?;
 
     Ok(())
 }

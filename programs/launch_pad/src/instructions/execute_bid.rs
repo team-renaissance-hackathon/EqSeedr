@@ -44,6 +44,9 @@ pub struct ExecuteBid<'info> {
 
         // to help prevent user from uncessary bid, 
         constraint = tick_bid_round.is_valid_delta(),
+
+        // total tokens == token allocation
+        constraint = !tick_bid_round.is_complete(),
     )]
     pub tick_bid_round: Account<'info, TickBidRound>,
 
@@ -111,9 +114,56 @@ pub fn handler(ctx: Context<ExecuteBid>) -> Result<()> {
     }
 
     vested_account_by_owner.update(market_bid, token_amount, round_index);
+
     tick_bid_round.update_bid_status(market_bid, tick_depth, clock.borrow());
-    tick_bid_round.update_highest_bid_rank(market_bid, vested_account_by_owner.bid_index);
     // session.update_bid_status(market);
+
+    // execute tick depth algo
+    let pool_tokens = tick_bid_round.update_pool_simple(tick_depth);
+    let (total_tokens, pool_tokens) =
+        if (pool_tokens + token_amount) > tick_bid_round.token_allocation {
+            let amount = tick_bid_round.token_allocation
+                - (tick_bid_round.total_tokens + tick_bid_round.bonus_pool);
+            (amount, amount - token_amount)
+        } else {
+            (pool_tokens + token_amount, pool_tokens)
+        };
+    // session
+    //  increse bid sum
+    session.bid_sum += market_bid;
+    //  increase total tokens
+    session.total_tokens += total_tokens;
+    //  compute average bid
+    //      avg = session.bid_sum / session.total_tokens
+    //  compute remainining tokens
+    //      reamining = session.token_allocation - session.total_tokens
+    // number of vested accounts -> total_vested
+    // number of bids -> number_of_bids
+    // market value -> market_value -> would it be the same as computed average bid?
+
+    // round
+    //  increase bid sum
+    tick_bid_round.bid_sum += market_bid;
+    //  increase total tokens
+    tick_bid_round.total_tokens += token_amount;
+    //  update pool
+    tick_bid_round.bonus_pool += pool_tokens;
+    //  compute average bid -> going with option b
+    //      option a :: avg = tick_bid_round.bid_sum / (tick_bid_round.total_tokens + tick_bid_round.bonus_pool)
+    //      option b :: avg = tick_bid_round.bid_sum / tick_bid_round.total_tokens
+    //  compute remainining tokens
+    //      remaining = tick_bid_round.token_allocation - (tick_bid_round.total_tokens + tick_bid_round.bonus_pool)
+    //  update highest bid
+    tick_bid_round.update_highest_bid_rank(market_bid, vested_account_by_owner.bid_index);
+    //  update nearest avg bid
+    //  update biggest tick depth
+    // if tick_depth >= tick_bid_round.curent_tick_depth {
+    //     tick_bid_round.curent_tick_depth = tick_depth;
+    //     tick_bid_round.tick_depth_index = vested_account_by_owner.bid_index;
+    // }
+    //  update biggest tick depth acumulation
+    //  increase tick depth accumulation
+    tick_bid_round.tick_depth_accumulation += tick_depth;
 
     transfer_checked(
         CpiContext::new(

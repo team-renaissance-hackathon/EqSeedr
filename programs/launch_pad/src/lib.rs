@@ -4,7 +4,7 @@ pub mod utils;
 use anchor_lang::prelude::*;
 pub use instructions::*;
 
-declare_id!("7GKWqKvkev22SYs2HEb1jw6h4uHJwLVKpEcxVUqTZKxG");
+declare_id!("HX1Lmwv3J3zHizFWAWkJmMbKUVAoFUbP4SdZJh2cF18U");
 
 #[program]
 pub mod launch_pad {

@@ -59,6 +59,7 @@ pub struct Session {
     pub has_max_rounds: bool,
     pub has_valid_commit_bid_vault: bool,
 
+    // might not need this
     pub tick_bid_leader_board_current_allocation: u64,
 }
 
