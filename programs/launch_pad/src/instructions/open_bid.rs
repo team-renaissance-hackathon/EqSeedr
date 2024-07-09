@@ -1,5 +1,6 @@
 use std::borrow::Borrow;
 
+use crate::states::round_leader_board::Position;
 use crate::states::{
     // STATE ACCOUNTS
     CommitQueue,
@@ -170,6 +171,27 @@ pub fn handler(ctx: Context<OpenBid>) -> Result<()> {
     }
 
     vested_account_by_owner.update(commit_bid.amount, token_amount, round_index);
+
+    session.bid_sum = commit_bid.amount;
+    session.total_tokens = token_amount;
+
+    // already being handled in open bid method
+    // tick_bid_round.bid_sum = commit_bid.amount;
+    // tick_bid_round.total_tokens = token_amount;
+
+    tick_bid_round.update_highest_bid_rank(commit_bid.amount, vested_account_by_owner.bid_index);
+    tick_bid_round.nearest_avg_bid = commit_bid.amount;
+    tick_bid_round.nearest_avg_bid_by_leadear_board_index = 0;
+
+    leader_board.add(
+        0,
+        Position {
+            vested_index: vested_account_by_owner.bid_index,
+            avg_bid: commit_bid.amount,
+        },
+    )?;
+
+    vested_account_by_owner.round_status[round_index as usize].is_on_leader_board = true;
 
     let seeds = &[b"authority", &[program_authority.bump][..]];
     let signer_seeds = &[&seeds[..]];

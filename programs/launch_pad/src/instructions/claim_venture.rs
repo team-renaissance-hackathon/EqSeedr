@@ -1,12 +1,10 @@
-use crate::states::{
-    vested_accounts::*, 
-    ProgramAuthority, Session};
+use crate::states::SessionStatus::Closed;
+use crate::states::{ProgramAuthority, Session};
 use crate::utils::errors::ErrorCode;
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{
     transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked,
 };
-use crate::states::SessionStatus::Closed;
 
 #[derive(Accounts)]
 pub struct ClaimVenture<'info> {
@@ -27,7 +25,7 @@ pub struct ClaimVenture<'info> {
         // Ensure there are enough tokens in the escrow account
     )]
     pub venture_token_escrow: InterfaceAccount<'info, TokenAccount>,
-    
+
     #[account(
         constraint = token_mint.key() == venture_token_escrow.mint
         // Ensure that both the escrow and the token mint have the same mint
@@ -50,14 +48,13 @@ pub struct ClaimVenture<'info> {
         bump = program_authority.bump,
     )]
     pub program_authority: Account<'info, ProgramAuthority>,
-    
+
     pub token_program: Interface<'info, TokenInterface>,
 }
 
 pub fn handler(ctx: Context<ClaimVenture>) -> Result<()> {
     let ClaimVenture {
         session,
-        project_owner,
         project_owner_token_account,
         venture_token_escrow,
         token_program,

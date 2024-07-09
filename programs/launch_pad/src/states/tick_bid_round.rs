@@ -1,4 +1,4 @@
-use crate::states::{LeaderBoard, Session, VestedAccountByOwner};
+use crate::states::{LeaderBoard, Session};
 use crate::utils::*;
 use anchor_lang::prelude::*;
 
@@ -43,9 +43,12 @@ pub struct TickBidRound {
     pub last_market_bid: u64,
 
     // the tick depth of the last bid
-    pub last_tick_bid_depth: u64,
+    pub last_tick_depth: u64,
     pub last_bid_timestamp: i64,
     pub last_bid_slot: u64,
+
+    // INCLUDING
+    pub tick_depth_accumulation: u64,
 
     // RANKING
     pub highest_overall_bid: u64,
@@ -70,8 +73,14 @@ impl TickBidRound {
         + UNSIGNED_32
         + UNSIGNED_64
         + UNSIGNED_64
+        + UNSIGNED_64
         + SIGNED_64
-        + UNSIGNED_64;
+        + UNSIGNED_64
+        + UNSIGNED_64
+        + UNSIGNED_64
+        + UNSIGNED_32
+        + UNSIGNED_64
+        + UNSIGNED_32;
 
     const MIN: i64 = 60; // MINUTE
     const UNIT: u64 = 0b1;
@@ -85,6 +94,22 @@ impl TickBidRound {
         6_765, 10_946, 17_711, 28_657,
     ];
 
+    pub fn update_pool_simple(&mut self, tick_depth: u64) -> u64 {
+        let mut sum: u64 = 0;
+        let mut tick = 1;
+
+        while tick <= tick_depth {
+            let num = TickBidRound::FIB_SEQUENCE[tick as usize];
+            sum += num;
+            tick += 1;
+        }
+
+        // self.bonus_pool += sum;
+        // self.total_tokens += sum + 1;
+        // log data
+        return sum;
+    }
+
     // CreateTickBidRound
     pub fn initialize(&mut self, bump: u8, session: &Account<'_, Session>) {
         self.bump = bump;
@@ -97,7 +122,7 @@ impl TickBidRound {
 
         self.avg_tick_depth = 0;
         self.last_market_bid = 0;
-        self.last_tick_bid_depth = 0;
+        self.last_tick_depth = 0;
         self.last_bid_timestamp = 0;
         self.last_bid_slot = 0;
         self.total_tokens = 0;
@@ -113,9 +138,10 @@ impl TickBidRound {
         self.init_market_bid = market_bid;
         self.last_market_bid = market_bid;
 
-        self.last_tick_bid_depth = 0;
+        self.last_tick_depth = 0;
 
         self.bid_sum += market_bid;
+        // though in the future if scaling, adding 1 will not working, need an input amount
         self.total_tokens += 1;
 
         // tick algo will be based on these.
@@ -127,6 +153,10 @@ impl TickBidRound {
             "{}", // EVENTS:
             "EVENTS",
         )
+    }
+
+    pub fn is_complete(&self) -> bool {
+        self.token_allocation == self.total_tokens + self.bonus_pool
     }
 
     pub fn get_index(&self) -> u8 {
@@ -201,7 +231,7 @@ impl TickBidRound {
     // ExecuteBid - 3 | OpenBid?
     pub fn update_bid_status(&mut self, market_bid: u64, tick_depth: u64, clock: &Clock) {
         self.last_market_bid = market_bid;
-        self.last_tick_bid_depth = tick_depth;
+        self.last_tick_depth = tick_depth;
         self.last_bid_timestamp = clock.unix_timestamp;
         self.last_bid_slot = clock.slot;
 
@@ -211,7 +241,7 @@ impl TickBidRound {
             "Last Market Bid: ",
             self.last_market_bid,
             "Last Tick Depth: ",
-            self.last_tick_bid_depth,
+            self.last_tick_depth,
             "TimeStamp: ",
             self.last_bid_timestamp,
             "Slot: ",
