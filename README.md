@@ -47,6 +47,4 @@ Twitter Links:
 * [Meuwiie](https://x.com/Meuwiie)
 
 ## Additional Resources
-going to add ASAP.
-* Pitch Deck
-* Video
+* [Pitch Deck](https://drive.google.com/file/d/1WSjPjQ0qeKJsxPq0ixXFx7O0FL_bOf-Q/view?usp=sharing)
